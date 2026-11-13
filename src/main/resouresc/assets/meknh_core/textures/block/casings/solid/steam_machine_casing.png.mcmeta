@@ -1,0 +1,9 @@
+{
+  "ctm": {
+    "ctm_version": 1,
+    "type": "ctm",
+    "textures": [
+      "meknh_core:block/casings/solid/steam_machine_casing_ctm"
+    ]
+  }
+}
