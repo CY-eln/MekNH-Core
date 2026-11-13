@@ -40,6 +40,10 @@ repositories {
     maven {
         url = "https://neoforged.forgecdn.net/mojang-meta"
     }
+    // CI 环境没有 mods/，依赖从 Modrinth Maven 拉取
+    maven {
+        url = "https://api.modrinth.com/maven"
+    }
     flatDir {
         dir 'mods'
     }
@@ -131,16 +135,19 @@ configurations {
 }
 
 dependencies {
-    // 本地开发使用 mods/ 下的完整依赖；CI 环境没有 mods/，改用 libs/ 里的最小依赖
-    // （Mekanism、MekanismGenerators、JEI、Jade）。
+    // 本地开发使用 mods/ 下的完整依赖；CI 环境没有 mods/，从公开 Maven 拉取最小依赖。
     if (fileTree(dir: 'mods', include: ['*.jar']).isEmpty()) {
-        implementation fileTree(dir: 'libs', include: ['*.jar'])
+        // 版本号对应的 Modrinth version id，见 https://api.modrinth.com
+        implementation "maven.modrinth:mekanism:5KzzycBT"
+        implementation "maven.modrinth:mekanism-generators:a6gl7srE"
+        compileOnly "maven.modrinth:jei:1vC6z8wV"
+        compileOnly "maven.modrinth:jade:eYz2YBGT"
     } else {
         implementation fileTree(dir: 'mods', include: ['*.jar'])
+        // JEI is present in the dev run; only needed at compile time for the ghost/ingredient handler.
+        compileOnly fileTree(dir: 'run/mods', include: ['*JEI*.jar'])
+        compileOnly fileTree(dir: 'run/mods', include: ['*Jade*.jar'])
     }
-    // JEI is present in the dev run; only needed at compile time for the ghost/ingredient handler.
-    compileOnly fileTree(dir: 'run/mods', include: ['*JEI*.jar'])
-    compileOnly fileTree(dir: 'run/mods', include: ['*Jade*.jar'])
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
