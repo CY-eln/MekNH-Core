@@ -1,0 +1,8 @@
+{
+  "sound_event": "meknh_core:music_disc.desultory_signals",
+  "description": {
+    "translate": "jukebox_song.meknh_core.desultory_signals"
+  },
+  "length_in_seconds": 150.75,
+  "comparator_output": 15
+}

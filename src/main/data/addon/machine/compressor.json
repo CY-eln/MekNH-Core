@@ -1,0 +1,14 @@
+{
+  "id": "compressor",
+  "level": "all",
+  "input": [
+    { "type": "item", "slots": 1, "stack_limit": 64 },
+    { "type": "gas", "slots": 1, "stack_limit": 8 }
+  ],
+  "output": [
+    { "type": "item", "slots": 1, "stack_limit": 64 }
+  ],
+  "time": "200",
+  "energy": 0.25,
+  "overlay": "compressor"
+}
