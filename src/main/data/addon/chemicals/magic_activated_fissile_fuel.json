@@ -1,7 +1,0 @@
-{
-  "id": "meknh_core:magic_activated_fissile_fuel",
-  "fluid": false,
-  "texture": "meknh_core:liquid/magic_activated_fissile_fuel",
-  "tint": "#9B30FF",
-  "attributes": {}
-}
