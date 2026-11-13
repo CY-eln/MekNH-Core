@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "meknh_core:block/casings/firebox/bronze_firebox_casing"
+    },
+    "active=true": {
+      "model": "meknh_core:block/casings/firebox/bronze_firebox_casing_active"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "meknh_core:block/casings/firebox/bronze_firebox_casing",
+    "top": "meknh_core:block/casings/solid/steam_machine_casing",
+    "bottom": "meknh_core:block/casings/solid/steam_machine_casing"
+  }
+}

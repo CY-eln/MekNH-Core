@@ -1,0 +1,25 @@
+{
+  "loader": "ctm:ctm",
+  "ctm_version": 1,
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "meknh_core:block/casings/firebox/bronze_firebox_casing",
+    "side": "meknh_core:block/casings/firebox/bronze_firebox_casing",
+    "top": "meknh_core:block/casings/solid/steam_machine_casing",
+    "bottom": "meknh_core:block/casings/solid/steam_machine_casing"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": { "texture": "#bottom", "cullface": "down" },
+        "up": { "texture": "#top", "cullface": "up" },
+        "north": { "texture": "#side", "cullface": "north" },
+        "south": { "texture": "#side", "cullface": "south" },
+        "west": { "texture": "#side", "cullface": "west" },
+        "east": { "texture": "#side", "cullface": "east" }
+      }
+    }
+  ]
+}

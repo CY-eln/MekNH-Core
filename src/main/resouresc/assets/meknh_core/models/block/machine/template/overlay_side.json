@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "elements": [
+    {
+      "from": [-0.01, -0.01, -0.01],
+      "to": [16.01, 16.01, 16.01],
+      "faces": {
+        "south": { "uv": [0.0, 0.0, 16.0, 16.0], "texture": "#overlay_side", "cullface": "south" },
+        "east": { "uv": [0.0, 0.0, 16.0, 16.0], "texture": "#overlay_side", "cullface": "east" },
+        "west": { "uv": [0.0, 0.0, 16.0, 16.0], "texture": "#overlay_side", "cullface": "west" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "music_disc.desultory_signals": {
+    "sounds": [
+      {
+        "name": "meknh_core:music_disc.desultory_signals",
+        "stream": true
+      }
+    ]
+  }
+}

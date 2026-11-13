@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "meknh_core:block/casings/solid/steam_machine_casing"
+  }
+}

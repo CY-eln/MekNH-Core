@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "meknh_core:block/casings/solid/steam_machine_casing"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "loader": "ctm:ctm",
+  "ctm_version": 1,
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "meknh_core:block/casings/firebox/bronze_firebox_casing",
+    "side": "meknh_core:block/casings/firebox/bronze_firebox_casing",
+    "top": "meknh_core:block/casings/solid/steam_machine_casing",
+    "bottom": "meknh_core:block/casings/solid/steam_machine_casing",
+    "active": "meknh_core:block/casings/firebox/bronze_firebox_casing_bloom"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": { "texture": "#bottom", "cullface": "down" },
+        "up": { "texture": "#top", "cullface": "up" },
+        "north": { "texture": "#side", "cullface": "north" },
+        "south": { "texture": "#side", "cullface": "south" },
+        "west": { "texture": "#side", "cullface": "west" },
+        "east": { "texture": "#side", "cullface": "east" }
+      }
+    },
+    {
+      "from": [-0.01, 0, -0.01],
+      "to": [16.01, 16, 16.01],
+      "shade": false,
+      "neoforge_data": { "block_light": 15, "sky_light": 15 },
+      "faces": {
+        "north": { "texture": "#active", "cullface": "north" },
+        "south": { "texture": "#active", "cullface": "south" },
+        "west": { "texture": "#active", "cullface": "west" },
+        "east": { "texture": "#active", "cullface": "east" }
+      }
+    }
+  ]
+}
