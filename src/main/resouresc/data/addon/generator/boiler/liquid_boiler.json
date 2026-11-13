@@ -1,0 +1,14 @@
+{
+  "id": "liquid_boiler",
+  "level": "ULV",
+  "input": [
+    { "type": "mek", "slots": 1, "stack_limit": 10 },
+    { "type": "heat", "slots": 1, "stack_limit": 1000 }
+  ],
+  "output": [
+    { "type": "chemical", "slots": 1, "stack_limit": 32 }
+  ],
+  "steam_per_tick": 16,
+  "high_pressure_multiplier": 2,
+  "overlay": "lava"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "solar_boiler",
+  "level": "ULV",
+  "input": [
+    { "type": "heat", "slots": 1, "stack_limit": 1000 }
+  ],
+  "output": [
+    { "type": "chemical", "slots": 1, "stack_limit": 32 }
+  ],
+  "steam_per_tick": 6,
+  "high_pressure_multiplier": 3,
+  "overlay": "solar"
+}

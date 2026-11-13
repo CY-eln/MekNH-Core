@@ -1,0 +1,14 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:alloy_smelter",
+  "level": "LV",
+  "time": "200",
+  "energy": 0.5,
+  "input": [
+    { "type": "item", "ingredient": "minecraft:copper_ingot", "count": 3 },
+    { "type": "item", "ingredient": "mekanism:ingot_tin", "count": 1 }
+  ],
+  "output": [
+    { "type": "item", "id": "mekanism:ingot_bronze", "count": 4 }
+  ]
+}
