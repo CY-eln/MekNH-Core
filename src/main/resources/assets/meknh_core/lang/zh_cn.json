@@ -178,6 +178,7 @@
   "gui.meknh_core.warning.no_water": "缺水",
   "gui.meknh_core.warning.no_fuel": "缺燃料",
   "multiblock.meknh_core.hatch": "%s%s",
+  "multiblock.meknh_core.amp": "%s安",
   "multiblock.meknh_core.controller": "%s多方块：%s",
   "multiblock.meknh_core.part.item_input": "输入总线",
   "multiblock.meknh_core.part.item_output": "输出总线",

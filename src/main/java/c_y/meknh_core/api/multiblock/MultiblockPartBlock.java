@@ -36,11 +36,17 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
 
     private final MultiblockPartType partType;
     private final MachineLevel level;
+    private final int amp;
 
     public MultiblockPartBlock(Properties properties, MultiblockPartType partType, MachineLevel level) {
+        this(properties, partType, level, 2);
+    }
+
+    public MultiblockPartBlock(Properties properties, MultiblockPartType partType, MachineLevel level, int amp) {
         super(properties);
         this.partType = partType;
         this.level = level;
+        this.amp = amp;
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
@@ -50,6 +56,13 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
 
     public MachineLevel level() {
         return this.level;
+    }
+
+    /**
+     * 能源仓的安培数；非能源仓固定为 2。
+     */
+    public int amp() {
+        return this.amp;
     }
 
     @Override

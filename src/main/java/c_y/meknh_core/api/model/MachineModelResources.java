@@ -103,7 +103,7 @@ public final class MachineModelResources {
             String model = "meknh_core:block/multiblock/part/" + path;
             put(resources, "blockstates/" + path + ".json", facingPartBlockstate(model));
             put(resources, "models/block/multiblock/part/" + path + ".json",
-                    partModel(partCasingTexture(part.level()), partVisual(part.type())));
+                    partModel(partCasingTexture(part.level()), partVisual(part.type(), part.amp())));
             put(resources, "models/item/" + path + ".json", parentItemModel(model));
         }
 
@@ -156,7 +156,7 @@ public final class MachineModelResources {
     /**
      * 一个仓室正面的两层贴图：功能图标、动态发光环。
      */
-    private record PartVisual(String overlay, String emissive) {
+    private record PartVisual(String overlay, String emissive, String tint) {
     }
 
     /**
@@ -179,7 +179,11 @@ public final class MachineModelResources {
         textures.addProperty("top", casing + "/top");
         textures.addProperty("bottom", casing + "/bottom");
         textures.addProperty("overlay_front", visual.overlay());
-        textures.addProperty("overlay_pipe", "meknh_core:block/overlay/machine/overlay_pipe");
+        if (visual.tint() != null) {
+            textures.addProperty("overlay_tint", visual.tint());
+        } else {
+            textures.addProperty("overlay_pipe", "meknh_core:block/overlay/machine/overlay_pipe");
+        }
         if (visual.emissive() != null) {
             textures.addProperty("overlay_emissive", visual.emissive());
         }
@@ -187,10 +191,14 @@ public final class MachineModelResources {
 
         JsonArray elements = new JsonArray();
         elements.add(cube());
-        elements.add(overlayPlane("#overlay_pipe", -0.01D, false));
-        elements.add(overlayPlane("#overlay_front", -0.02D, false));
+        if (visual.tint() != null) {
+            elements.add(overlayPlane("#overlay_tint", -0.01D, false, 2));
+        } else {
+            elements.add(overlayPlane("#overlay_pipe", -0.01D, false, -1));
+        }
+        elements.add(overlayPlane("#overlay_front", -0.02D, false, -1));
         if (visual.emissive() != null) {
-            elements.add(overlayPlane("#overlay_emissive", -0.03D, true));
+            elements.add(overlayPlane("#overlay_emissive", -0.03D, true, -1));
         }
         model.add("elements", elements);
         return model;
@@ -203,7 +211,7 @@ public final class MachineModelResources {
      * @param z          z 偏移（越负越靠前）
      * @param fullbright 是否自发光
      */
-    private static JsonObject overlayPlane(String texture, double z, boolean fullbright) {
+    private static JsonObject overlayPlane(String texture, double z, boolean fullbright, int tintIndex) {
         JsonObject element = new JsonObject();
         element.add("from", array(0.0, 0.0, z));
         element.add("to", array(16.0, 16.0, z));
@@ -219,6 +227,9 @@ public final class MachineModelResources {
         face.add("uv", array(0.0, 0.0, 16.0, 16.0));
         face.addProperty("texture", texture);
         face.addProperty("cullface", "north");
+        if (tintIndex >= 0) {
+            face.addProperty("tintindex", tintIndex);
+        }
         faces.add("north", face);
         element.add("faces", faces);
         return element;
@@ -254,17 +265,18 @@ public final class MachineModelResources {
      *     这里沿用能源图标、不加发光环。</li>
      * </ul>
      */
-    private static PartVisual partVisual(c_y.meknh_core.api.multiblock.MultiblockPartType type) {
+    private static PartVisual partVisual(c_y.meknh_core.api.multiblock.MultiblockPartType type, int amp) {
         String base = "meknh_core:block/overlay/machine/";
         String ringIn = base + "overlay_pipe_in_emissive";
         String ringOut = base + "overlay_pipe_out_emissive";
+        String energy = "overlay_energy_" + amp + "a_";
         return switch (type) {
-            case ITEM_INPUT -> new PartVisual(base + "overlay_item_hatch_input", ringIn);
-            case ITEM_OUTPUT -> new PartVisual(base + "overlay_item_hatch_output", ringOut);
-            case FLUID_INPUT, STEAM_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn);
-            case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut);
-            case ENERGY_INPUT -> new PartVisual(base + "overlay_energy_1a_in", null);
-            case ENERGY_OUTPUT -> new PartVisual(base + "overlay_energy_1a_out", null);
+            case ITEM_INPUT -> new PartVisual(base + "overlay_item_hatch_input", ringIn, null);
+            case ITEM_OUTPUT -> new PartVisual(base + "overlay_item_hatch_output", ringOut, null);
+            case FLUID_INPUT, STEAM_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn, null);
+            case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null);
+            case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted");
+            case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted");
         };
     }
 

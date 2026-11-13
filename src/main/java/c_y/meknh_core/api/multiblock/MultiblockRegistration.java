@@ -89,7 +89,7 @@ public final class MultiblockRegistration {
      * @param level 电压等级
      * @param type  功能类型
      */
-    public record PartBlockInfo(ResourceLocation id, MachineLevel level, MultiblockPartType type) {
+    public record PartBlockInfo(ResourceLocation id, MachineLevel level, MultiblockPartType type, int amp) {
     }
 
     private static boolean initialized;
@@ -196,28 +196,28 @@ public final class MultiblockRegistration {
             // 能量仓只有电力版本；物品/流体仓额外提供 ULV（蒸汽）版本。
             boolean energy = type == MultiblockPartType.ENERGY_INPUT || type == MultiblockPartType.ENERGY_OUTPUT;
             List<MachineLevel> levels = new ArrayList<>();
-            if (!energy) {
-                levels.add(MachineLevel.steam(SteamVariant.LOW));
-            }
+            levels.add(MachineLevel.steam(SteamVariant.LOW));
             levels.addAll(ELECTRIC_LEVELS);
 
             List<DeferredBlock<MultiblockPartBlock>> blocks = new ArrayList<>();
             for (MachineLevel level : levels) {
                 // ULV 仓使用 GT 的 ulv_ 前缀，而不是蒸汽机器的 lp_steam_。
                 String tierPrefix = level.isSteam() ? "ulv" : level.idPrefix();
-                String path = tierPrefix + "_" + type.id() + "_hatch";
-                DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
-                        path,
-                        properties -> new MultiblockPartBlock(properties, type, level),
-                        BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
-                );
-                DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
-                        path,
-                        properties -> new MultiblockBlockItem(block.get(), properties)
-                );
-                blocks.add(block);
-                PART_BLOCK_INFOS.add(new PartBlockInfo(block.getId(), level, type));
-                ALL_ITEMS.add(item);
+                for (int amp : ampsFor(type, level)) {
+                    String path = tierPrefix + "_" + type.id() + "_hatch" + (amp == 2 ? "" : "_" + amp + "a");
+                    DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
+                            path,
+                            properties -> new MultiblockPartBlock(properties, type, level, amp),
+                            BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+                    );
+                    DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
+                            path,
+                            properties -> new MultiblockBlockItem(block.get(), properties)
+                    );
+                    blocks.add(block);
+                    PART_BLOCK_INFOS.add(new PartBlockInfo(block.getId(), level, type, amp));
+                    ALL_ITEMS.add(item);
+                }
             }
             PART_BLOCK_HOLDERS.put(type, List.copyOf(blocks));
             DeferredHolder<BlockEntityType<?>, BlockEntityType<MultiblockPartBlockEntity>> holder =
@@ -229,7 +229,7 @@ public final class MultiblockRegistration {
                                 (pos, state) -> {
                                     if (state.getBlock() instanceof MultiblockPartBlock part) {
                                         return new MultiblockPartBlockEntity(getPartBlockEntityType(type), pos, state,
-                                                part.partType(), part.level());
+                                                part.partType(), part.level(), part.amp());
                                     }
                                     throw new IllegalStateException("Block " + state.getBlock()
                                             + " is not a multiblock part, but is registered to " + type.id() + "_hatch");
@@ -240,6 +240,19 @@ public final class MultiblockRegistration {
             PART_TYPES.add(new PartTypeEntry(type, holder));
         }
         registerSteamHatch();
+    }
+
+    /**
+     * 能源仓的安培变体：ULV～HV 只有 2A，EV/IV 额外提供 4A 与 16A。
+     */
+    private static List<Integer> ampsFor(MultiblockPartType type, MachineLevel level) {
+        if (type != MultiblockPartType.ENERGY_INPUT && type != MultiblockPartType.ENERGY_OUTPUT) {
+            return List.of(2);
+        }
+        return switch (level.voltage()) {
+            case EV, IV -> List.of(2, 4, 16);
+            default -> List.of(2);
+        };
     }
 
     /**
@@ -260,7 +273,7 @@ public final class MultiblockRegistration {
                 properties -> new MultiblockBlockItem(block.get(), properties)
         );
         ALL_ITEMS.add(item);
-        PART_BLOCK_INFOS.add(new PartBlockInfo(block.getId(), level, MultiblockPartType.STEAM_INPUT));
+        PART_BLOCK_INFOS.add(new PartBlockInfo(block.getId(), level, MultiblockPartType.STEAM_INPUT, 2));
         PART_BLOCK_HOLDERS.put(MultiblockPartType.STEAM_INPUT, List.of(block));
 
         DeferredHolder<BlockEntityType<?>, BlockEntityType<MultiblockPartBlockEntity>> holder =

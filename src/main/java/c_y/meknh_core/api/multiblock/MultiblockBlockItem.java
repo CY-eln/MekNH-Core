@@ -22,8 +22,12 @@ public class MultiblockBlockItem extends BlockItem {
     public Component getName(ItemStack stack) {
         Block block = this.getBlock();
         if (block instanceof MultiblockPartBlock part) {
+            var tier = MachineNames.gtTierName(part.level());
+            if (part.amp() > 2) {
+                tier = Component.translatable("multiblock.meknh_core.amp", part.amp()).append(tier);
+            }
             return Component.translatable("multiblock.meknh_core.hatch",
-                    MachineNames.gtTierName(part.level()),
+                    tier,
                     Component.translatable("multiblock.meknh_core.part." + part.partType().id()));
         }
         if (block instanceof MultiblockControllerBlock controller) {

@@ -63,6 +63,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
 
     private final MultiblockPartType partType;
     private final MachineLevel machineLevel;
+    private final int amp;
 
     @Nullable
     private BlockPos controllerPos;
@@ -86,9 +87,15 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
 
     public MultiblockPartBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                      MultiblockPartType partType, MachineLevel level) {
+        this(type, pos, state, partType, level, 2);
+    }
+
+    public MultiblockPartBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                     MultiblockPartType partType, MachineLevel level, int amp) {
         super(type, pos, state);
         this.partType = partType;
         this.machineLevel = level;
+        this.amp = amp;
         this.createHandlers();
     }
 
@@ -126,11 +133,11 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                         new CombinedChemicalHandler(this.chemicalTank), true, false);
             }
             case ENERGY_INPUT -> {
-                this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel), true, false, this::setChanged);
+                this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel, this.amp), true, false, this::setChanged);
                 this.strictEnergyHandler = this.energyStorage.strictHandler();
             }
             case ENERGY_OUTPUT -> {
-                this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel), false, true, this::setChanged);
+                this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel, this.amp), false, true, this::setChanged);
                 this.strictEnergyHandler = this.energyStorage.strictHandler();
             }
         }
@@ -156,7 +163,19 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
      * 能量仓容量：单方块机器缓存 ×16。
      */
     public static long energyCapacity(MachineLevel level) {
-        return level.voltage().energyCapacity() * ENERGY_CAPACITY_MULTIPLIER;
+        return energyCapacity(level, 2);
+    }
+
+    /**
+     * 能源仓容量：2A 为单方块机器缓存 ×16，更高安培按比例放大。
+     * ULV 是蒸汽等级，没有 FE 缓存，按电压单独计算。
+     */
+    public static long energyCapacity(MachineLevel level, int amp) {
+        long base = level.voltage().energyCapacity();
+        if (base <= 0L) {
+            base = level.voltage().voltage() * ENERGY_CAPACITY_MULTIPLIER * 2L;
+        }
+        return base * Math.max(1, amp) / 2L;
     }
 
     /**

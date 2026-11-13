@@ -178,6 +178,7 @@
   "gui.meknh_core.warning.no_water": "No water",
   "gui.meknh_core.warning.no_fuel": "No fuel",
   "multiblock.meknh_core.hatch": "%s %s",
+  "multiblock.meknh_core.amp": "%sA ",
   "multiblock.meknh_core.controller": "%s Multiblock: %s",
   "multiblock.meknh_core.part.item_input": "Input Bus",
   "multiblock.meknh_core.part.item_output": "Output Bus",
