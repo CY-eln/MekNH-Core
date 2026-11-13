@@ -31,7 +31,7 @@
   "jei.meknh_core.total": "Total: %1$s EU",
   "jei.meknh_core.power": "Power: %1$sA @ %2$s",
   "gui.meknh_core.progress": "Progress: %s%%",
-  "gui.meknh_core.energy_stored": "Energy: %s / %s FE",
+  "gui.meknh_core.energy_stored": "Energy: %s / %s",
   "gui.meknh_core.energy_using": "Using: %s/t",
   "gui.meknh_core.energy_needed": "Needed: %s",
   "gui.meknh_core.energy_unit_label": "Unit: %s",
@@ -177,6 +177,10 @@
   "gui.meknh_core.boiler.steam_rate_b": "Output: %s B/t steam",
   "gui.meknh_core.warning.no_water": "No water",
   "gui.meknh_core.warning.no_fuel": "No fuel",
+  "gui.meknh_core.hatch.empty": "Empty",
+  "gui.meknh_core.hatch.energy": "Energy: %s / %s",
+  "gui.meknh_core.hatch.fluid": "Fluid: %s / %s mB",
+  "gui.meknh_core.hatch.chemical": "Chemical: %s / %s",
   "multiblock.meknh_core.hatch": "%s %s",
   "multiblock.meknh_core.amp": "%sA ",
   "multiblock.meknh_core.controller": "%s Multiblock: %s",
@@ -190,5 +194,9 @@
   "multiblock.meknh_core.status.formed": "Formed: %s (progress %s, parallel %s)",
   "multiblock.meknh_core.status.unformed": "Not formed: %s",
   "block.meknh_core.steam_machine_casing": "Steam Machine Casing",
-  "block.meknh_core.bronze_firebox_casing": "Bronze Firebox Casing"
+  "block.meknh_core.bronze_firebox_casing": "Bronze Firebox Casing",
+  "gui.meknh_core.hatch.auto_output.on": "Auto-eject: ON (click to turn off)",
+  "gui.meknh_core.hatch.auto_output.off": "Auto-eject: OFF (click to turn on)",
+  "gui.meknh_core.hatch.auto_input.on": "Auto-input: ON (click to turn off)",
+  "gui.meknh_core.hatch.auto_input.off": "Auto-input: OFF (click to turn on)"
 }

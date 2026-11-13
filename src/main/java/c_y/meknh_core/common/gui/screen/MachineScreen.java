@@ -319,8 +319,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             && mouseY >= this.topPos + 16 && mouseY < this.topPos + 70) {
          MachineLevel level = ((MachineMenu)this.menu).level();
          long capacity = level == null ? 0L : level.energyCapacity();
-         graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.energy_stored",
-               this.format(((MachineMenu)this.menu).data(0)), this.format(capacity)), mouseX, mouseY);
+         graphics.renderComponentTooltip(this.font, java.util.List.of(
+               Component.translatable("gui.meknh_core.energy_stored",
+                     c_y.meknh_core.common.util.EnergyText.shortFe(
+                           ((MachineMenu)this.menu).data(MachineMenu.DATA_ENERGY)),
+                     c_y.meknh_core.common.util.EnergyText.shortFe(capacity))), mouseX, mouseY);
          return;
       }
       int warningCode = ((MachineMenu)this.menu).data(MachineMenu.DATA_WARNING);
@@ -405,8 +408,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             case ENERGY -> {
                MachineLevel level = ((MachineMenu)this.menu).level();
                long capacity = level == null ? 0L : level.energyCapacity();
-               graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.energy_stored",
-                     this.format(((MachineMenu)this.menu).data(0)), this.format(capacity)), mouseX, mouseY);
+               graphics.renderComponentTooltip(this.font, java.util.List.of(
+                     Component.translatable("gui.meknh_core.energy_stored",
+                           c_y.meknh_core.common.util.EnergyText.shortFe(
+                                 ((MachineMenu)this.menu).data(MachineMenu.DATA_ENERGY)),
+                           c_y.meknh_core.common.util.EnergyText.shortFe(capacity))), mouseX, mouseY);
                return true;
             }
             case FLUID_IN -> {
@@ -498,17 +504,21 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       long stored = ((MachineMenu)this.menu).data(MachineMenu.DATA_ENERGY);
       java.util.List<Component> tooltip = new java.util.ArrayList<>(3);
       tooltip.add(Component.translatable("gui.meknh_core.energy_using",
-            this.formatEnergy(((MachineMenu)this.menu).data(MachineMenu.DATA_ENERGY_PER_TICK))));
+            this.energyComponent(((MachineMenu)this.menu).data(MachineMenu.DATA_ENERGY_PER_TICK))));
       tooltip.add(Component.translatable("gui.meknh_core.energy_needed",
-            this.formatEnergy(Math.max(0L, capacity - stored))));
+            this.energyComponent(Math.max(0L, capacity - stored))));
       tooltip.add(Component.translatable("gui.meknh_core.energy_unit_label",
             Component.translatable(this.energyUnit == 1 ? "gui.meknh_core.energy_unit.j" : "gui.meknh_core.energy_unit.fe")));
       return tooltip;
    }
 
-   private String formatEnergy(long fe) {
-      double value = this.energyUnit == 1 ? fe * 2.5D : fe;
-      return this.decimal(value) + (this.energyUnit == 1 ? " J" : " FE");
+   /**
+    * 能量数值：走 Mek 的 SI 前缀（k / M / G …），并按当前单位开关在 FE / J 之间切换。
+    */
+   private Component energyComponent(long fe) {
+      return this.energyUnit == 1
+            ? c_y.meknh_core.common.util.EnergyText.shortJ(Math.round(fe * 2.5D))
+            : c_y.meknh_core.common.util.EnergyText.shortFe(fe);
    }
 
    private java.util.List<Component> steamEnergyTooltip() {

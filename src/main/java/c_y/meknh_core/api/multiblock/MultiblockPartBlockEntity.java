@@ -5,12 +5,14 @@ import c_y.meknh_core.api.machine.MachineItemHandler;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
 import java.util.List;
 import mekanism.api.Action;
+import mekanism.api.AutomationType;
 import mekanism.api.chemical.BasicChemicalTank;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.energy.IStrictEnergyHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
@@ -21,11 +23,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -61,9 +65,21 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     private static final long FLUID_CAPACITY_BASE = 8_000L;
     private static final long ENERGY_CAPACITY_MULTIPLIER = 16L;
 
+    /**
+     * 自动搬运的间隔（tick）。10 tick 一次，避免每 tick 反复扫邻居能力。
+     */
+    public static final int TRANSFER_INTERVAL = 10;
+
     private final MultiblockPartType partType;
     private final MachineLevel machineLevel;
     private final int amp;
+
+    /**
+     * 自动搬运开关：输出仓自动弹出、输入仓自动吸入，默认开启。
+     */
+    private boolean autoTransfer;
+
+    private int transferTimer;
 
     @Nullable
     private BlockPos controllerPos;
@@ -96,32 +112,36 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         this.partType = partType;
         this.machineLevel = level;
         this.amp = amp;
+        this.autoTransfer = true;
         this.createHandlers();
     }
 
     private void createHandlers() {
         switch (this.partType) {
             case ITEM_INPUT -> {
-                this.items = new MachineItemHandler(limits(ITEM_SLOTS), List.of(), this::setChanged);
+                this.items = new MachineItemHandler(limits(itemSlots(this.machineLevel)), List.of(), this::setChanged);
                 this.externalItemHandler = this.items.externalView();
             }
             case ITEM_OUTPUT -> {
-                this.items = new MachineItemHandler(List.of(), limits(ITEM_SLOTS), this::setChanged);
+                this.items = new MachineItemHandler(List.of(), limits(itemSlots(this.machineLevel)), this::setChanged);
                 this.externalItemHandler = this.items.externalView();
             }
             case FLUID_INPUT -> {
                 this.createMekSlot(this.machineLevel);
+                this.items = new MachineItemHandler(limits(1), limits(1), this::setChanged);
                 this.externalFluidHandler = new DirectionalFluidHandler(this.fluidTank, true, false);
                 this.externalChemicalHandler = new c_y.meknh_core.common.machine.config.SidedChemicalHandler(
                         new CombinedChemicalHandler(this.chemicalTank), true, false);
             }
             case FLUID_OUTPUT -> {
                 this.createMekSlot(this.machineLevel);
+                this.items = new MachineItemHandler(limits(1), limits(1), this::setChanged);
                 this.externalFluidHandler = new DirectionalFluidHandler(this.fluidTank, false, true);
                 this.externalChemicalHandler = new c_y.meknh_core.common.machine.config.SidedChemicalHandler(
                         new CombinedChemicalHandler(this.chemicalTank), false, true);
             }
             case STEAM_INPUT -> {
+                this.items = new MachineItemHandler(limits(1), limits(1), this::setChanged);
                 // 蒸汽仓只接受 mekanism:steam；控制器用内部 shrinkStack 扣除，
                 // 对外能力仍然只允许插入。
                 this.chemicalTank = BasicChemicalTank.createModern(
@@ -133,14 +153,24 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                         new CombinedChemicalHandler(this.chemicalTank), true, false);
             }
             case ENERGY_INPUT -> {
+                this.items = new MachineItemHandler(limits(1), limits(1), this::setChanged);
                 this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel, this.amp), true, false, this::setChanged);
                 this.strictEnergyHandler = this.energyStorage.strictHandler();
             }
             case ENERGY_OUTPUT -> {
+                this.items = new MachineItemHandler(limits(1), limits(1), this::setChanged);
                 this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel, this.amp), false, true, this::setChanged);
                 this.strictEnergyHandler = this.energyStorage.strictHandler();
             }
         }
+    }
+
+    /**
+     * 物品总线的槽位数，对齐 GT：{@code (1 + min(9, tier))^2}。
+     */
+    public static int itemSlots(MachineLevel level) {
+        int n = 1 + Math.min(9, level.voltage().level());
+        return n * n;
     }
 
     private static List<Integer> limits(int slots) {
@@ -208,6 +238,13 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
 
     public MachineLevel level() {
         return this.machineLevel;
+    }
+
+    /**
+     * 能源仓安培数；普通仓室为 2。
+     */
+    public int amp() {
+        return this.amp;
     }
 
     @Nullable
@@ -284,8 +321,372 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     }
 
     // ------------------------------------------------------------------
+    // 覆盖面 / 自动搬运
+    // ------------------------------------------------------------------
+
+    /**
+     * 覆盖层所在面：输出仓是弹出口，输入仓是吸入口；没有该属性时退回北面。
+     */
+    public Direction ioFace() {
+        BlockState state = this.getBlockState();
+        return state.hasProperty(MultiblockPartBlock.FACING)
+                ? state.getValue(MultiblockPartBlock.FACING)
+                : Direction.NORTH;
+    }
+
+    /**
+     * 自动搬运是否开启：输出仓自动弹出，输入仓自动吸入。
+     */
+    public boolean autoTransfer() {
+        return this.autoTransfer;
+    }
+
+    /**
+     * 切换自动搬运（GUI 的 tab 按钮调用）。
+     */
+    public void setAutoTransfer(boolean autoTransfer) {
+        if (this.autoTransfer == autoTransfer) {
+            return;
+        }
+        this.autoTransfer = autoTransfer;
+        this.setChanged();
+    }
+
+    // ------------------------------------------------------------------
     // 手动交互（无 GUI）
     // ------------------------------------------------------------------
+
+    /**
+     * 服务端 tick：先处理自动搬运，再处理仓室 IO 槽里的容器/电池。
+     */
+    public void tick() {
+        if (this.level == null || this.level.isClientSide) {
+            return;
+        }
+        this.tickTransfer();
+        if (this.items == null || this.items.getSlots() < 2) {
+            return;
+        }
+        ItemStack input = this.items.getStackInSlot(0);
+        if (input.isEmpty() || !this.items.getStackInSlot(1).isEmpty()) {
+            return;
+        }
+        if (this.fluidTank != null) {
+            this.handleFluidContainer(input);
+        } else if (this.energyStorage != null) {
+            this.handleEnergyItem(input);
+        }
+    }
+
+    private void tickTransfer() {
+        if (!this.autoTransfer) {
+            return;
+        }
+        if (++this.transferTimer < TRANSFER_INTERVAL) {
+            return;
+        }
+        this.transferTimer = 0;
+        Direction face = this.ioFace();
+        BlockPos target = this.worldPosition.relative(face);
+        switch (this.partType) {
+            case ITEM_INPUT -> this.pullItems(face, target);
+            case ITEM_OUTPUT -> this.ejectItems(face, target);
+            case FLUID_INPUT -> {
+                this.pullFluid(face, target);
+                this.pullChemical(face, target);
+            }
+            case FLUID_OUTPUT -> {
+                this.ejectFluid(face, target);
+                this.ejectChemical(face, target);
+            }
+            case STEAM_INPUT -> this.pullChemical(face, target);
+            case ENERGY_INPUT -> this.pullEnergy(face, target);
+            case ENERGY_OUTPUT -> this.ejectEnergy(face, target);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // 输入仓：自动吸入
+    // ------------------------------------------------------------------
+
+    private void pullItems(Direction face, BlockPos target) {
+        if (this.items == null || this.level == null) {
+            return;
+        }
+        IItemHandler source = this.level.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+                target, face.getOpposite());
+        if (source == null) {
+            return;
+        }
+        for (int slot = 0; slot < source.getSlots(); slot++) {
+            ItemStack available = source.extractItem(slot, ITEM_STACK_LIMIT, true);
+            if (available.isEmpty()) {
+                continue;
+            }
+            ItemStack leftover = ItemHandlerHelper.insertItemStacked(this.items, available, true);
+            int accepted = available.getCount() - leftover.getCount();
+            if (accepted <= 0) {
+                continue;
+            }
+            // 先按可接受量真实抽取，再把塞不下的还回源容器，避免复制/丢失。
+            ItemStack taken = source.extractItem(slot, accepted, false);
+            if (taken.isEmpty()) {
+                continue;
+            }
+            ItemStack rest = ItemHandlerHelper.insertItemStacked(this.items, taken, false);
+            if (!rest.isEmpty()) {
+                source.insertItem(slot, rest, false);
+            }
+            this.setChanged();
+        }
+    }
+
+    private void pullFluid(Direction face, BlockPos target) {
+        if (this.fluidTank == null || this.level == null) {
+            return;
+        }
+        if (this.fluidTank.getFluidAmount() >= this.fluidTank.getCapacity()) {
+            return;
+        }
+        IFluidHandler source = this.level.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
+                target, face.getOpposite());
+        if (source == null) {
+            return;
+        }
+        FluidStack moved = FluidUtil.tryFluidTransfer(this.fluidTank, source,
+                this.fluidTank.getCapacity() - this.fluidTank.getFluidAmount(), true);
+        if (!moved.isEmpty()) {
+            this.setChanged();
+        }
+    }
+
+    private void pullChemical(Direction face, BlockPos target) {
+        if (this.chemicalTank == null || this.level == null) {
+            return;
+        }
+        long needed = this.chemicalTank.getNeeded();
+        if (needed <= 0L) {
+            return;
+        }
+        IChemicalHandler source = this.level.getCapability(
+                mekanism.common.capabilities.Capabilities.CHEMICAL.block(),
+                target, face.getOpposite());
+        if (source == null) {
+            return;
+        }
+        ChemicalStack available = source.extractChemical(needed, Action.SIMULATE);
+        if (available.isEmpty()) {
+            return;
+        }
+        ChemicalStack leftover = this.chemicalTank.insert(available, Action.SIMULATE, AutomationType.MANUAL);
+        long accepted = available.getAmount() - leftover.getAmount();
+        if (accepted <= 0L) {
+            return;
+        }
+        ChemicalStack taken = source.extractChemical(accepted, Action.EXECUTE);
+        if (taken.isEmpty()) {
+            return;
+        }
+        this.chemicalTank.insert(taken, Action.EXECUTE, AutomationType.MANUAL);
+        this.setChanged();
+    }
+
+    private void pullEnergy(Direction face, BlockPos target) {
+        if (this.energyStorage == null || this.level == null) {
+            return;
+        }
+        long neededFe = this.energyStorage.getMaxEnergyStored() - this.energyStorage.getEnergyStored();
+        if (neededFe <= 0L) {
+            return;
+        }
+        // Mek 线缆只认严格能量（J），优先走它；其余模组走 NeoForge FE。
+        IStrictEnergyHandler strict = this.level.getCapability(
+                mekanism.common.capabilities.Capabilities.STRICT_ENERGY.block(),
+                target, face.getOpposite());
+        if (strict != null) {
+            long availableJ = strict.extractEnergy(Math.round(neededFe * 2.5D), Action.SIMULATE);
+            if (availableJ <= 0L) {
+                return;
+            }
+            int wouldAccept = this.energyStorage.receiveEnergy(
+                    (int) Math.min(Integer.MAX_VALUE, Math.round(availableJ / 2.5D)), true);
+            if (wouldAccept <= 0) {
+                return;
+            }
+            long taken = strict.extractEnergy(Math.round(wouldAccept * 2.5D), Action.EXECUTE);
+            if (taken > 0L) {
+                this.energyStorage.receiveEnergy(
+                        (int) Math.min(Integer.MAX_VALUE, Math.round(taken / 2.5D)), false);
+                this.setChanged();
+            }
+            return;
+        }
+        IEnergyStorage source = this.level.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,
+                target, face.getOpposite());
+        if (source == null) {
+            return;
+        }
+        int available = source.extractEnergy((int) Math.min(Integer.MAX_VALUE, neededFe), true);
+        if (available <= 0) {
+            return;
+        }
+        int taken = source.extractEnergy(available, false);
+        if (taken > 0) {
+            this.energyStorage.receiveEnergy(taken, false);
+            this.setChanged();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // 输出仓：自动弹出
+    // ------------------------------------------------------------------
+
+    private void ejectItems(Direction face, BlockPos target) {
+        if (this.items == null || this.level == null) {
+            return;
+        }
+        IItemHandler destination = this.level.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+                target, face.getOpposite());
+        if (destination == null) {
+            return;
+        }
+        for (int slot = this.items.inputSlots(); slot < this.items.getSlots(); slot++) {
+            ItemStack stack = this.items.getStackInSlot(slot);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            ItemStack remainder = ItemHandlerHelper.insertItemStacked(destination, stack.copy(), false);
+            if (remainder.getCount() == stack.getCount()) {
+                continue;
+            }
+            this.items.setStackInSlot(slot, remainder.isEmpty() ? ItemStack.EMPTY : remainder);
+            this.setChanged();
+        }
+    }
+
+    private void ejectFluid(Direction face, BlockPos target) {
+        if (this.fluidTank == null || this.level == null || this.fluidTank.isEmpty()) {
+            return;
+        }
+        IFluidHandler destination = this.level.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
+                target, face.getOpposite());
+        if (destination == null) {
+            return;
+        }
+        FluidStack moved = FluidUtil.tryFluidTransfer(destination, this.fluidTank,
+                this.fluidTank.getFluidAmount(), true);
+        if (!moved.isEmpty()) {
+            this.setChanged();
+        }
+    }
+
+    private void ejectChemical(Direction face, BlockPos target) {
+        if (this.chemicalTank == null || this.level == null || this.chemicalTank.isEmpty()) {
+            return;
+        }
+        IChemicalHandler destination = this.level.getCapability(
+                mekanism.common.capabilities.Capabilities.CHEMICAL.block(),
+                target, face.getOpposite());
+        if (destination == null) {
+            return;
+        }
+        ChemicalStack stack = this.chemicalTank.getStack();
+        ChemicalStack remainder = destination.insertChemical(stack, Action.SIMULATE);
+        long moved = stack.getAmount() - remainder.getAmount();
+        if (moved <= 0L) {
+            return;
+        }
+        ChemicalStack drained = this.chemicalTank.extract(moved, Action.EXECUTE, AutomationType.MANUAL);
+        if (drained.isEmpty()) {
+            return;
+        }
+        destination.insertChemical(drained, Action.EXECUTE);
+        this.setChanged();
+    }
+
+    private void ejectEnergy(Direction face, BlockPos target) {
+        if (this.energyStorage == null || this.level == null) {
+            return;
+        }
+        long stored = this.energyStorage.getEnergyStored();
+        if (stored <= 0L) {
+            return;
+        }
+        // Mek 线缆只认严格能量（J），优先走它；其余模组走 NeoForge FE。
+        IStrictEnergyHandler strict = this.level.getCapability(
+                mekanism.common.capabilities.Capabilities.STRICT_ENERGY.block(),
+                target, face.getOpposite());
+        if (strict != null) {
+            long offered = Math.round(stored * 2.5D);
+            long remainder = strict.insertEnergy(offered, Action.EXECUTE);
+            long moved = offered - remainder;
+            if (moved > 0L) {
+                this.energyStorage.extractEnergy(
+                        (int) Math.min(Integer.MAX_VALUE, Math.round(moved / 2.5D)), false);
+                this.setChanged();
+            }
+            return;
+        }
+        IEnergyStorage destination = this.level.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,
+                target, face.getOpposite());
+        if (destination == null) {
+            return;
+        }
+        int accepted = destination.receiveEnergy((int) Math.min(Integer.MAX_VALUE, stored), false);
+        if (accepted > 0) {
+            this.energyStorage.extractEnergy(accepted, false);
+            this.setChanged();
+        }
+    }
+
+    private void handleFluidContainer(ItemStack input) {
+        boolean output = this.partType == MultiblockPartType.FLUID_OUTPUT;
+        var result = output
+                ? FluidUtil.tryFillContainer(input, this.fluidTank, Integer.MAX_VALUE, null, true)
+                : FluidUtil.tryEmptyContainer(input, this.fluidTank, Integer.MAX_VALUE, null, true);
+        if (!result.isSuccess()) {
+            result = output
+                    ? FluidUtil.tryEmptyContainer(input, this.fluidTank, Integer.MAX_VALUE, null, true)
+                    : FluidUtil.tryFillContainer(input, this.fluidTank, Integer.MAX_VALUE, null, true);
+        }
+        if (!result.isSuccess()) {
+            return;
+        }
+        ItemStack remaining = input.copy();
+        remaining.shrink(1);
+        this.items.setStackInSlot(0, remaining.isEmpty() ? ItemStack.EMPTY : remaining);
+        this.items.setStackInSlot(1, result.getResult());
+        this.setChanged();
+    }
+
+    private void handleEnergyItem(ItemStack input) {
+        net.neoforged.neoforge.energy.IEnergyStorage storage = input.getCapability(
+                net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM);
+        if (storage == null) {
+            return;
+        }
+        if (this.partType == MultiblockPartType.ENERGY_INPUT) {
+            int available = storage.extractEnergy(Integer.MAX_VALUE, true);
+            int accepted = this.energyStorage.receiveEnergy(available, false);
+            if (accepted > 0) {
+                storage.extractEnergy(accepted, false);
+                this.setChanged();
+            }
+        } else {
+            int wanted = storage.receiveEnergy(Integer.MAX_VALUE, true);
+            int drained = this.energyStorage.extractEnergy(wanted, false);
+            if (drained > 0) {
+                storage.receiveEnergy(drained, false);
+                this.setChanged();
+            }
+        }
+    }
 
     /**
      * 右键仓室时的手动交互。
@@ -380,6 +781,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         if (this.energyStorage != null) {
             tag.putInt("Energy", this.energyStorage.getEnergyStored());
         }
+        tag.putBoolean("AutoTransfer", this.autoTransfer);
     }
 
     @Override
@@ -397,6 +799,40 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         }
         if (this.energyStorage != null && tag.contains("Energy")) {
             this.energyStorage.setStored(tag.getInt("Energy"));
+        }
+        // AutoEject 是旧存档键，保留兼容。
+        if (tag.contains("AutoTransfer")) {
+            this.autoTransfer = tag.getBoolean("AutoTransfer");
+        } else if (tag.contains("AutoEject")) {
+            this.autoTransfer = tag.getBoolean("AutoEject");
+        }
+        this.resizeItems();
+    }
+
+    /**
+     * 旧存档里的物品槽数量可能与当前槽位公式不同（例如总线从固定 9 格改为按等级）。
+     * 读档后按当前槽位数量重建，避免服务端/客户端容器槽位不一致。
+     */
+    private void resizeItems() {
+        int expected = switch (this.partType) {
+            case ITEM_INPUT, ITEM_OUTPUT -> itemSlots(this.machineLevel);
+            case FLUID_INPUT, FLUID_OUTPUT, STEAM_INPUT, ENERGY_INPUT, ENERGY_OUTPUT -> 2;
+        };
+        if (this.items == null || this.items.getSlots() == expected) {
+            return;
+        }
+        MachineItemHandler fresh = switch (this.partType) {
+            case ITEM_INPUT -> new MachineItemHandler(limits(expected), List.of(), this::setChanged);
+            case ITEM_OUTPUT -> new MachineItemHandler(List.of(), limits(expected), this::setChanged);
+            default -> new MachineItemHandler(limits(1), limits(1), this::setChanged);
+        };
+        int copy = Math.min(this.items.getSlots(), fresh.getSlots());
+        for (int slot = 0; slot < copy; slot++) {
+            fresh.setStackInSlot(slot, this.items.getStackInSlot(slot));
+        }
+        this.items = fresh;
+        if (this.partType == MultiblockPartType.ITEM_INPUT || this.partType == MultiblockPartType.ITEM_OUTPUT) {
+            this.externalItemHandler = fresh.externalView();
         }
     }
 

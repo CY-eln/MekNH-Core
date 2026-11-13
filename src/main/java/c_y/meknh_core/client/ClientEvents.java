@@ -3,7 +3,9 @@ package c_y.meknh_core.client;
 import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.api.machine.MachineRegistration;
 import c_y.meknh_core.api.generator.boiler.BoilerRegistration;
+import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import c_y.meknh_core.common.generator.boiler.BoilerScreen;
+import c_y.meknh_core.common.gui.screen.HatchScreen;
 import c_y.meknh_core.common.gui.screen.MachineScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -33,5 +35,6 @@ public final class ClientEvents {
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
         event.register(MachineRegistration.MACHINE_MENU.get(), MachineScreen::create);
         event.register(BoilerRegistration.BOILER_MENU.get(), BoilerScreen::new);
+        event.register(MultiblockRegistration.HATCH_MENU.get(), HatchScreen::new);
     }
 }

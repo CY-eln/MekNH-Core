@@ -22,6 +22,10 @@ public class MultiblockBlockItem extends BlockItem {
     public Component getName(ItemStack stack) {
         Block block = this.getBlock();
         if (block instanceof MultiblockPartBlock part) {
+            // 蒸汽输入仓不带 ULV 前缀，直接叫「蒸汽输入仓」。
+            if (part.partType() == MultiblockPartType.STEAM_INPUT) {
+                return Component.translatable("multiblock.meknh_core.part.steam_input");
+            }
             var tier = MachineNames.gtTierName(part.level());
             if (part.amp() > 2) {
                 tier = Component.translatable("multiblock.meknh_core.amp", part.amp()).append(tier);

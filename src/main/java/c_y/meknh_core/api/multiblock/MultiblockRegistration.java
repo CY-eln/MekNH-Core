@@ -14,6 +14,7 @@ import mekanism.common.capabilities.Capabilities;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -62,6 +63,17 @@ public final class MultiblockRegistration {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MekNHCore.MODID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MekNHCore.MODID);
+    private static final DeferredRegister<MenuType<?>> MENU_TYPES =
+            DeferredRegister.create(Registries.MENU, MekNHCore.MODID);
+
+    /**
+     * 仓室 GUI。槽位/数据由 {@link c_y.meknh_core.common.gui.menu.HatchMenu} 提供。
+     */
+    public static final DeferredHolder<MenuType<?>, MenuType<c_y.meknh_core.common.gui.menu.HatchMenu>> HATCH_MENU =
+            MENU_TYPES.register("hatch", () -> new MenuType<>(
+                    (net.neoforged.neoforge.network.IContainerFactory<c_y.meknh_core.common.gui.menu.HatchMenu>)
+                            c_y.meknh_core.common.gui.menu.HatchMenu::new,
+                    net.minecraft.world.flag.FeatureFlags.VANILLA_SET));
 
     private static final Map<ResourceLocation, MultiblockDefinition> DEFINITIONS = new LinkedHashMap<>();
     private static final Map<ResourceLocation, MultiblockVariant> VARIANTS = new LinkedHashMap<>();
@@ -110,6 +122,7 @@ public final class MultiblockRegistration {
         BLOCKS.register(bus);
         ITEMS.register(bus);
         BLOCK_ENTITIES.register(bus);
+        MENU_TYPES.register(bus);
 
         // 反查表在第一次查询时懒建，不依赖 RegisterEvent 的监听器顺序。
         bus.addListener(RegisterCapabilitiesEvent.class, MultiblockRegistration::registerCapabilities);

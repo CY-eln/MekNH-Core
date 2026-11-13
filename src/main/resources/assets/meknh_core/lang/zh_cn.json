@@ -31,7 +31,7 @@
   "jei.meknh_core.total": "总计：%1$s EU",
   "jei.meknh_core.power": "功耗：%1$sA @ %2$s",
   "gui.meknh_core.progress": "进度：%s%%",
-  "gui.meknh_core.energy_stored": "能量：%s / %s FE",
+  "gui.meknh_core.energy_stored": "能量：%s / %s",
   "gui.meknh_core.energy_using": "能耗：%s/t",
   "gui.meknh_core.energy_needed": "需要：%s",
   "gui.meknh_core.energy_unit_label": "单位：%s",
@@ -177,6 +177,10 @@
   "gui.meknh_core.boiler.steam_rate_b": "产出：%s B/t 蒸汽",
   "gui.meknh_core.warning.no_water": "缺水",
   "gui.meknh_core.warning.no_fuel": "缺燃料",
+  "gui.meknh_core.hatch.empty": "空",
+  "gui.meknh_core.hatch.energy": "能量：%s / %s",
+  "gui.meknh_core.hatch.fluid": "流体：%s / %s mB",
+  "gui.meknh_core.hatch.chemical": "化学品：%s / %s",
   "multiblock.meknh_core.hatch": "%s%s",
   "multiblock.meknh_core.amp": "%s安",
   "multiblock.meknh_core.controller": "%s多方块：%s",
@@ -190,5 +194,9 @@
   "multiblock.meknh_core.status.formed": "结构已成型：%s（进度 %s，并行 %s）",
   "multiblock.meknh_core.status.unformed": "结构未成型：%s",
   "block.meknh_core.steam_machine_casing": "蒸汽机器外壳",
-  "block.meknh_core.bronze_firebox_casing": "青铜燃烧室外壳"
+  "block.meknh_core.bronze_firebox_casing": "青铜燃烧室外壳",
+  "gui.meknh_core.hatch.auto_output.on": "自动弹出：开（点击关闭）",
+  "gui.meknh_core.hatch.auto_output.off": "自动弹出：关（点击开启）",
+  "gui.meknh_core.hatch.auto_input.on": "自动吸入：开（点击关闭）",
+  "gui.meknh_core.hatch.auto_input.off": "自动吸入：关（点击开启）"
 }

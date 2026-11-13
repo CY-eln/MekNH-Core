@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "c_y.meknh_core.mixin.mek.display",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "UnitDisplayUtilsMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

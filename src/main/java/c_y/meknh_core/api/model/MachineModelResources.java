@@ -103,7 +103,7 @@ public final class MachineModelResources {
             String model = "meknh_core:block/multiblock/part/" + path;
             put(resources, "blockstates/" + path + ".json", facingPartBlockstate(model));
             put(resources, "models/block/multiblock/part/" + path + ".json",
-                    partModel(partCasingTexture(part.level()), partVisual(part.type(), part.amp())));
+                    partModel(partCasingTexture(part.level(), part.type()), partVisual(part.type(), part.amp())));
             put(resources, "models/item/" + path + ".json", parentItemModel(model));
         }
 
@@ -136,27 +136,40 @@ public final class MachineModelResources {
     }
 
     /**
-     * 仓室 blockstate：四个 facing 共用同一个模型，按朝向做 y 旋转。
+     * 仓室 blockstate：6 个朝向共用一个「北面带覆盖层」的模型，按朝向旋转。
+     *
+     * <p>旋转取值与 Mek 的 {@code basic_energy_cube.json} 一致：
+     * 北 0、东 y=90、南 y=180、西 y=270、上 x=-90、下 x=90。</p>
      */
     private static JsonObject facingPartBlockstate(String model) {
         JsonObject blockstate = new JsonObject();
         JsonObject variants = new JsonObject();
-        for (int index = 0; index < FACINGS.length; index++) {
-            JsonObject entry = new JsonObject();
-            entry.addProperty("model", model);
-            if (ROTATIONS[index] != 0) {
-                entry.addProperty("y", ROTATIONS[index]);
-            }
-            variants.add("facing=" + FACINGS[index], entry);
-        }
+        partVariant(variants, model, "north", 0, 0);
+        partVariant(variants, model, "east", 0, 90);
+        partVariant(variants, model, "south", 0, 180);
+        partVariant(variants, model, "west", 0, 270);
+        partVariant(variants, model, "up", -90, 0);
+        partVariant(variants, model, "down", 90, 0);
         blockstate.add("variants", variants);
         return blockstate;
+    }
+
+    private static void partVariant(JsonObject variants, String model, String facing, int x, int y) {
+        JsonObject entry = new JsonObject();
+        entry.addProperty("model", model);
+        if (x != 0) {
+            entry.addProperty("x", x);
+        }
+        if (y != 0) {
+            entry.addProperty("y", y);
+        }
+        variants.add("facing=" + facing, entry);
     }
 
     /**
      * 一个仓室正面的两层贴图：功能图标、动态发光环。
      */
-    private record PartVisual(String overlay, String emissive, String tint) {
+    private record PartVisual(String overlay, String emissive, String tint, boolean pipe) {
     }
 
     /**
@@ -181,7 +194,7 @@ public final class MachineModelResources {
         textures.addProperty("overlay_front", visual.overlay());
         if (visual.tint() != null) {
             textures.addProperty("overlay_tint", visual.tint());
-        } else {
+        } else if (visual.pipe()) {
             textures.addProperty("overlay_pipe", "meknh_core:block/overlay/machine/overlay_pipe");
         }
         if (visual.emissive() != null) {
@@ -193,7 +206,7 @@ public final class MachineModelResources {
         elements.add(cube());
         if (visual.tint() != null) {
             elements.add(overlayPlane("#overlay_tint", -0.01D, false, 2));
-        } else {
+        } else if (visual.pipe()) {
             elements.add(overlayPlane("#overlay_pipe", -0.01D, false, -1));
         }
         elements.add(overlayPlane("#overlay_front", -0.02D, false, -1));
@@ -245,7 +258,12 @@ public final class MachineModelResources {
     /**
      * 仓室的外壳贴图：蒸汽（ULV）统一使用 {@code casings/voltage/ulv}，电力仓跟随电压等级。
      */
-    private static String partCasingTexture(MachineLevel level) {
+    private static String partCasingTexture(MachineLevel level,
+                                            c_y.meknh_core.api.multiblock.MultiblockPartType type) {
+        if (type == c_y.meknh_core.api.multiblock.MultiblockPartType.STEAM_INPUT) {
+            // GT steam_input_hatch 使用 casings/steam/bronze 外壳。
+            return "meknh_core:block/casings/steam/bronze";
+        }
         if (level.isSteam()) {
             return "meknh_core:block/casings/voltage/ulv";
         }
@@ -271,12 +289,13 @@ public final class MachineModelResources {
         String ringOut = base + "overlay_pipe_out_emissive";
         String energy = "overlay_energy_" + amp + "a_";
         return switch (type) {
-            case ITEM_INPUT -> new PartVisual(base + "overlay_item_hatch_input", ringIn, null);
-            case ITEM_OUTPUT -> new PartVisual(base + "overlay_item_hatch_output", ringOut, null);
-            case FLUID_INPUT, STEAM_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn, null);
-            case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null);
-            case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted");
-            case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted");
+            case ITEM_INPUT -> new PartVisual(base + "overlay_item_hatch_input", ringIn, null, true);
+            case ITEM_OUTPUT -> new PartVisual(base + "overlay_item_hatch_output", ringOut, null, true);
+            case FLUID_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn, null, true);
+            case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null, true);
+            case STEAM_INPUT -> new PartVisual("meknh_core:block/cover/pump", null, null, false);
+            case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted", false);
+            case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted", false);
         };
     }
 
