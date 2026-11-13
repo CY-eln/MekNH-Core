@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,lit=false": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high",
+      "y": 0
+    },
+    "facing=north,lit=true": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high_active",
+      "y": 0
+    },
+    "facing=east,lit=false": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high",
+      "y": 90
+    },
+    "facing=east,lit=true": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high_active",
+      "y": 90
+    },
+    "facing=south,lit=false": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high",
+      "y": 180
+    },
+    "facing=south,lit=true": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high_active",
+      "y": 180
+    },
+    "facing=west,lit=false": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high",
+      "y": 270
+    },
+    "facing=west,lit=true": {
+      "model": "meknh_core:block/generator/liquid_boiler_ulv_high_active",
+      "y": 270
+    }
+  }
+}

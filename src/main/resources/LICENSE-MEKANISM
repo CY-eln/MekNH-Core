@@ -1,0 +1,60 @@
+Mekanism MIT License
+====================
+
+Copyright (c) 2017-2025 Aidan C. Brady
+
+本模组的部分 GUI 贴图资源引自 Mekanism 项目，遵循 MIT 许可证。
+具体为：
+
+- `mekanism:gui/bar/base.png`（横向蒸汽能量条边框）
+- `mekanism:gui/dump.png`（清空按钮）
+- `mekanism:gui/progress/bar.png`（电力熔炉/电力机器进度条）
+- `mekanism:gui/slot/normal.png`（普通槽位）
+- `mekanism:gui/slot/input.png`（输入槽）
+- `mekanism:gui/slot/input_2.png`（第二输入槽）
+- `mekanism:gui/slot/output.png`（输出槽）
+- `mekanism:gui/holder_left.png` / `holder_right.png`（机器标签页 holder）
+- `mekanism:gui/button.png`（标签页按钮底图）
+- `mekanism:gui/configuration.png`（侧面配置）
+- `mekanism:gui/transporter_config.png`（传输配置）
+- `mekanism:gui/public.png` / `private.png`（安全）
+- `mekanism:gui/redstone_control_disabled.png` / `_high.png` / `_low.png`（红石）
+- `mekanism:gui/tabs/energy_info_fe.png`（能量信息）
+- `mekanism:gui/tabs/warning_info_left.png`（问题提示）
+- `mekanism:gui/warning.png`（红石 tab 警告叠加）
+- `mekanism:gui/items.png` / `fluids.png` / `chemicals.png` / `energy.png`（侧面配置类型 tab）
+- `mekanism:gui/button/clear_sides.png` / `close.png` / `auto_eject.png`（侧面配置按钮）
+- `mekanism:gui/base.png` / `shadow.png`（配置窗口底板与阴影）
+- `mekanism:gui/button/pinned.png` / `unpinned.png`（Pin 按钮）
+- `mekanism:gui/inner_screen.png`（内部状态黑屏）
+
+对应实现参考了 Mekanism 10.7.19 的
+`mekanism.client.gui.element.bar.GuiBar` / `GuiTankBar` / `GuiChemicalBar`、
+`mekanism.client.gui.element.progress.GuiProgress`、
+`mekanism.client.gui.element.slot.GuiSlot` / `SlotType`、
+`mekanism.client.gui.element.GuiSideHolder` / `GuiInsetElement`、
+`mekanism.client.gui.element.tab.*` 与
+`mekanism.client.gui.machine.GuiFactory` / `GuiElectricMachine` 的布局和绘制逻辑。
+
+----------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2017-2025 Aidan C. Brady
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

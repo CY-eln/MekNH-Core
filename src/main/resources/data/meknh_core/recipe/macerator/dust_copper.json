@@ -1,0 +1,13 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:macerator",
+  "level": "ULV",
+  "time": "5s",
+  "energy": 0.25,
+  "input": [
+    { "type": "item", "ingredient": "minecraft:copper_ingot", "count": 1 }
+  ],
+  "output": [
+    { "type": "item", "id": "mekanism:dust_copper", "count": 1 }
+  ]
+}
