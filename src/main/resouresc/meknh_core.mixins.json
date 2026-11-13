@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "c_y.meknh_core.mixin.mek.fission",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "FissionReactorFuelInitMixin",
+    "FissionReactorWasteInitMixin",
+    "FissionReactorBurnMixin",
+    "MixinFissionReactorCoolant",
+    "ChemicalGaseousMixin",
+    "BaseMappedRegistryAccessor"
+  ],
+  "client": [
+    "FissionRecipeViewerRecipeMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

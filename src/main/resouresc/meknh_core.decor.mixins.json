@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "c_y.meknh_core.decor.supercritical_ice.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CoolantTooltipMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
