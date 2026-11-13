@@ -14,5 +14,7 @@ public final class BoilerJadePlugin implements IWailaPlugin {
     @Override
     public void register(IWailaCommonRegistration registration) {
         registration.registerBlockDataProvider(BoilerJadeDataProvider.INSTANCE, BoilerBlockEntity.class);
+        registration.registerBlockDataProvider(EnergyHatchJadeDataProvider.INSTANCE,
+                c_y.meknh_core.api.multiblock.MultiblockPartBlockEntity.class);
     }
 }

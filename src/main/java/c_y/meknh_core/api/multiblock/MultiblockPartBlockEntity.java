@@ -167,14 +167,10 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     }
 
     /**
-     * 能源仓容量：2A 为单方块机器缓存 ×16，更高安培按比例放大。
-     * ULV 是蒸汽等级，没有 FE 缓存，按电压单独计算。
+     * 能源仓容量：2A 时 ULV 256 FE，每级 ×4；4A 为 2A 的 2 倍，16A 为 8 倍。
      */
     public static long energyCapacity(MachineLevel level, int amp) {
-        long base = level.voltage().energyCapacity();
-        if (base <= 0L) {
-            base = level.voltage().voltage() * ENERGY_CAPACITY_MULTIPLIER * 2L;
-        }
+        long base = 256L << (2 * level.voltage().level());
         return base * Math.max(1, amp) / 2L;
     }
 
