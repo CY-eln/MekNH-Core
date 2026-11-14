@@ -109,13 +109,13 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
         super.render(graphics, mouseX, mouseY, partialTick);
         if (this.isOverTank(mouseX, mouseY)) {
             FluidStack fluid = this.menu.fluid();
-            if (fluid == null) {
+            if (fluid == null || fluid.isEmpty()) {
                 graphics.renderTooltip(this.font,
                         Component.translatable("gui.meknh_core.hatch.empty"), mouseX, mouseY);
             } else {
-                graphics.renderComponentTooltip(this.font,
-                        List.of(Component.translatable("gui.meknh_core.hatch.fluid",
-                                this.menu.amount(), this.menu.capacity())), mouseX, mouseY);
+                graphics.renderTooltip(this.font,
+                        Component.literal(fluid.getHoverName().getString() + "："
+                                + this.menu.amount() + " / " + this.menu.capacity() + " mB"), mouseX, mouseY);
             }
         }
     }

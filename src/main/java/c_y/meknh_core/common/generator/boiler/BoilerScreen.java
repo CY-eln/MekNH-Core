@@ -516,9 +516,14 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
         if (this.menu.isLiquid()
                 && mouseX >= this.leftPos + 18 && mouseX < this.leftPos + 36
                 && mouseY >= this.topPos + 10 && mouseY < this.topPos + 68) {
-            graphics.renderTooltip(this.font, Component.translatable("generator.meknh_core.fuel")
-                    .append(": " + this.menu.value(BoilerMenu.DATA_FUEL) + " / "
-                            + this.menu.value(BoilerMenu.DATA_FUEL_CAP) + " mB"), mouseX, mouseY);
+            String fuelName = !this.menu.fuelChemical().isEmpty()
+                    ? this.menu.fuelChemical().getChemical().getTextComponent().getString()
+                    : !this.menu.fuelFluid().isEmpty()
+                    ? this.menu.fuelFluid().getHoverName().getString()
+                    : Component.translatable("generator.meknh_core.fuel").getString();
+            graphics.renderTooltip(this.font, Component.literal(fuelName + "："
+                    + this.menu.value(BoilerMenu.DATA_FUEL) + " / "
+                    + this.menu.value(BoilerMenu.DATA_FUEL_CAP) + " mB"), mouseX, mouseY);
             return;
         }
         boolean solarTank = this.menu.isSolar();
@@ -527,16 +532,22 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
         int waterH = solarTank ? 58 : 28;
         if (mouseX >= this.leftPos + waterX && mouseX < this.leftPos + waterX + 16
                 && mouseY >= this.topPos + waterY && mouseY < this.topPos + waterY + waterH) {
-            graphics.renderTooltip(this.font, Component.translatable("generator.meknh_core.water")
-                    .append(": " + this.menu.value(BoilerMenu.DATA_WATER) + " / "
-                            + this.menu.value(BoilerMenu.DATA_WATER_CAP) + " mB"), mouseX, mouseY);
+            String waterName = this.menu.waterFluid().isEmpty()
+                    ? Component.translatable("generator.meknh_core.water").getString()
+                    : this.menu.waterFluid().getHoverName().getString();
+            graphics.renderTooltip(this.font, Component.literal(waterName + "："
+                    + this.menu.value(BoilerMenu.DATA_WATER) + " / "
+                    + this.menu.value(BoilerMenu.DATA_WATER_CAP) + " mB"), mouseX, mouseY);
             return;
         }
         if (mouseX >= this.leftPos + 140 && mouseX < this.leftPos + 158
                 && mouseY >= this.topPos + 10 && mouseY < this.topPos + 68) {
-            graphics.renderTooltip(this.font, Component.translatable("generator.meknh_core.steam")
-                    .append(": " + this.menu.value(BoilerMenu.DATA_STEAM) + " / "
-                            + this.menu.value(BoilerMenu.DATA_STEAM_CAP) + " mB"), mouseX, mouseY);
+            String steamName = this.menu.outputChemical().isEmpty()
+                    ? Component.translatable("generator.meknh_core.steam").getString()
+                    : this.menu.outputChemical().getChemical().getTextComponent().getString();
+            graphics.renderTooltip(this.font, Component.literal(steamName + "："
+                    + this.menu.value(BoilerMenu.DATA_STEAM) + " / "
+                    + this.menu.value(BoilerMenu.DATA_STEAM_CAP) + " mB"), mouseX, mouseY);
             return;
         }
         if (mouseX >= this.leftPos + RATE_X && mouseX < this.leftPos + RATE_X + RATE_WIDTH + 2

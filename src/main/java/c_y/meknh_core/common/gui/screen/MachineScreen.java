@@ -439,20 +439,26 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             return true;
          }
          Component name;
+         long capacity;
          if (fluid) {
             Fluid value = BuiltInRegistries.FLUID.byId(id);
             if (value == null) {
                return true;
             }
             name = new net.neoforged.neoforge.fluids.FluidStack(value, amount).getHoverName();
+            capacity = ((MachineMenu)this.menu).fluidCapacity(
+                  element.kind() == UiElementKind.FLUID_IN);
          } else {
             Chemical value = MekanismAPI.CHEMICAL_REGISTRY.byId(id);
             if (value == null) {
                return true;
             }
             name = value.getTextComponent();
+            capacity = ((MachineMenu)this.menu).chemicalCapacity(
+                  element.kind() == UiElementKind.GAS_IN);
          }
-         graphics.renderTooltip(this.font, Component.literal(name.getString() + "：" + amount + " mB"), mouseX, mouseY);
+         graphics.renderTooltip(this.font, Component.literal(name.getString() + "：" + amount
+               + (capacity > 0L ? " / " + capacity : "") + " mB"), mouseX, mouseY);
          return true;
       }
       return false;
