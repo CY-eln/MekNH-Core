@@ -119,7 +119,7 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
             }
         } else if (this.isOverProgress(mouseX, mouseY)) {
             graphics.renderTooltip(this.font,
-                    Component.translatable("gui.meknh_core.show_recipe"), mouseX, mouseY);
+                    Component.translatableWithFallback("gui.meknh_core.show_recipe", "显示配方"), mouseX, mouseY);
         }
     }
 
