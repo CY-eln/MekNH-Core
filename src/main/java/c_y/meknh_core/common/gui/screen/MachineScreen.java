@@ -342,12 +342,6 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
          return;
       }
 
-      if (((MachineMenu)this.menu).usesSteamLayout() && isOverProgress(mouseX, mouseY)) {
-         graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.progress", Math.round(this.progressRatio() * 100.0F)), mouseX, mouseY);
-         return;
-      }
-
-      // 提取机 MEK 输出槽。
       if (this.isOverMekSlot(mouseX, mouseY)) {
          MachineBlockEntity machine = ((MachineMenu)this.menu).machine();
          if (machine != null) {
@@ -487,12 +481,33 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
    }
 
    private boolean isOverProgress(int mouseX, int mouseY) {
-      int inputSlots = ((MachineMenu)this.menu).definition() == null ? 0 : ((MachineMenu)this.menu).definition().itemInputSlots();
-      int outputSlots = ((MachineMenu)this.menu).definition() == null ? 0 : ((MachineMenu)this.menu).definition().itemOutputSlots();
-      int x = this.leftPos + SteamGuiLayout.progressX(inputSlots, outputSlots);
-      int y = this.topPos + SteamGuiLayout.PROGRESS_Y;
-      return mouseX >= x && mouseX < x + SteamGuiLayout.PROGRESS_WIDTH
-            && mouseY >= y && mouseY < y + SteamGuiLayout.PROGRESS_HEIGHT;
+      if (((MachineMenu)this.menu).definition() == null) {
+         return false;
+      }
+      if (((MachineMenu)this.menu).usesSteamLayout()) {
+         int inputSlots = ((MachineMenu)this.menu).definition().itemInputSlots();
+         int outputSlots = ((MachineMenu)this.menu).definition().itemOutputSlots();
+         int x = this.leftPos + SteamGuiLayout.progressX(inputSlots, outputSlots);
+         int y = this.topPos + SteamGuiLayout.PROGRESS_Y;
+         return mouseX >= x && mouseX < x + SteamGuiLayout.PROGRESS_WIDTH
+               && mouseY >= y && mouseY < y + SteamGuiLayout.PROGRESS_HEIGHT;
+      }
+      List<UiElement> elements = MachineUiLayouts.current(((MachineMenu)this.menu).definition().id());
+      if (elements == null || elements.isEmpty()) {
+         elements = MachineUiLayouts.defaults(((MachineMenu)this.menu).definition(), ((MachineMenu)this.menu).level());
+      }
+      for (UiElement element : elements) {
+         if (element.kind() != UiElementKind.PROGRESS) {
+            continue;
+         }
+         int x = this.leftPos + element.x();
+         int y = this.topPos + element.y();
+         if (mouseX >= x && mouseX < x + element.width()
+               && mouseY >= y && mouseY < y + element.height()) {
+            return true;
+         }
+      }
+      return false;
    }
 
    private java.util.List<Component> energyTabTooltip() {
@@ -745,6 +760,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       if (this.tabs.mouseClicked(mouseX, mouseY, button, this.leftPos, this.topPos,
             warning != 0, this::sendButton, this.configContext())) {
          return true;
+      }
+      // 点击进度条：打开该机器的 JEI 配方页（不再显示进度百分比）。
+      if (button == 0 && this.isOverProgress((int)mouseX, (int)mouseY)) {
+         if (((MachineMenu)this.menu).definition() != null
+               && c_y.meknh_core.client.jei.MeknhJeiPlugin.openMachineRecipes(
+                     ((MachineMenu)this.menu).definition().id())) {
+            return true;
+         }
       }
       return this.editor != null && this.editor.mouseClicked(mouseX, mouseY, button)
             ? true

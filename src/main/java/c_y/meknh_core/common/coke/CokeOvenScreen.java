@@ -117,11 +117,17 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
                         List.of(Component.translatable("gui.meknh_core.hatch.fluid",
                                 this.menu.amount(), this.menu.capacity())), mouseX, mouseY);
             }
-        } else if (this.isOverProgress(mouseX, mouseY)) {
-            graphics.renderTooltip(this.font,
-                    Component.translatable("gui.meknh_core.progress", Math.round(this.menu.progressRatio() * 100.0F)),
-                    mouseX, mouseY);
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && this.isOverProgress(mouseX, mouseY)
+                && c_y.meknh_core.client.jei.MeknhJeiPlugin.openMultiblockRecipes(
+                        c_y.meknh_core.MekNHCore.rl("coke_oven"))) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
