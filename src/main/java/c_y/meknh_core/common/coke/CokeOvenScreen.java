@@ -117,6 +117,9 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
                         Component.literal(fluid.getHoverName().getString() + "："
                                 + this.menu.amount() + " / " + this.menu.capacity() + " mB"), mouseX, mouseY);
             }
+        } else if (this.isOverProgress(mouseX, mouseY)) {
+            graphics.renderTooltip(this.font,
+                    Component.translatable("gui.meknh_core.show_recipe"), mouseX, mouseY);
         }
     }
 

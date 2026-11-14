@@ -342,6 +342,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
          return;
       }
 
+      if (this.isOverProgress(mouseX, mouseY)) {
+         graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.show_recipe"), mouseX, mouseY);
+         return;
+      }
+
       if (this.isOverMekSlot(mouseX, mouseY)) {
          MachineBlockEntity machine = ((MachineMenu)this.menu).machine();
          if (machine != null) {
