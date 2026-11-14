@@ -22,7 +22,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 按机器查找可执行的配方。
  *
- * <p>配方从标准 {@link RecipeManager} 读取（目录 {@code data/<命名空间>/recipe/<机器ID>/}），
+ * <p>配方从标准 {@link RecipeManager} 读取（目录 {@code data/<命名空间>/recipe/machine/<机器ID>/}，
+ * 多方块在 {@code recipe/multiblock/<多方块ID>/}；目录只是组织方式），
  * 匹配条件：</p>
  * <ol>
  *     <li>{@code id} 等于机器 ID，或机器 ID 出现在配方的 {@code extra_type} 中；</li>

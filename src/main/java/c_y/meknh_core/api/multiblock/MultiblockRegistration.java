@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import mekanism.common.capabilities.Capabilities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -18,6 +19,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -95,6 +97,38 @@ public final class MultiblockRegistration {
     }
 
     /**
+     * 自定义控制器方块实体工厂：给某些多方块（例如焦炉）挂自己的容器/GUI。
+     */
+    public interface ControllerFactory {
+        MultiblockControllerBlockEntity create(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                               MultiblockDefinition definition, MachineLevel level);
+    }
+
+    private static final Map<ResourceLocation, ControllerFactory> CONTROLLER_FACTORIES = new HashMap<>();
+
+    /**
+     * 给指定多方块 ID 注册控制器工厂；不注册就用默认的 {@link MultiblockControllerBlockEntity}。
+     */
+    public static synchronized void registerControllerFactory(ResourceLocation id, ControllerFactory factory) {
+        CONTROLLER_FACTORIES.put(id, factory);
+    }
+
+    /**
+     * 按工厂创建控制器方块实体。
+     *
+     * <p>放置（{@code Block#newBlockEntity}）和区块加载（{@code BlockEntityType} 工厂）
+     * 都必须走这里，否则会出现两端实体类型不一致（焦炉刚放下时没有 GUI/容器）。</p>
+     */
+    public static MultiblockControllerBlockEntity createController(BlockEntityType<?> type, BlockPos pos,
+                                                                   BlockState state, MultiblockDefinition definition,
+                                                                   MachineLevel level) {
+        ControllerFactory factory = CONTROLLER_FACTORIES.get(definition.id());
+        return factory == null
+                ? new MultiblockControllerBlockEntity(type, pos, state, definition, level)
+                : factory.create(type, pos, state, definition, level);
+    }
+
+    /**
      * 仓室方块的模型生成信息。
      *
      * @param id    方块注册名
@@ -152,7 +186,9 @@ public final class MultiblockRegistration {
 
         List<Map.Entry<MachineLevel, DeferredBlock<MultiblockControllerBlock>>> blocks = new ArrayList<>();
         for (MachineLevel level : definition.levels()) {
-            String path = MachineNames.internalPath(definition.id(), level);
+            String path = definition.noVoltage()
+                    ? definition.id().getPath()
+                    : MachineNames.internalPath(definition.id(), level);
             DeferredBlock<MultiblockControllerBlock> block = BLOCKS.registerBlock(
                     path,
                     properties -> new MultiblockControllerBlock(properties, definition, level),
@@ -167,7 +203,7 @@ public final class MultiblockRegistration {
                             .map(entry -> (Block) entry.getValue().get())
                             .toArray(Block[]::new);
                     return BlockEntityType.Builder.of(
-                            (pos, state) -> new MultiblockControllerBlockEntity(
+                            (pos, state) -> createController(
                                     getBlockEntityType(definition.id()),
                                     pos,
                                     state,
@@ -182,7 +218,9 @@ public final class MultiblockRegistration {
         CONTROLLER_TYPES.put(definition.id(), blockEntityType);
 
         for (Map.Entry<MachineLevel, DeferredBlock<MultiblockControllerBlock>> entry : blocks) {
-            String path = MachineNames.internalPath(definition.id(), entry.getKey());
+            String path = definition.noVoltage()
+                    ? definition.id().getPath()
+                    : MachineNames.internalPath(definition.id(), entry.getKey());
             DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
                     path,
                     properties -> new MultiblockBlockItem(entry.getValue().get(), properties)
@@ -203,7 +241,7 @@ public final class MultiblockRegistration {
      */
     private static void registerHatches() {
         for (MultiblockPartType type : MultiblockPartType.values()) {
-            if (type == MultiblockPartType.STEAM_INPUT) {
+            if (type == MultiblockPartType.STEAM_INPUT || type == MultiblockPartType.COKE_OVEN_HATCH) {
                 continue;
             }
             // 能量仓只有电力版本；物品/流体仓额外提供 ULV（蒸汽）版本。
@@ -253,6 +291,7 @@ public final class MultiblockRegistration {
             PART_TYPES.add(new PartTypeEntry(type, holder));
         }
         registerSteamHatch();
+        registerCokeOvenHatch();
     }
 
     /**
@@ -303,6 +342,41 @@ public final class MultiblockRegistration {
                         block.get()
                 ).build(null));
         PART_TYPES.add(new PartTypeEntry(MultiblockPartType.STEAM_INPUT, holder));
+    }
+
+    /**
+     * 焦炉仓：焦炉专属仓室，代理焦炉控制器的输入/输出槽与输出罐，没有 GUI。
+     */
+    private static void registerCokeOvenHatch() {
+        MachineLevel level = MachineLevel.steam(SteamVariant.LOW);
+        String path = "coke_oven_hatch";
+        DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
+                path,
+                properties -> new MultiblockPartBlock(properties, MultiblockPartType.COKE_OVEN_HATCH, level),
+                BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+        );
+        DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
+                path,
+                properties -> new MultiblockBlockItem(block.get(), properties)
+        );
+        ALL_ITEMS.add(item);
+        PART_BLOCK_INFOS.add(new PartBlockInfo(block.getId(), level, MultiblockPartType.COKE_OVEN_HATCH, 2));
+        PART_BLOCK_HOLDERS.put(MultiblockPartType.COKE_OVEN_HATCH, List.of(block));
+
+        DeferredHolder<BlockEntityType<?>, BlockEntityType<MultiblockPartBlockEntity>> holder =
+                BLOCK_ENTITIES.register("coke_oven_hatch", () -> BlockEntityType.Builder.of(
+                        (pos, state) -> {
+                            if (state.getBlock() instanceof MultiblockPartBlock part) {
+                                return new MultiblockPartBlockEntity(
+                                        getPartBlockEntityType(MultiblockPartType.COKE_OVEN_HATCH), pos, state,
+                                        part.partType(), part.level());
+                            }
+                            throw new IllegalStateException("Block " + state.getBlock()
+                                    + " is not a coke oven hatch");
+                        },
+                        block.get()
+                ).build(null));
+        PART_TYPES.add(new PartTypeEntry(MultiblockPartType.COKE_OVEN_HATCH, holder));
     }
 
     /**
@@ -369,6 +443,16 @@ public final class MultiblockRegistration {
                             Capabilities.STRICT_ENERGY.block(),
                             type,
                             (blockEntity, side) -> blockEntity.strictEnergyHandler());
+                }
+                case COKE_OVEN_HATCH -> {
+                    event.registerBlockEntity(
+                            net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+                            type,
+                            (blockEntity, side) -> blockEntity.externalItemHandler());
+                    event.registerBlockEntity(
+                            net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
+                            type,
+                            (blockEntity, side) -> blockEntity.externalFluidHandler());
                 }
             }
         }

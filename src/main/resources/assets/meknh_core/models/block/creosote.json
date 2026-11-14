@@ -1,0 +1,6 @@
+{
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "meknh_core:block/fluids/creosote"
+  }
+}

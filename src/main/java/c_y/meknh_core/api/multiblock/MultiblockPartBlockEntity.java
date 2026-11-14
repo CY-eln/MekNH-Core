@@ -162,6 +162,11 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                 this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel, this.amp), false, true, this::setChanged);
                 this.strictEnergyHandler = this.energyStorage.strictHandler();
             }
+            case COKE_OVEN_HATCH -> {
+                // 焦炉仓本身没有容器，全部代理焦炉控制器的输入/输出槽与输出罐。
+                this.externalItemHandler = new ControllerItemProxy(this);
+                this.externalFluidHandler = new ControllerFluidProxy(this);
+            }
         }
     }
 
@@ -402,6 +407,9 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
             case STEAM_INPUT -> this.pullChemical(face, target);
             case ENERGY_INPUT -> this.pullEnergy(face, target);
             case ENERGY_OUTPUT -> this.ejectEnergy(face, target);
+            // 焦炉仓没有自动搬运（GT 里也是靠相邻管道/漏斗）。
+            case COKE_OVEN_HATCH -> {
+            }
         }
     }
 
@@ -817,6 +825,8 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         int expected = switch (this.partType) {
             case ITEM_INPUT, ITEM_OUTPUT -> itemSlots(this.machineLevel);
             case FLUID_INPUT, FLUID_OUTPUT, STEAM_INPUT, ENERGY_INPUT, ENERGY_OUTPUT -> 2;
+            // 焦炉仓没有自己的槽位，全部代理控制器。
+            case COKE_OVEN_HATCH -> 0;
         };
         if (this.items == null || this.items.getSlots() == expected) {
             return;
@@ -839,6 +849,117 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     // ------------------------------------------------------------------
     // 辅助类型
     // ------------------------------------------------------------------
+
+    /**
+     * 焦炉仓 → 焦炉控制器的物品代理：槽位 0 进、槽位 1 出。
+     */
+    public c_y.meknh_core.common.coke.CokeOvenControllerBlockEntity cokeOvenController() {
+        if (this.level == null || this.controllerPos == null) {
+            return null;
+        }
+        return this.level.getBlockEntity(this.controllerPos)
+                instanceof c_y.meknh_core.common.coke.CokeOvenControllerBlockEntity oven ? oven : null;
+    }
+
+    private record ControllerItemProxy(MultiblockPartBlockEntity part) implements IItemHandler {
+
+        private MachineItemHandler target() {
+            var controller = this.part.cokeOvenController();
+            return controller == null ? null : controller.coalItems();
+        }
+
+        @Override
+        public int getSlots() {
+            MachineItemHandler handler = this.target();
+            return handler == null ? 0 : handler.getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            MachineItemHandler handler = this.target();
+            return handler == null ? ItemStack.EMPTY : handler.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            MachineItemHandler handler = this.target();
+            if (handler == null || slot != 0) {
+                return stack;
+            }
+            return handler.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            MachineItemHandler handler = this.target();
+            if (handler == null || slot != 1) {
+                return ItemStack.EMPTY;
+            }
+            return handler.extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            MachineItemHandler handler = this.target();
+            return handler == null ? 0 : handler.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            MachineItemHandler handler = this.target();
+            return handler != null && slot == 0 && handler.isItemValid(slot, stack);
+        }
+    }
+
+    /**
+     * 焦炉仓 → 焦炉控制器的流体代理：只允许抽取输出罐。
+     */
+    private record ControllerFluidProxy(MultiblockPartBlockEntity part) implements IFluidHandler {
+
+        private net.neoforged.neoforge.fluids.capability.templates.FluidTank target() {
+            var controller = this.part.cokeOvenController();
+            return controller == null ? null : controller.creosoteTank();
+        }
+
+        @Override
+        public int getTanks() {
+            return this.target() == null ? 0 : 1;
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int tank) {
+            var handler = this.target();
+            return handler == null ? FluidStack.EMPTY : handler.getFluid();
+        }
+
+        @Override
+        public int getTankCapacity(int tank) {
+            var handler = this.target();
+            return handler == null ? 0 : handler.getCapacity();
+        }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack) {
+            return false;
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            return 0;
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            var handler = this.target();
+            return handler == null ? FluidStack.EMPTY : handler.drain(resource, action);
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            var handler = this.target();
+            return handler == null ? FluidStack.EMPTY : handler.drain(maxDrain, action);
+        }
+    }
 
     /**
      * 按输入/输出方向收窄的流体视图。

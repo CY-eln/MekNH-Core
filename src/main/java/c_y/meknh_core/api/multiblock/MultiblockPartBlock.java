@@ -159,6 +159,10 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                             BlockHitResult hit) {
+        if (!this.partType.hasGui()) {
+            // 焦炉仓这类专属仓室没有 GUI，只靠漏斗/管道交互。
+            return InteractionResult.PASS;
+        }
         if (!level.isClientSide) {
             if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
                     && level.getBlockEntity(pos) instanceof MultiblockPartBlockEntity part) {

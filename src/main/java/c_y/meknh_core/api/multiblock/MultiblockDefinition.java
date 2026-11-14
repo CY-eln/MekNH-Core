@@ -1,10 +1,12 @@
 package c_y.meknh_core.api.multiblock;
 
 import c_y.meknh_core.common.data.voltage.MachineLevel;
+import c_y.meknh_core.common.data.voltage.VoltageTier;
 import c_y.meknh_core.common.recipe.MachineRecipe;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -37,9 +39,11 @@ import org.jetbrains.annotations.Nullable;
  * @param structure 结构
  * @param time      默认配方时间（tick）
  * @param energy    默认每 tick 电流（A）
+ * @param noVoltage 无电压模式：不注册等级前缀、不需要能源仓、不超频
  */
 public record MultiblockDefinition(ResourceLocation id, List<MachineLevel> levels,
-                                   MultiblockStructure structure, int time, double energy) {
+                                   MultiblockStructure structure, int time, double energy,
+                                   boolean noVoltage) {
 
     /**
      * 结构 JSON 的时间默认值（tick）。
@@ -56,7 +60,11 @@ public record MultiblockDefinition(ResourceLocation id, List<MachineLevel> level
         Objects.requireNonNull(levels, "levels");
         Objects.requireNonNull(structure, "structure");
         if (levels.isEmpty()) {
-            throw new IllegalArgumentException("Multiblock " + id + ": 'level' must contain at least one electric tier");
+            throw new IllegalArgumentException("Multiblock " + id + ": 'level' must contain at least one controller variant");
+        }
+        if (noVoltage && levels.size() != 1) {
+            throw new IllegalArgumentException("Multiblock " + id
+                    + ": no-voltage mode must register exactly one controller");
         }
         if (time < 1) {
             throw new IllegalArgumentException("Multiblock " + id + ": 'time' must be at least 1 tick");
@@ -100,7 +108,11 @@ public record MultiblockDefinition(ResourceLocation id, List<MachineLevel> level
             id = parsed;
         }
 
-        List<MachineLevel> levels = MachineLevel.parse(id, json.get("level"));
+        JsonElement levelElement = json.get("level");
+        boolean noVoltage = isNoVoltage(json, levelElement);
+        List<MachineLevel> levels = noVoltage
+                ? List.of(MachineLevel.electric(VoltageTier.LV))
+                : MachineLevel.parse(id, levelElement);
         if (levels.isEmpty()) {
             throw new IllegalArgumentException("Multiblock " + id + ": 'level' resolved to no controller variant");
         }
@@ -116,6 +128,30 @@ public record MultiblockDefinition(ResourceLocation id, List<MachineLevel> level
         }
         double energy = json.has("energy") ? json.get("energy").getAsDouble() : DEFAULT_ENERGY;
 
-        return new MultiblockDefinition(id, levels, structure, Math.max(1, time), energy);
+        return new MultiblockDefinition(id, levels, structure, Math.max(1, time), energy, noVoltage);
+    }
+
+    /**
+     * 判断是否“无电压等级”模式。
+     *
+     * <p>支持两种写法：{@code "level": "none"}（也接受 {@code no_voltage}、{@code 无}、{@code 无电压}、
+     * 空字符串），或 {@code "无电压": true}。</p>
+     */
+    private static boolean isNoVoltage(JsonObject json, @Nullable JsonElement levelElement) {
+        if (json.has("无电压") && json.get("无电压").isJsonPrimitive()
+                && json.get("无电压").getAsJsonPrimitive().isBoolean()
+                && json.get("无电压").getAsBoolean()) {
+            return true;
+        }
+        if (levelElement == null || !levelElement.isJsonPrimitive()) {
+            return false;
+        }
+        String value = levelElement.getAsString().trim().toLowerCase(Locale.ROOT);
+        return value.isEmpty()
+                || value.equals("none")
+                || value.equals("no_voltage")
+                || value.equals("novoltage")
+                || value.equals("无")
+                || value.equals("无电压");
     }
 }

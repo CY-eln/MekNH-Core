@@ -32,6 +32,7 @@ public final class MeknhJeiPlugin implements IModPlugin {
 
     private static final ResourceLocation UID = MekNHCore.rl("jei");
     private final List<MachineRecipeCategory> machineCategories = new ArrayList<>();
+    private final List<MultiblockRecipeCategory> multiblockCategories = new ArrayList<>();
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -41,9 +42,16 @@ public final class MeknhJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         this.machineCategories.clear();
+        this.multiblockCategories.clear();
         for (var definition : MachineRegistration.definitions()) {
             MachineRecipeCategory category = new MachineRecipeCategory(definition, registration.getJeiHelpers().getGuiHelper());
             this.machineCategories.add(category);
+            registration.addRecipeCategories(category);
+        }
+        for (var definition : c_y.meknh_core.api.multiblock.MultiblockRegistration.definitions()) {
+            MultiblockRecipeCategory category = new MultiblockRecipeCategory(definition,
+                    registration.getJeiHelpers().getGuiHelper());
+            this.multiblockCategories.add(category);
             registration.addRecipeCategories(category);
         }
     }
@@ -63,6 +71,13 @@ public final class MeknhJeiPlugin implements IModPlugin {
                     .toList();
             registration.addRecipes(category.getRecipeType(), recipes);
         }
+        for (MultiblockRecipeCategory category : this.multiblockCategories) {
+            List<MachineRecipe> recipes = all.stream()
+                    .map(RecipeHolder::value)
+                    .filter(recipe -> recipe.belongsTo(category.definition().id()))
+                    .toList();
+            registration.addRecipes(category.getRecipeType(), recipes);
+        }
     }
 
     @Override
@@ -74,12 +89,21 @@ public final class MeknhJeiPlugin implements IModPlugin {
                 }
             }
         }
+        for (MultiblockRecipeCategory category : this.multiblockCategories) {
+            for (var variant : c_y.meknh_core.api.multiblock.MultiblockRegistration.variants()) {
+                if (variant.definition().id().equals(category.definition().id())) {
+                    registration.addRecipeCatalysts(category.getRecipeType(), variant.item().get());
+                }
+            }
+        }
     }
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         registration.addGuiContainerHandler(MachineScreen.class, new TankIngredientHandler<>());
         registration.addGuiContainerHandler(BoilerScreen.class, new TankIngredientHandler<>());
+        registration.addGuiContainerHandler(c_y.meknh_core.common.coke.CokeOvenScreen.class,
+                new TankIngredientHandler<>());
     }
 
     private static final class TankIngredientHandler<T extends AbstractContainerScreen<?>>
@@ -92,6 +116,9 @@ public final class MeknhJeiPlugin implements IModPlugin {
             }
             if (screen instanceof BoilerScreen boiler) {
                 return boiler.jeiTankIngredient(factory, mouseX, mouseY);
+            }
+            if (screen instanceof c_y.meknh_core.common.coke.CokeOvenScreen oven) {
+                return oven.jeiTankIngredient(factory, mouseX, mouseY);
             }
             return Optional.empty();
         }

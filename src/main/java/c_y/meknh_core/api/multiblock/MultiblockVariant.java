@@ -30,9 +30,11 @@ public record MultiblockVariant(MultiblockDefinition definition, MachineLevel le
     }
 
     /**
-     * 内部路径，例如 {@code lv_my_multiblock}。
+     * 内部路径；无电压控制器没有等级前缀。
      */
     public String path() {
-        return MachineNames.internalPath(this.definition.id(), this.level);
+        return this.definition.noVoltage()
+                ? this.definition.id().getPath()
+                : MachineNames.internalPath(this.definition.id(), this.level);
     }
 }
