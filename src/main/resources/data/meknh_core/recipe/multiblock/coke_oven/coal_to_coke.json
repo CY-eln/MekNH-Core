@@ -1,0 +1,23 @@
+{
+  "type": "meknh_core:machine",
+  "id": "coke_oven",
+  "input": [
+    {
+      "type": "item",
+      "ingredient": "minecraft:coal",
+      "count": 1
+    }
+  ],
+  "output": [
+    {
+      "type": "item",
+      "id": "meknh_core:coke_gem",
+      "count": 1
+    },
+    {
+      "type": "fluid",
+      "fluid": "meknh_core:creosote",
+      "amount": 500
+    }
+  ]
+}

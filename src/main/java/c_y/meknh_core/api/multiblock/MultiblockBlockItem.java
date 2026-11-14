@@ -22,9 +22,10 @@ public class MultiblockBlockItem extends BlockItem {
     public Component getName(ItemStack stack) {
         Block block = this.getBlock();
         if (block instanceof MultiblockPartBlock part) {
-            // 蒸汽输入仓不带 ULV 前缀，直接叫「蒸汽输入仓」。
-            if (part.partType() == MultiblockPartType.STEAM_INPUT) {
-                return Component.translatable("multiblock.meknh_core.part.steam_input");
+            // 蒸汽输入仓 / 焦炉仓不带电压前缀，直接用专有名称。
+            if (part.partType() == MultiblockPartType.STEAM_INPUT
+                    || part.partType() == MultiblockPartType.COKE_OVEN_HATCH) {
+                return Component.translatable("multiblock.meknh_core.part." + part.partType().id());
             }
             var tier = MachineNames.gtTierName(part.level());
             if (part.amp() > 2) {
@@ -35,10 +36,15 @@ public class MultiblockBlockItem extends BlockItem {
                     Component.translatable("multiblock.meknh_core.part." + part.partType().id()));
         }
         if (block instanceof MultiblockControllerBlock controller) {
+            Component name = Component.translatable("multiblock."
+                    + controller.definition().id().getNamespace()
+                    + "." + controller.definition().id().getPath());
+            if (controller.definition().noVoltage()) {
+                // 无电压多方块（蒸汽/原始机器）直接用本名，不加等级前缀。
+                return name;
+            }
             return Component.translatable("multiblock.meknh_core.controller",
-                    MachineNames.tierName(controller.level()),
-                    Component.translatable("multiblock." + controller.definition().id().getNamespace()
-                            + "." + controller.definition().id().getPath()));
+                    MachineNames.tierName(controller.level()), name);
         }
         return super.getName(stack);
     }

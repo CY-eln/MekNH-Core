@@ -23,7 +23,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 机器配方（{@code 机器配方注册.txt}）。
  *
- * <p>JSON 位于 {@code data/<命名空间>/recipe/<机器ID>/*.json}，字段：</p>
+ * <p>JSON 位于 {@code data/<命名空间>/recipe/machine/<机器ID>/*.json}（多方块用
+ * {@code recipe/multiblock/<多方块ID>/}），目录只用于组织，实际归属看 {@code id} 字段。字段：</p>
  *
  * <pre>{@code
  * {

@@ -300,7 +300,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
                 Block.UPDATE_CLIENTS);
     }
 
-    private void setActiveState(boolean active) {
+    protected void setActiveState(boolean active) {
         Level world = this.getLevel();
         if (world == null || world.isClientSide) {
             return;
@@ -320,7 +320,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     // 配方执行
     // ------------------------------------------------------------------
 
-    private void tickRecipe(Level world) {
+    protected void tickRecipe(Level world) {
         if (this.activeRecipe == null && this.activeRecipeId != null) {
             this.resolvePendingRecipe(world);
         }
@@ -345,15 +345,17 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     }
 
     private boolean startRecipe(Level world) {
-        MachineLevel energyLevel = this.energyLevel();
-        if (energyLevel == null) {
+        boolean noVoltage = this.definition.noVoltage();
+        MachineLevel energyLevel = noVoltage ? null : this.energyLevel();
+        if (!noVoltage && energyLevel == null) {
             // 没有能源仓（电力）或蒸汽仓：结构成型也不能开工。
             return false;
         }
-        // 配方等级门槛：电力由最高等级的能源仓决定，蒸汽固定 ULV/LV。
-        VoltageTier allowedTier = this.machineLevel.isSteam()
-                ? this.machineLevel.recipeTier()
-                : energyLevel.voltage();
+        // 配方等级门槛：电力由最高等级的能源仓决定，蒸汽固定 ULV/LV；
+        // 无电压结构不设等级门槛。
+        VoltageTier allowedTier = noVoltage
+                ? VoltageTier.IV
+                : (this.machineLevel.isSteam() ? this.machineLevel.recipeTier() : energyLevel.voltage());
 
         MachineRecipeInput input = this.recipeInput();
         RecipeHolder<MachineRecipe> holder = MachineRecipeLookup.find(world, this.definition.id(),
@@ -363,7 +365,8 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         }
         MachineRecipe recipe = holder.value();
 
-        int parallel = Math.min(this.machineLevel.parallel(), recipe.maxCrafts(input));
+        int parallelLimit = noVoltage ? 1 : this.machineLevel.parallel();
+        int parallel = Math.min(parallelLimit, recipe.maxCrafts(input));
         if (parallel < 1) {
             return false;
         }
@@ -375,13 +378,24 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         }
 
         int baseTicks = this.definition.resolveTime(recipe);
-        double amperage = this.definition.resolveEnergy(recipe);
-        // 超频次数由能源仓等级决定，而不是控制器方块等级。
-        int countedOverclocks = Overclock.count(energyLevel, recipe.level());
-        int countedTicks = Overclock.ticks(baseTicks, countedOverclocks, this.machineLevel);
-        long power = Overclock.energyPerTick(amperage, recipe.level(), countedOverclocks);
-        long countedEnergyPerTick = this.machineLevel.isSteam() ? 0L : power;
-        long countedSteamPerTick = this.machineLevel.isSteam() ? this.machineLevel.steamPerTick(power) : 0L;
+        int countedOverclocks;
+        int countedTicks;
+        long countedEnergyPerTick = 0L;
+        long countedSteamPerTick = 0L;
+
+        if (noVoltage) {
+            // 无电压：不超频、不耗能，按默认时间跑。
+            countedOverclocks = 0;
+            countedTicks = baseTicks;
+        } else {
+            double amperage = this.definition.resolveEnergy(recipe);
+            // 超频次数由能源仓等级决定，而不是控制器方块等级。
+            countedOverclocks = Overclock.count(energyLevel, recipe.level());
+            countedTicks = Overclock.ticks(baseTicks, countedOverclocks, this.machineLevel);
+            long power = Overclock.energyPerTick(amperage, recipe.level(), countedOverclocks);
+            countedEnergyPerTick = this.machineLevel.isSteam() ? 0L : power;
+            countedSteamPerTick = this.machineLevel.isSteam() ? this.machineLevel.steamPerTick(power) : 0L;
+        }
 
         if (!this.canAfford(countedEnergyPerTick, countedSteamPerTick)) {
             return false;
@@ -480,6 +494,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     }
 
     private boolean consumePower() {
+        if (this.definition.noVoltage()) {
+            return true;
+        }
         if (this.steamPerTick > 0L) {
             return this.consumeSteam(this.steamPerTick);
         }

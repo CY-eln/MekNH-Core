@@ -75,7 +75,9 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new MultiblockControllerBlockEntity(
+        // 必须走注册的控制器工厂：放置时 LevelChunk 用的是 Block#newBlockEntity，
+        // 不经过 BlockEntityType 的工厂，直接 new 会得到基类（焦炉就没有 GUI/容器）。
+        return MultiblockRegistration.createController(
                 MultiblockRegistration.getBlockEntityType(this.definition.id()),
                 pos,
                 state,
@@ -115,11 +117,32 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
+        if (level.getBlockEntity(pos) instanceof MultiblockControllerGui gui
+                && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                && gui.openControllerGui(serverPlayer)) {
+            return InteractionResult.CONSUME;
+        }
         if (level.getBlockEntity(pos) instanceof MultiblockControllerBlockEntity controller) {
             controller.sendStatus(player);
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;
+    }
+
+    /**
+     * 桶/容器交互：实现了 {@link BucketFluidController} 的控制器可以直接用桶取流体。
+     */
+    @Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
+                                                                 BlockPos pos, Player player,
+                                                                 net.minecraft.world.InteractionHand hand,
+                                                                 BlockHitResult hit) {
+        if (level.getBlockEntity(pos) instanceof BucketFluidController buckets
+                && net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(
+                        player, hand, buckets.bucketFluidHandler())) {
+            return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

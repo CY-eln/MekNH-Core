@@ -48,6 +48,16 @@ public final class MachineModelResources {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    /**
+     * 焦炉砖外壳贴图。
+     */
+    public static final String COKE_BRICKS = "meknh_core:block/casings/solid/machine_coke_bricks";
+
+    /**
+     * 焦炉正面覆盖层目录。
+     */
+    public static final String COKE_OVERLAY = "meknh_core:block/multiblock/coke_oven";
+
     private MachineModelResources() {
     }
 
@@ -93,6 +103,18 @@ public final class MachineModelResources {
         for (MultiblockVariant variant : MultiblockRegistration.variants()) {
             String name = variant.path();
             String model = "meknh_core:block/multiblock/" + name;
+            if (variant.definition().id().getPath().equals("coke_oven")) {
+                // 焦炉：焦炉砖外壳 + 正面覆盖层（空闲/工作两套），blockstate 需要 formed × active 全组合。
+                put(resources, "blockstates/" + name + ".json", cokeOvenBlockstate(name));
+                put(resources, "models/block/multiblock/" + name + "_idle.json",
+                        partModel(COKE_BRICKS, new PartVisual(COKE_OVERLAY + "/overlay_front",
+                                COKE_OVERLAY + "/overlay_front_emissive", null, false), true));
+                put(resources, "models/block/multiblock/" + name + "_active.json",
+                        partModel(COKE_BRICKS, new PartVisual(COKE_OVERLAY + "/overlay_front_active",
+                                COKE_OVERLAY + "/overlay_front_active_emissive", null, false), true));
+                put(resources, "models/item/" + name + ".json", parentItemModel(model + "_idle"));
+                continue;
+            }
             put(resources, "blockstates/" + name + ".json", facingCubeBlockstate(model));
             put(resources, "models/block/multiblock/" + name + ".json", baseModel(casingTexture(variant.level())));
             put(resources, "models/item/" + name + ".json", parentItemModel(model));
@@ -103,12 +125,63 @@ public final class MachineModelResources {
             String model = "meknh_core:block/multiblock/part/" + path;
             put(resources, "blockstates/" + path + ".json", facingPartBlockstate(model));
             put(resources, "models/block/multiblock/part/" + path + ".json",
-                    partModel(partCasingTexture(part.level(), part.type()), partVisual(part.type(), part.amp())));
+                    partModel(partCasingTexture(part.level(), part.type()), partVisual(part.type(), part.amp()),
+                            part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH));
             put(resources, "models/item/" + path + ".json", parentItemModel(model));
         }
 
+        // 焦炉砖：普通 cube_all 方块。
+        put(resources, "blockstates/coke_oven_bricks.json", cubeAllBlockstate());
+        put(resources, "models/block/coke_oven_bricks.json", cubeAllModel());
+        put(resources, "models/item/coke_oven_bricks.json", parentItemModel("meknh_core:block/coke_oven_bricks"));
+
         LOGGER.info("Generated {} machine model resource(s)", resources.size());
         return resources;
+    }
+
+    /**
+     * 焦炉方块状态：facing 4 向 × formed 2 × active 2，全部显式列出，
+     * 否则 MC 会因为缺变体而渲染成 missing model。
+     */
+    private static JsonObject cokeOvenBlockstate(String name) {
+        JsonObject blockstate = new JsonObject();
+        JsonObject variants = new JsonObject();
+        for (int index = 0; index < FACINGS.length; index++) {
+            String facing = FACINGS[index];
+            int rotation = ROTATIONS[index];
+            for (boolean formed : new boolean[]{false, true}) {
+                for (boolean active : new boolean[]{false, true}) {
+                    JsonObject entry = new JsonObject();
+                    entry.addProperty("model", "meknh_core:block/multiblock/" + name
+                            + (active ? "_active" : "_idle"));
+                    if (rotation != 0) {
+                        entry.addProperty("y", rotation);
+                    }
+                    variants.add("facing=" + facing + ",formed=" + formed + ",active=" + active, entry);
+                }
+            }
+        }
+        blockstate.add("variants", variants);
+        return blockstate;
+    }
+
+    private static JsonObject cubeAllBlockstate() {
+        JsonObject blockstate = new JsonObject();
+        JsonObject variants = new JsonObject();
+        JsonObject entry = new JsonObject();
+        entry.addProperty("model", "meknh_core:block/coke_oven_bricks");
+        variants.add("", entry);
+        blockstate.add("variants", variants);
+        return blockstate;
+    }
+
+    private static JsonObject cubeAllModel() {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/cube_all");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("all", COKE_BRICKS);
+        model.add("textures", textures);
+        return model;
     }
 
     /**
@@ -183,14 +256,26 @@ public final class MachineModelResources {
      * </pre>
      */
     private static JsonObject partModel(String casing, PartVisual visual) {
+        return partModel(casing, visual, false);
+    }
+
+    /**
+     * @param singleTexture 外壳只有一张贴图（如焦炉砖）时用 cube_all，而不是 side/top/bottom
+     */
+    private static JsonObject partModel(String casing, PartVisual visual, boolean singleTexture) {
         JsonObject model = new JsonObject();
         model.addProperty("parent", "minecraft:block/block");
         model.addProperty("render_type", "minecraft:cutout");
         JsonObject textures = new JsonObject();
-        textures.addProperty("particle", casing + "/side");
-        textures.addProperty("side", casing + "/side");
-        textures.addProperty("top", casing + "/top");
-        textures.addProperty("bottom", casing + "/bottom");
+        if (singleTexture) {
+            textures.addProperty("particle", casing);
+            textures.addProperty("all", casing);
+        } else {
+            textures.addProperty("particle", casing + "/side");
+            textures.addProperty("side", casing + "/side");
+            textures.addProperty("top", casing + "/top");
+            textures.addProperty("bottom", casing + "/bottom");
+        }
         textures.addProperty("overlay_front", visual.overlay());
         if (visual.tint() != null) {
             textures.addProperty("overlay_tint", visual.tint());
@@ -203,7 +288,7 @@ public final class MachineModelResources {
         model.add("textures", textures);
 
         JsonArray elements = new JsonArray();
-        elements.add(cube());
+        elements.add(singleTexture ? cubeAll() : cube());
         if (visual.tint() != null) {
             elements.add(overlayPlane("#overlay_tint", -0.01D, false, 2));
         } else if (visual.pipe()) {
@@ -260,6 +345,10 @@ public final class MachineModelResources {
      */
     private static String partCasingTexture(MachineLevel level,
                                             c_y.meknh_core.api.multiblock.MultiblockPartType type) {
+        if (type == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH) {
+            // 焦炉仓使用焦炉砖外壳。
+            return COKE_BRICKS;
+        }
         if (type == c_y.meknh_core.api.multiblock.MultiblockPartType.STEAM_INPUT) {
             // GT steam_input_hatch 使用 casings/steam/bronze 外壳。
             return "meknh_core:block/casings/steam/bronze";
@@ -294,6 +383,7 @@ public final class MachineModelResources {
             case FLUID_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn, null, true);
             case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null, true);
             case STEAM_INPUT -> new PartVisual("meknh_core:block/cover/pump", null, null, false);
+            case COKE_OVEN_HATCH -> new PartVisual(base + "overlay_hatch", null, null, false);
             case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted", false);
             case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted", false);
         };
@@ -437,8 +527,22 @@ public final class MachineModelResources {
         return apply;
     }
 
-    private static JsonObject cube() {
+    /**
+     * 单贴图立方体：所有面都用 {@code #all}（焦炉砖这种 cube_all 外壳）。
+     */
+    private static JsonObject cubeAll() {
         JsonObject element = new JsonObject();
+        element.add("from", array(0.0, 0.0, 0.0));
+        element.add("to", array(16.0, 16.0, 16.0));
+        JsonObject faces = new JsonObject();
+        for (String direction : new String[]{"down", "up", "north", "south", "west", "east"}) {
+            faces.add(direction, face("#all", direction));
+        }
+        element.add("faces", faces);
+        return element;
+    }
+
+    private static JsonObject cube() {        JsonObject element = new JsonObject();
         element.add("from", array(0.0, 0.0, 0.0));
         element.add("to", array(16.0, 16.0, 16.0));
         JsonObject faces = new JsonObject();

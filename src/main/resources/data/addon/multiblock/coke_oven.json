@@ -1,0 +1,13 @@
+{
+  "id": "coke_oven",
+  "level": "none",
+  "time": "45s",
+  "结构": [
+    ["bbb", "bbb", "bbb"],
+    ["bbb", "b#b", "bbb"],
+    ["bbb", "b@b", "bbb"]
+  ],
+  "组成": {
+    "b": ["meknh_core:coke_oven_bricks", {"allow": "meknh_core:coke_oven_hatch"}]
+  }
+}

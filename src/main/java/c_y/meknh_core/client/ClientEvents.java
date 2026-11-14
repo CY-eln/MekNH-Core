@@ -36,5 +36,7 @@ public final class ClientEvents {
         event.register(MachineRegistration.MACHINE_MENU.get(), MachineScreen::create);
         event.register(BoilerRegistration.BOILER_MENU.get(), BoilerScreen::new);
         event.register(MultiblockRegistration.HATCH_MENU.get(), HatchScreen::new);
+        event.register(c_y.meknh_core.common.coke.CokeOvenRegistration.COKE_OVEN_MENU.get(),
+                c_y.meknh_core.common.coke.CokeOvenScreen::new);
     }
 }

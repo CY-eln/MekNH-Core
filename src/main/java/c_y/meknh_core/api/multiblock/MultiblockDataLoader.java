@@ -97,8 +97,10 @@ public final class MultiblockDataLoader {
             JsonObject json = element.getAsJsonObject();
             MultiblockDefinition definition = MultiblockDefinition.parse(id, json);
             MultiblockRegistration.register(definition);
-            LOGGER.debug("Loaded data-driven multiblock {} with {} controller variant(s), structure {}",
-                    definition.id(), definition.levels().size(), definition.structure().describeSize());
+            LOGGER.info("Loaded data-driven multiblock {}: time={} ticks ({}s), energy={}, structure={}, cells={}, {} controller variant(s)",
+                    definition.id(), definition.time(), definition.time() / 20.0D, definition.energy(),
+                    definition.structure().describeSize(), definition.structure().cells().size(),
+                    definition.levels().size());
             return true;
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Failed to load multiblock definition {} from {}", id, file, e);

@@ -31,7 +31,13 @@ public enum MultiblockPartType {
     /** 能量输入仓：外部只能输入 FE，控制器每 tick 扣除。 */
     ENERGY_INPUT("energy_input", true, false),
     /** 能量输出仓：预留给发电机类多方块，当前内核不主动输出。 */
-    ENERGY_OUTPUT("energy_output", false, true);
+    ENERGY_OUTPUT("energy_output", false, true),
+
+    /**
+     * 焦炉仓：焦炉专属仓室，代理焦炉控制器的输入/输出槽与输出罐。
+     * 没有 GUI、没有自动搬运，只靠漏斗/管道交互。
+     */
+    COKE_OVEN_HATCH("coke_oven_hatch", true, true);
 
     private final String id;
     private final boolean input;
@@ -41,6 +47,13 @@ public enum MultiblockPartType {
         this.id = id;
         this.input = input;
         this.output = output;
+    }
+
+    /**
+     * 是否有右键 GUI；焦炉仓没有。
+     */
+    public boolean hasGui() {
+        return this != COKE_OVEN_HATCH;
     }
 
     /**
