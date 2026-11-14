@@ -125,6 +125,12 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.isOverTank(mouseX, mouseY)
+                && c_y.meknh_core.common.gui.element.DropperInteraction.click(
+                        this.menu.blockPos(), c_y.meknh_core.common.network.DropperUsePayload.TANK_FLUID, 0,
+                        button, net.minecraft.client.gui.screens.Screen.hasShiftDown())) {
+            return true;
+        }
         if (button == 0 && this.isOverProgress(mouseX, mouseY)
                 && c_y.meknh_core.client.jei.MeknhJeiPlugin.openMultiblockRecipes(
                         c_y.meknh_core.MekNHCore.rl("coke_oven"))) {

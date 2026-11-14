@@ -125,6 +125,18 @@ public class CokeOvenMenu extends AbstractContainerMenu {
         return Math.max(0.0F, Math.min(1.0F, (float) this.progress() / (float) this.totalTicks()));
     }
 
+    /**
+     * 焦炉控制器坐标；客户端暂时找不到实体时返回 {@link BlockPos#ZERO}。
+     */
+    public BlockPos blockPos() {
+        return this.oven == null ? BlockPos.ZERO : this.oven.getBlockPos();
+    }
+
+    @Nullable
+    public CokeOvenControllerBlockEntity oven() {
+        return this.oven;
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = this.slots.get(index);
