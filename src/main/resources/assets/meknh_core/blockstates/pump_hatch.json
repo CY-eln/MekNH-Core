@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "meknh_core:block/machine/pump_hatch"
+    },
+    "facing=east": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "y": 270
+    }
+  }
+}

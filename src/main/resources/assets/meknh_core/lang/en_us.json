@@ -1,4 +1,8 @@
 {
+  "block.meknh_core.primitive_pump": "Primitive Water Pump",
+  "block.meknh_core.pump_deck": "Pump Deck",
+  "block.meknh_core.treated_wood_frame": "Treated Wood Frame",
+  "block.meknh_core.pump_hatch": "Pump Hatch",
   "chemical.meknh_core.magic_activated_fissile_fuel": "Magic Source Activated Fissile Fuel",
   "chemical.meknh_core.supercritical_cryo_ice_solution": "Supercritical Cryo Ice Solution",
   "chemical.meknh_core.decor.coolant.efficiency": " - Coolant Efficiency: ",

@@ -1,4 +1,8 @@
 {
+  "block.meknh_core.primitive_pump": "原始水泵",
+  "block.meknh_core.pump_deck": "水泵平台",
+  "block.meknh_core.treated_wood_frame": "防腐木框架",
+  "block.meknh_core.pump_hatch": "水泵仓",
   "chemical.meknh_core.magic_activated_fissile_fuel": "魔源活化裂变燃料",
   "chemical.meknh_core.supercritical_cryo_ice_solution": "超临界凛冰溶液",
   "chemical.meknh_core.decor.coolant.efficiency": " - 冷却剂效率: ",

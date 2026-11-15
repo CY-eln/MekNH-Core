@@ -2,6 +2,7 @@ package c_y.meknh_core.api.casing;
 
 import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.common.casing.FireboxCasingBlock;
+import c_y.meknh_core.common.casing.PumpFacingBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Block;
@@ -17,7 +18,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * 格雷风格外壳方块注册。
  *
  * <p>方块 ID 与 GTCEu 保持一致（去掉 {@code gtceu:} 命名空间），方便配方/多方块按名称对应：
- * {@code steam_machine_casing} 与 {@code bronze_firebox_casing}。</p>
+ * 蒸汽外壳、燃烧室外壳，以及原始水泵、平台、防腐木框架和水泵仓。</p>
  */
 public final class CasingRegistration {
 
@@ -50,6 +51,25 @@ public final class CasingRegistration {
             ITEMS.registerItem("bronze_firebox_casing",
                     properties -> new BlockItem(BRONZE_FIREBOX_CASING.get(), properties));
 
+    // 与 GTCEu 对应的泵结构方块，仅注册方块与外观。
+    public static final DeferredBlock<PumpFacingBlock> PRIMITIVE_PUMP = BLOCKS.register("primitive_pump",
+            () -> new PumpFacingBlock(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
+    public static final DeferredBlock<Block> PUMP_DECK = BLOCKS.register("pump_deck",
+            () -> new Block(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
+    public static final DeferredBlock<Block> TREATED_WOOD_FRAME = BLOCKS.register("treated_wood_frame",
+            () -> new Block(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD).noOcclusion()));
+    public static final DeferredBlock<PumpFacingBlock> PUMP_HATCH = BLOCKS.register("pump_hatch",
+            () -> new PumpFacingBlock(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
+
+    public static final DeferredItem<BlockItem> PRIMITIVE_PUMP_ITEM =
+            ITEMS.registerItem("primitive_pump", properties -> new BlockItem(PRIMITIVE_PUMP.get(), properties));
+    public static final DeferredItem<BlockItem> PUMP_DECK_ITEM =
+            ITEMS.registerItem("pump_deck", properties -> new BlockItem(PUMP_DECK.get(), properties));
+    public static final DeferredItem<BlockItem> TREATED_WOOD_FRAME_ITEM =
+            ITEMS.registerItem("treated_wood_frame", properties -> new BlockItem(TREATED_WOOD_FRAME.get(), properties));
+    public static final DeferredItem<BlockItem> PUMP_HATCH_ITEM =
+            ITEMS.registerItem("pump_hatch", properties -> new BlockItem(PUMP_HATCH.get(), properties));
+
     private CasingRegistration() {
     }
 
@@ -67,6 +87,10 @@ public final class CasingRegistration {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(STEAM_MACHINE_CASING_ITEM.get());
             event.accept(BRONZE_FIREBOX_CASING_ITEM.get());
+            event.accept(PRIMITIVE_PUMP_ITEM.get());
+            event.accept(PUMP_DECK_ITEM.get());
+            event.accept(TREATED_WOOD_FRAME_ITEM.get());
+            event.accept(PUMP_HATCH_ITEM.get());
         }
     }
 }

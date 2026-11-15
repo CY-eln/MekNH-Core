@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "all": "meknh_core:block/material_sets/treated_wood/frame_gt"
+  }
+}
