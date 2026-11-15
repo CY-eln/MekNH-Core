@@ -1,0 +1,33 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "meknh_core:block/machine/pump_hatch_base"
+      }
+    },
+    {
+      "when": {"facing": "north"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay"}
+    },
+    {
+      "when": {"facing": "east"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "y": 90}
+    },
+    {
+      "when": {"facing": "south"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "y": 180}
+    },
+    {
+      "when": {"facing": "west"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "y": 270}
+    },
+    {
+      "when": {"facing": "up"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "x": -90}
+    },
+    {
+      "when": {"facing": "down"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "x": 90}
+    }
+  ]
+}

@@ -16,8 +16,18 @@ public final class DropperInteraction {
     }
 
     public static boolean isDropper() {
+        return isCarriedDropper() || isHandDropper();
+    }
+
+    private static boolean isCarriedDropper() {
         Minecraft minecraft = Minecraft.getInstance();
         return minecraft.player != null && isDropper(minecraft.player.containerMenu.getCarried());
+    }
+
+    private static boolean isHandDropper() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.player != null && (isDropper(minecraft.player.getMainHandItem())
+                || isDropper(minecraft.player.getOffhandItem()));
     }
 
     public static boolean isDropper(ItemStack stack) {
@@ -28,16 +38,29 @@ public final class DropperInteraction {
      * @return true 表示这次点击已经被滴管消费。
      */
     public static boolean click(BlockPos pos, int tankType, int tankId, int mouseButton, boolean shift) {
-        if (pos == null || !isDropper()) {
+        if (pos == null) {
+            return false;
+        }
+        boolean carried = isCarriedDropper();
+        boolean hand = !carried && isHandDropper();
+        if (!carried && !hand) {
+            return false;
+        }
+        // 手持滴管只保留右键填入；左键、Shift+左键只对光标上的滴管生效。
+        if (hand && (mouseButton != 1 || shift)) {
             return false;
         }
         int action;
-        if (shift) {
+        // 与 Mekanism 滴管一致：
+        // 左键：从槽位取走，尽量填满滴管；
+        // Shift+左键：清空槽位；
+        // 右键：把滴管内容倒回槽位。
+        if (shift && mouseButton == 0) {
             action = DropperUsePayload.ACTION_DUMP;
         } else if (mouseButton == 0) {
-            action = DropperUsePayload.ACTION_FILL;
-        } else if (mouseButton == 1) {
             action = DropperUsePayload.ACTION_DRAIN;
+        } else if (mouseButton == 1) {
+            action = DropperUsePayload.ACTION_FILL;
         } else {
             return false;
         }

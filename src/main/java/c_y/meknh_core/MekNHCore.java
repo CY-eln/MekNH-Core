@@ -50,6 +50,10 @@ public class MekNHCore {
 
         // 多方块内核：data/addon/multiblock（控制器 + 结构匹配 + 仓室 + 配方执行）
         c_y.meknh_core.api.multiblock.MultiblockRegistration.initialize(modEventBus);
+        c_y.meknh_core.api.multiblock.MultiblockRegistration.registerControllerCandidate(
+                c_y.meknh_core.common.casing.PrimitivePumpControllerBlock.STRUCTURE_ID,
+                c_y.meknh_core.api.casing.CasingRegistration.PRIMITIVE_PUMP,
+                c_y.meknh_core.api.casing.CasingRegistration.PRIMITIVE_PUMP_ITEM);
         c_y.meknh_core.api.multiblock.MultiblockDataLoader.loadFromMods();
 
         // 发电机：data/addon/generator/boiler

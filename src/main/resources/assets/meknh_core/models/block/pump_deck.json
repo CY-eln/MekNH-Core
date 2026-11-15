@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "meknh_core:block/casings/pump_deck/bottom",
+    "top": "meknh_core:block/casings/pump_deck/top",
+    "side": "meknh_core:block/casings/pump_deck/side",
+    "particle": "#side"
+  }
+}

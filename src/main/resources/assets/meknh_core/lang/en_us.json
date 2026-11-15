@@ -1,4 +1,9 @@
 {
+  "multiblock.meknh_core.layout_mtesteamwaterpump": "Primitive Water Pump",
+  "block.meknh_core.primitive_pump": "Primitive Water Pump",
+  "block.meknh_core.pump_deck": "Pump Deck",
+  "block.meknh_core.treated_wood_frame": "Treated Wood Frame",
+  "block.meknh_core.pump_hatch": "Pump Hatch",
   "chemical.meknh_core.magic_activated_fissile_fuel": "Magic Source Activated Fissile Fuel",
   "chemical.meknh_core.supercritical_cryo_ice_solution": "Supercritical Cryo Ice Solution",
   "chemical.meknh_core.decor.coolant.efficiency": " - Coolant Efficiency: ",
@@ -193,6 +198,7 @@
   "multiblock.meknh_core.part.energy_input": "Energy Hatch",
   "multiblock.meknh_core.part.energy_output": "Dynamo Hatch",
   "multiblock.meknh_core.part.steam_input": "Steam Input Hatch",
+  "multiblock.meknh_core.part.pump_hatch": "Pump Hatch",
   "multiblock.meknh_core.status.formed": "Formed: %s (progress %s, parallel %s)",
   "multiblock.meknh_core.status.unformed": "Not formed: %s",
   "block.meknh_core.steam_machine_casing": "Steam Machine Casing",
@@ -215,5 +221,6 @@
   "message.meknh_core.multiblock_terminal.complete": "Structure is already complete",
   "jade.meknh_core.multiblock.formed": "Structure formed",
   "jade.meknh_core.multiblock.unformed": "Structure incomplete",
+  "jade.meknh_core.waterpump.output": "Output: %s mB/s",
   "config.jade.plugin_meknh_core.multiblock_status": "Structure Status"
 }

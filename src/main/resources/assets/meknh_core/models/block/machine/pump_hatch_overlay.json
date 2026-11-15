@@ -1,0 +1,48 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "overlay_pipe": "meknh_core:block/overlay/machine/overlay_pipe",
+    "overlay": "meknh_core:block/overlay/machine/overlay_fluid_hatch_output",
+    "overlay_emissive": "meknh_core:block/overlay/machine/overlay_pipe_out_emissive"
+  },
+  "elements": [
+    {
+      "from": [0, 0, -0.01],
+      "to": [16, 16, -0.01],
+      "shade": true,
+      "faces": {
+        "north": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#overlay_pipe",
+          "cullface": "north"
+        }
+      }
+    },
+    {
+      "from": [0, 0, -0.02],
+      "to": [16, 16, -0.02],
+      "shade": true,
+      "faces": {
+        "north": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#overlay",
+          "cullface": "north"
+        }
+      }
+    },
+    {
+      "from": [0, 0, -0.03],
+      "to": [16, 16, -0.03],
+      "shade": false,
+      "neoforge_data": {"block_light": 15, "sky_light": 15, "ambient_occlusion": false},
+      "faces": {
+        "north": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#overlay_emissive",
+          "cullface": "north"
+        }
+      }
+    }
+  ]
+}

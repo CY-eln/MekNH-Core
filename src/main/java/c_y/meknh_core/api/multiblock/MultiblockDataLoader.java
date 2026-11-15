@@ -39,72 +39,61 @@ public final class MultiblockDataLoader {
      * @return 成功注册的数量
      */
     public static int loadFromMods() {
-        int loaded = 0;
-        for (IModFileInfo modFileInfo : ModList.get().getModFiles()) {
-            IModFile modFile = modFileInfo.getFile();
-            try {
-                loaded += loadFromModFile(modFile);
-            } catch (Exception e) {
-                LOGGER.error("Failed to scan multiblock definitions in mod file {}", modFile.getFileName(), e);
-            }
-        }
-        LOGGER.info("Loaded {} data-driven multiblock definition(s)", loaded);
-        return loaded;
-    }
-
-    private static int loadFromModFile(IModFile modFile) {
-        Path directory = modFile.getSecureJar().getRootPath()
-                .resolve(DATA_ROOT)
-                .resolve(MultiblockRegistration.ADDON_DATA_DIRECTORY)
-                .resolve(MultiblockRegistration.MULTIBLOCK_DIRECTORY);
-        if (!Files.isDirectory(directory)) {
-            return 0;
-        }
-        int loaded = 0;
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
-            for (Path file : files) {
-                if (!file.getFileName().toString().endsWith(JSON_SUFFIX)) {
-                    continue;
+        java.util.List<MultiblockDefinition> definitions = new java.util.ArrayList<>();
+        java.util.List<ControllerBindingPlan.Request> requests = new java.util.ArrayList<>();
+        for (IModFileInfo info : ModList.get().getModFiles()) {
+            IModFile modFile = info.getFile();
+            Path directory = modFile.getSecureJar().getRootPath().resolve(DATA_ROOT)
+                    .resolve(MultiblockRegistration.ADDON_DATA_DIRECTORY)
+                    .resolve(MultiblockRegistration.MULTIBLOCK_DIRECTORY);
+            if (!Files.isDirectory(directory)) continue;
+            try (DirectoryStream<Path> files = MultiblockDefinitionFiles.open(directory)) {
+                for (Path file : files) {
+                    try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                        String name = file.getFileName().toString();
+                        ResourceLocation fileId = ResourceLocation.tryBuild(MekNHCore.MODID,
+                                name.substring(0, name.length() - JSON_SUFFIX.length()));
+                        if (fileId == null) {
+                            throw new IllegalArgumentException("Invalid definition filename ResourceLocation: " + name);
+                        }
+                        JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                        MultiblockDefinition definition = MultiblockDefinition.parse(fileId, json);
+                        String controller = null;
+                        if (json.has("controller_block")) {
+                            JsonElement value = json.get("controller_block");
+                            if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+                                throw new IllegalArgumentException("controller_block must be a namespace:block string");
+                            }
+                            controller = value.getAsString();
+                            if (!controller.contains(":") || ResourceLocation.tryParse(controller) == null) {
+                                throw new IllegalArgumentException("Invalid controller_block ResourceLocation: " + controller);
+                            }
+                        }
+                        definitions.add(definition);
+                        requests.add(new ControllerBindingPlan.Request(definition.id().toString(), definition.noVoltage(),
+                                controller, MultiblockRegistration.generatedControllerIds(definition)));
+                    } catch (IOException | RuntimeException e) {
+                        // 单个第三方定义坏了就跳过，不能让它阻止整个游戏启动。
+                        LOGGER.error("Skipping invalid multiblock definition {}: {}", file, e.toString());
+                    }
                 }
-                if (loadMultiblock(file)) {
-                    loaded++;
-                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to scan multiblock directory in {}: {}", modFile.getFileName(), e.toString());
             }
-        } catch (IOException e) {
-            LOGGER.error("Failed to scan multiblock definitions in mod file {}", modFile.getFileName(), e);
         }
-        return loaded;
-    }
-
-    private static boolean loadMultiblock(Path file) {
-        String fileName = file.getFileName().toString();
-        String path = fileName.substring(0, fileName.length() - JSON_SUFFIX.length());
-        ResourceLocation id = ResourceLocation.tryBuild(MekNHCore.MODID, path);
-        if (id == null) {
-            LOGGER.error("Skipping multiblock definition with invalid id: {} ({})", path, file);
-            return false;
+        // 绑定预检失败时退回“全部按普通多方块注册”，避免一个冲突/坏显式声明导致启动崩溃。
+        java.util.Map<String, String> plan = java.util.Map.of();
+        try {
+            plan = ControllerBindingPlan.plan(requests, MultiblockRegistration.controllerCandidates(),
+                    MultiblockRegistration.reservedControllerBlockIds());
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Multiblock controller binding preflight failed; external bindings disabled: {}",
+                    e.getMessage());
         }
-        if (MultiblockRegistration.definition(id) != null) {
-            LOGGER.warn("Skipping duplicate multiblock definition {} ({})", id, file);
-            return false;
-        }
-        try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            JsonElement element = JsonParser.parseReader(reader);
-            if (!element.isJsonObject()) {
-                LOGGER.error("Multiblock definition {} must be a JSON object ({})", id, file);
-                return false;
-            }
-            JsonObject json = element.getAsJsonObject();
-            MultiblockDefinition definition = MultiblockDefinition.parse(id, json);
-            MultiblockRegistration.register(definition);
-            LOGGER.info("Loaded data-driven multiblock {}: time={} ticks ({}s), energy={}, structure={}, cells={}, {} controller variant(s)",
-                    definition.id(), definition.time(), definition.time() / 20.0D, definition.energy(),
-                    definition.structure().describeSize(), definition.structure().cells().size(),
-                    definition.levels().size());
-            return true;
-        } catch (IOException | RuntimeException e) {
-            LOGGER.error("Failed to load multiblock definition {} from {}", id, file, e);
-            return false;
-        }
+        MultiblockRegistration.applyControllerPlan(plan);
+        definitions.sort(java.util.Comparator.comparing(d -> d.id().toString()));
+        for (MultiblockDefinition definition : definitions) MultiblockRegistration.register(definition);
+        LOGGER.info("Loaded {} data-driven multiblock definition(s)", definitions.size());
+        return definitions.size();
     }
 }

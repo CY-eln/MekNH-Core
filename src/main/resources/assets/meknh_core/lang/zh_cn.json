@@ -1,4 +1,9 @@
 {
+  "multiblock.meknh_core.layout_mtesteamwaterpump": "原始水泵",
+  "block.meknh_core.primitive_pump": "原始水泵",
+  "block.meknh_core.pump_deck": "水泵盖板",
+  "block.meknh_core.treated_wood_frame": "防腐木框架",
+  "block.meknh_core.pump_hatch": "水泵仓",
   "chemical.meknh_core.magic_activated_fissile_fuel": "魔源活化裂变燃料",
   "chemical.meknh_core.supercritical_cryo_ice_solution": "超临界凛冰溶液",
   "chemical.meknh_core.decor.coolant.efficiency": " - 冷却剂效率: ",
@@ -193,6 +198,7 @@
   "multiblock.meknh_core.part.energy_input": "能源仓",
   "multiblock.meknh_core.part.energy_output": "动力仓",
   "multiblock.meknh_core.part.steam_input": "蒸汽输入仓",
+  "multiblock.meknh_core.part.pump_hatch": "水泵仓",
   "multiblock.meknh_core.status.formed": "结构已成型：%s（进度 %s，并行 %s）",
   "multiblock.meknh_core.status.unformed": "结构未成型：%s",
   "block.meknh_core.steam_machine_casing": "蒸汽机器外壳",
@@ -215,5 +221,6 @@
   "message.meknh_core.multiblock_terminal.complete": "结构已经完整",
   "jade.meknh_core.multiblock.formed": "结构已成型",
   "jade.meknh_core.multiblock.unformed": "结构不完整",
+  "jade.meknh_core.waterpump.output": "产出：%s mB/s",
   "config.jade.plugin_meknh_core.multiblock_status": "结构状态"
 }

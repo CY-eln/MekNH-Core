@@ -1,0 +1,16 @@
+{
+  "id": "primitive_pump",
+  "level": "none",
+  "time": "1s",
+  "结构": [
+    ["CCC", ".A.", ".A."],
+    ["CBC", "A.A", "AAA"],
+    ["CCC", "...", ".A."],
+    ["C@C", ".A.", ".A."]
+  ],
+  "组成": {
+    "A": "meknh_core:treated_wood_frame",
+    "C": "meknh_core:pump_deck",
+    "B": ["meknh_core:pump_deck",{"allow":"part:pump_hatch"}]
+  }
+}

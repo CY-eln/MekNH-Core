@@ -29,7 +29,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,6 +51,10 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
      * 覆盖层所在面（也是自动弹出方向）；6 个方向都可能，模型按此属性旋转。
      */
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
+    /** 结构成型后使用控制器外壳贴图。 */
+    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    /** 成型外壳贴图索引：0=自身，1=低压蒸汽，2=高压蒸汽，3..7=LV..IV。 */
+    public static final IntegerProperty CASING = IntegerProperty.create("casing", 0, 7);
 
     private final MultiblockPartType partType;
     private final MachineLevel level;
@@ -63,7 +69,10 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
         this.partType = partType;
         this.level = level;
         this.amp = amp;
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(FORMED, false)
+                .setValue(CASING, 0));
     }
 
     public MultiblockPartType partType() {
@@ -86,7 +95,8 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
      */
     public MutableComponent displayName() {
         if (this.partType == MultiblockPartType.STEAM_INPUT
-                || this.partType == MultiblockPartType.COKE_OVEN_HATCH) {
+                || this.partType == MultiblockPartType.COKE_OVEN_HATCH
+                || this.partType == MultiblockPartType.PUMP_HATCH) {
             return Component.translatable("multiblock.meknh_core.part." + this.partType.id());
         }
         MutableComponent tier = MachineNames.gtTierName(this.level);
@@ -108,7 +118,7 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, FORMED, CASING);
     }
 
     @Override

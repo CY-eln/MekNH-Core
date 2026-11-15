@@ -2,6 +2,7 @@ package c_y.meknh_core.client.jade;
 
 import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.api.multiblock.MultiblockControllerBlock;
+import c_y.meknh_core.common.casing.PrimitivePumpControllerBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,5 +35,8 @@ public final class MultiblockStatusProvider implements IBlockComponentProvider {
                         ? "jade.meknh_core.multiblock.formed"
                         : "jade.meknh_core.multiblock.unformed")
                 .withStyle(formed ? ChatFormatting.GREEN : ChatFormatting.RED));
+        if (formed && state.getBlock() instanceof PrimitivePumpControllerBlock) {
+            tooltip.add(Component.translatable("jade.meknh_core.waterpump.output", 250));
+        }
     }
 }

@@ -6,6 +6,7 @@ import c_y.meknh_core.api.machine.MachineVariant;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import c_y.meknh_core.api.multiblock.MultiblockVariant;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
+import c_y.meknh_core.common.data.voltage.VoltageTier;
 import c_y.meknh_core.common.machine.steam.SteamVariant;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -101,6 +102,8 @@ public final class MachineModelResources {
 
         // 多方块控制器：立方体外壳 + 按 facing 的 blockstate；没有 formed/active 覆盖层。
         for (MultiblockVariant variant : MultiblockRegistration.variants()) {
+            // Existing controllers keep their own blockstates, item models and textures.
+            if (MultiblockRegistration.hasExternalController(variant.definition().id())) continue;
             String name = variant.path();
             String model = "meknh_core:block/multiblock/" + name;
             if (variant.definition().id().getPath().equals("coke_oven")) {
@@ -121,13 +124,29 @@ public final class MachineModelResources {
         }
         // 仓室：电压外壳 + 正面功能覆盖层（物品/流体/能量），按朝向旋转。
         for (MultiblockRegistration.PartBlockInfo part : MultiblockRegistration.partBlockInfos()) {
+            // 水泵仓自带静态 blockstate/model，避免运行时生成覆盖掉多层贴图。
+            if (part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.PUMP_HATCH) {
+                continue;
+            }
             String path = part.id().getPath();
             String model = "meknh_core:block/multiblock/part/" + path;
-            put(resources, "blockstates/" + path + ".json", facingPartBlockstate(model));
+            String overlayModel = model + "_overlay";
+            put(resources, "blockstates/" + path + ".json", facingPartBlockstate(path, model, overlayModel));
             put(resources, "models/block/multiblock/part/" + path + ".json",
+                    partBaseModel(partCasingTexture(part.level(), part.type()),
+                            part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH));
+            put(resources, "models/block/multiblock/part/" + path + "_overlay.json",
+                    partOverlayModel(partVisual(part.type(), part.amp())));
+            // 结构成型后的外壳贴图：按控制器等级生成 7 套外壳模型。
+            for (int casing = 1; casing <= 7; casing++) {
+                put(resources, "models/block/multiblock/part/" + path + "_formed_" + casing + ".json",
+                        partBaseModel(casingTexture(casing),
+                                part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH));
+            }
+            put(resources, "models/block/multiblock/part/" + path + "_item.json",
                     partModel(partCasingTexture(part.level(), part.type()), partVisual(part.type(), part.amp()),
                             part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH));
-            put(resources, "models/item/" + path + ".json", parentItemModel(model));
+            put(resources, "models/item/" + path + ".json", parentItemModel(model + "_item"));
         }
 
         // 焦炉砖：普通 cube_all 方块。
@@ -193,6 +212,7 @@ public final class MachineModelResources {
         for (String facing : FACINGS) {
             JsonObject entry = new JsonObject();
             entry.addProperty("model", model);
+            entry.addProperty("uvlock", true);
             variants.add("facing=" + facing, entry);
         }
         blockstate.add("variants", variants);
@@ -209,34 +229,55 @@ public final class MachineModelResources {
     }
 
     /**
-     * 仓室 blockstate：6 个朝向共用一个「北面带覆盖层」的模型，按朝向旋转。
+     * 仓室 blockstate：未成型用自身外壳，成型后按控制器等级切换外壳贴图。
      *
      * <p>旋转取值与 Mek 的 {@code basic_energy_cube.json} 一致：
      * 北 0、东 y=90、南 y=180、西 y=270、上 x=-90、下 x=90。</p>
      */
-    private static JsonObject facingPartBlockstate(String model) {
+    private static JsonObject facingPartBlockstate(String path, String model, String overlayModel) {
         JsonObject blockstate = new JsonObject();
-        JsonObject variants = new JsonObject();
-        partVariant(variants, model, "north", 0, 0);
-        partVariant(variants, model, "east", 0, 90);
-        partVariant(variants, model, "south", 0, 180);
-        partVariant(variants, model, "west", 0, 270);
-        partVariant(variants, model, "up", -90, 0);
-        partVariant(variants, model, "down", 90, 0);
-        blockstate.add("variants", variants);
+        JsonArray multipart = new JsonArray();
+
+        // 外壳始终固定，不随朝向旋转；只旋转覆盖层模型。
+        addPartBase(multipart, model, "false", 0);
+        addPartBase(multipart, model, "true", 0);
+        for (int casing = 1; casing <= 7; casing++) {
+            addPartBase(multipart, "meknh_core:block/multiblock/part/" + path + "_formed_" + casing,
+                    "true", casing);
+        }
+
+        String[] facings = {"north", "east", "south", "west", "up", "down"};
+        int[][] rotations = {{0, 0}, {0, 90}, {0, 180}, {0, 270}, {-90, 0}, {90, 0}};
+        for (int index = 0; index < facings.length; index++) {
+            JsonObject part = new JsonObject();
+            JsonObject when = new JsonObject();
+            when.addProperty("facing", facings[index]);
+            part.add("when", when);
+            JsonObject apply = new JsonObject();
+            apply.addProperty("model", overlayModel);
+            if (rotations[index][0] != 0) {
+                apply.addProperty("x", rotations[index][0]);
+            }
+            if (rotations[index][1] != 0) {
+                apply.addProperty("y", rotations[index][1]);
+            }
+            part.add("apply", apply);
+            multipart.add(part);
+        }
+        blockstate.add("multipart", multipart);
         return blockstate;
     }
 
-    private static void partVariant(JsonObject variants, String model, String facing, int x, int y) {
-        JsonObject entry = new JsonObject();
-        entry.addProperty("model", model);
-        if (x != 0) {
-            entry.addProperty("x", x);
-        }
-        if (y != 0) {
-            entry.addProperty("y", y);
-        }
-        variants.add("facing=" + facing, entry);
+    private static void addPartBase(JsonArray multipart, String model, String formed, int casing) {
+        JsonObject part = new JsonObject();
+        JsonObject when = new JsonObject();
+        when.addProperty("formed", formed);
+        when.addProperty("casing", Integer.toString(casing));
+        part.add("when", when);
+        JsonObject apply = new JsonObject();
+        apply.addProperty("model", model);
+        part.add("apply", apply);
+        multipart.add(part);
     }
 
     /**
@@ -255,6 +296,57 @@ public final class MachineModelResources {
      * overlay_emissive  -0.03（自发光，16×96 动态环）
      * </pre>
      */
+    private static JsonObject partBaseModel(String casing, boolean singleTexture) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/block");
+        model.addProperty("render_type", "minecraft:cutout");
+        JsonObject textures = new JsonObject();
+        if (singleTexture) {
+            textures.addProperty("particle", casing);
+            textures.addProperty("all", casing);
+        } else {
+            textures.addProperty("particle", casing + "/side");
+            textures.addProperty("side", casing + "/side");
+            textures.addProperty("top", casing + "/top");
+            textures.addProperty("bottom", casing + "/bottom");
+        }
+        model.add("textures", textures);
+        JsonArray elements = new JsonArray();
+        elements.add(singleTexture ? cubeAll() : cube());
+        model.add("elements", elements);
+        return model;
+    }
+
+    private static JsonObject partOverlayModel(PartVisual visual) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/block");
+        model.addProperty("render_type", "minecraft:cutout");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("particle", visual.overlay());
+        textures.addProperty("overlay_front", visual.overlay());
+        if (visual.tint() != null) {
+            textures.addProperty("overlay_tint", visual.tint());
+        } else if (visual.pipe()) {
+            textures.addProperty("overlay_pipe", "meknh_core:block/overlay/machine/overlay_pipe");
+        }
+        if (visual.emissive() != null) {
+            textures.addProperty("overlay_emissive", visual.emissive());
+        }
+        model.add("textures", textures);
+        JsonArray elements = new JsonArray();
+        if (visual.tint() != null) {
+            elements.add(overlayPlane("#overlay_tint", -0.01D, false, 2));
+        } else if (visual.pipe()) {
+            elements.add(overlayPlane("#overlay_pipe", -0.01D, false, -1));
+        }
+        elements.add(overlayPlane("#overlay_front", -0.02D, false, -1));
+        if (visual.emissive() != null) {
+            elements.add(overlayPlane("#overlay_emissive", -0.03D, true, -1));
+        }
+        model.add("elements", elements);
+        return model;
+    }
+
     private static JsonObject partModel(String casing, PartVisual visual) {
         return partModel(casing, visual, false);
     }
@@ -385,10 +477,22 @@ public final class MachineModelResources {
             case FLUID_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn, null, true);
             case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null, true);
             case STEAM_INPUT -> new PartVisual("meknh_core:block/cover/pump", null, null, false);
+            case PUMP_HATCH -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null, true);
             case COKE_OVEN_HATCH -> new PartVisual(base + "overlay_hatch", null, null, false);
             case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted", false);
             case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted", false);
         };
+    }
+
+    private static String casingTexture(int casing) {
+        if (casing == 1) {
+            return "meknh_core:block/casings/steam/bricked_bronze";
+        }
+        if (casing == 2) {
+            return "meknh_core:block/casings/steam/bricked_steel";
+        }
+        int tier = Math.max(1, Math.min(5, casing - 2));
+        return "meknh_core:block/casings/voltage/" + VoltageTier.ELECTRIC.get(tier - 1).getSerializedName();
     }
 
     private static String casingTexture(MachineLevel level) {

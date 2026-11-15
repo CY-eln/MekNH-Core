@@ -1,0 +1,12 @@
+{
+  "type": "meknh_core:machine",
+  "id": "primitive_pump",
+  "input": "none",
+  "output": [
+    {
+      "type": "fluid",
+      "fluid": "minecraft:water",
+      "amount": 250
+    }
+  ]
+}
