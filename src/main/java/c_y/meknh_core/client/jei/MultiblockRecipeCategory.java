@@ -4,6 +4,8 @@ import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.api.multiblock.MultiblockDefinition;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import c_y.meknh_core.common.coke.CokeOvenLayout;
+import c_y.meknh_core.common.blast.PrimitiveBlastFurnaceLayout;
+import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.layout.MachineGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
 import c_y.meknh_core.common.recipe.MachineIngredient;
@@ -61,7 +63,7 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
         this.definition = definition;
         this.recipeType = RecipeType.create(MekNHCore.MODID, "multiblock_" + definition.id().getPath(),
                 MachineRecipe.class);
-        this.background = new GuiBackground();
+        this.background = isPrimitiveBlastFurnace() ? new BlastBackground() : new GuiBackground();
         this.inputSlot = guiHelper.createDrawable(MachineGuiTextures.SLOT_INPUT, 0, 0, 18, 18);
         this.outputSlot = guiHelper.createDrawable(MachineGuiTextures.SLOT_OUTPUT, 0, 0, 18, 18);
         ItemStack iconStack = MultiblockRegistration.variants().stream()
@@ -107,8 +109,28 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
         return this.icon;
     }
 
+    private boolean isPrimitiveBlastFurnace() {
+        return this.definition.id().equals(MekNHCore.rl("primitive_blast_furnace"));
+    }
+
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, MachineRecipe recipe, IFocusGroup focuses) {
+        if (isPrimitiveBlastFurnace()) {
+            int input = 0, output = 0;
+            for (var ingredient : recipe.inputs()) {
+                if (ingredient instanceof MachineIngredient.Item && input < 3) {
+                    MachineRecipeCategory.addIngredient(builder.addInputSlot(PrimitiveBlastFurnaceLayout.INPUT_X,
+                            PrimitiveBlastFurnaceLayout.INPUT_Y + input++ * PrimitiveBlastFurnaceLayout.SLOT_STEP), ingredient);
+                }
+            }
+            for (var product : recipe.outputs()) {
+                if (product instanceof MachineOutput.ItemProduct && output < 3) {
+                    MachineRecipeCategory.addProduct(builder.addOutputSlot(PrimitiveBlastFurnaceLayout.OUTPUT_X
+                            + output++ * PrimitiveBlastFurnaceLayout.SLOT_STEP, PrimitiveBlastFurnaceLayout.OUTPUT_Y), product);
+                }
+            }
+            return;
+        }
         int itemInput = 0;
         int fluidInput = 0;
         for (MachineIngredient ingredient : recipe.inputs()) {
@@ -151,21 +173,39 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
     public void draw(MachineRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics graphics, double mouseX,
                      double mouseY) {
         // 进度条（动态）叠在真实 GUI 的进度条位置。
-        AnimatedProgressBar.INSTANCE.draw(graphics, PROGRESS_X, PROGRESS_Y);
-        // 储罐刻度：画在流体内容之上，和游戏内 GuiGauge 的顺序一致。
-        graphics.blit(MachineGuiTextures.GAUGE, TANK_X + 1, TANK_Y, 0, 0,
+        AnimatedProgressBar.INSTANCE.draw(graphics,
+                isPrimitiveBlastFurnace() ? PrimitiveBlastFurnaceLayout.PROGRESS_X : PROGRESS_X,
+                isPrimitiveBlastFurnace() ? PrimitiveBlastFurnaceLayout.PROGRESS_Y : PROGRESS_Y);
+        // Only the coke oven has a fluid tank.
+        if (!isPrimitiveBlastFurnace()) graphics.blit(MachineGuiTextures.GAUGE, TANK_X + 1, TANK_Y, 0, 0,
                 TANK_INNER_WIDTH, TANK_HEIGHT, TANK_INNER_WIDTH, TANK_HEIGHT);
         // 耗时放标题区域。
         // 实际耗时：配方写了 time 就用配方，否则用多方块 JSON 的 time（已解析成 tick）。
         int time = this.definition.resolveTime(recipe);
         var font = net.minecraft.client.Minecraft.getInstance().font;
         graphics.drawString(font, Component.translatable("jei.meknh_core.time",
-                MachineRecipeCategory.seconds(time)), 6, 62, 0x404040, false);
+                MachineRecipeCategory.seconds(time)), 6, isPrimitiveBlastFurnace() ? 6 : 62, 0x404040, false);
     }
 
     /**
      * 复刻游戏内 GUI 底图：Mek 底板九宫格 + 储罐底板。
      */
+    private static final class BlastBackground implements IDrawable {
+        @Override public int getWidth() { return WIDTH; }
+        @Override public int getHeight() { return HEIGHT; }
+        @Override public void draw(GuiGraphics graphics, int x, int y) {
+            GuiDraw.nineSlice(graphics, MachineGuiTextures.BASE, x, y, WIDTH, HEIGHT, 4, 256, 256);
+            for (int i = 0; i < 3; i++) {
+                GuiDraw.nineSlice(graphics, MekGuiTextures.SLOT_NORMAL, x + PrimitiveBlastFurnaceLayout.INPUT_X - 1,
+                        y + PrimitiveBlastFurnaceLayout.INPUT_Y + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
+                        18, 18, 1, 18, 18);
+                GuiDraw.nineSlice(graphics, MekGuiTextures.SLOT_NORMAL, x + PrimitiveBlastFurnaceLayout.OUTPUT_X
+                        + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1, y + PrimitiveBlastFurnaceLayout.OUTPUT_Y - 1,
+                        18, 18, 1, 18, 18);
+            }
+        }
+    }
+
     private static final class GuiBackground implements IDrawable {
 
         @Override

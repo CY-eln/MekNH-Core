@@ -1,4 +1,9 @@
 {
+  "block.meknh_core.primitive_blast_furnace": "土高炉",
+  "block.meknh_core.primitive_blast_furnace_bricks": "耐火砖块",
+  "item.meknh_core.dust_tiny_dark_ash": "小撮深灰",
+  "item.meknh_core.dust_ash": "灰烬粉",
+  "multiblock.meknh_core.primitive_blast_furnace": "土高炉",
   "multiblock.meknh_core.layout_mtesteamwaterpump": "原始水泵",
   "block.meknh_core.primitive_pump": "原始水泵",
   "block.meknh_core.pump_deck": "水泵盖板",

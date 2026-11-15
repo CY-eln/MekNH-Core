@@ -104,6 +104,8 @@ public final class MachineModelResources {
         for (MultiblockVariant variant : MultiblockRegistration.variants()) {
             // Existing controllers keep their own blockstates, item models and textures.
             if (MultiblockRegistration.hasExternalController(variant.definition().id())) continue;
+            // Primitive furnace ships complete static active/emissive models. Do not replace them.
+            if (variant.definition().id().equals(MekNHCore.rl("primitive_blast_furnace"))) continue;
             String name = variant.path();
             String model = "meknh_core:block/multiblock/" + name;
             if (variant.definition().id().getPath().equals("coke_oven")) {

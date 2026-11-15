@@ -1,0 +1,20 @@
+allprojects { p ->
+    if (p == rootProject) {
+        def probeDir = layout.buildDirectory.dir('devtools/pbf-runtime')
+        tasks.register('compilePbfRuntimeProbe', JavaCompile) {
+            dependsOn tasks.named('classes')
+            source = files('devtools/PrimitiveBlastFurnaceRuntimeProbe.java')
+            classpath = sourceSets.main.compileClasspath + sourceSets.main.output
+            destinationDirectory = probeDir
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+            options.encoding = 'UTF-8'
+        }
+        tasks.register('pbfRuntimeProbe', JavaExec) {
+            dependsOn tasks.named('compilePbfRuntimeProbe')
+            classpath = sourceSets.main.runtimeClasspath + files(probeDir)
+            mainClass = 'PrimitiveBlastFurnaceRuntimeProbe'
+            workingDir = rootDir
+            javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+        }
+    }
+}
