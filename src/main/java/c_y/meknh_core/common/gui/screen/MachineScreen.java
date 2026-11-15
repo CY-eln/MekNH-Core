@@ -898,7 +898,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                button, Screen.hasShiftDown());
       }
       if (this.hasMekOutputSlot() && this.isOverMekSlot(mouseX, mouseY)) {
-         boolean gas = machine.outputGasTank() != null && !machine.outputGasTank().isEmpty();
+         // 客户端方块实体里的罐体不一定同步；使用菜单数据判断当前是气体还是流体。
+         boolean gas = ((MachineMenu)this.menu).data(MachineMenu.DATA_GAS_OUT) > 0
+               && ((MachineMenu)this.menu).data(MachineMenu.DATA_GAS_OUT_ID) >= 0;
          return c_y.meknh_core.common.gui.element.DropperInteraction.click(pos,
                gas ? c_y.meknh_core.common.network.DropperUsePayload.TANK_CHEMICAL
                    : c_y.meknh_core.common.network.DropperUsePayload.TANK_FLUID,
