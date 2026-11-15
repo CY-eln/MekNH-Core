@@ -92,9 +92,9 @@ public record DropperUsePayload(BlockPos pos, int action, int tankType, int tank
             return;
         }
         if (action == ACTION_FILL) {
-            transferChemical(tank, handler, player);
-        } else if (action == ACTION_DRAIN) {
             transferChemical(handler, tank, player);
+        } else if (action == ACTION_DRAIN) {
+            transferChemical(tank, handler, player);
         }
     }
 
