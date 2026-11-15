@@ -22,18 +22,7 @@ public class MultiblockBlockItem extends BlockItem {
     public Component getName(ItemStack stack) {
         Block block = this.getBlock();
         if (block instanceof MultiblockPartBlock part) {
-            // 蒸汽输入仓 / 焦炉仓不带电压前缀，直接用专有名称。
-            if (part.partType() == MultiblockPartType.STEAM_INPUT
-                    || part.partType() == MultiblockPartType.COKE_OVEN_HATCH) {
-                return Component.translatable("multiblock.meknh_core.part." + part.partType().id());
-            }
-            var tier = MachineNames.gtTierName(part.level());
-            if (part.amp() > 2) {
-                tier = Component.translatable("multiblock.meknh_core.amp", part.amp()).append(tier);
-            }
-            return Component.translatable("multiblock.meknh_core.hatch",
-                    tier,
-                    Component.translatable("multiblock.meknh_core.part." + part.partType().id()));
+            return part.displayName();
         }
         if (block instanceof MultiblockControllerBlock controller) {
             Component name = Component.translatable("multiblock."

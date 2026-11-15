@@ -1,12 +1,15 @@
 package c_y.meknh_core.api.multiblock;
 
 import c_y.meknh_core.common.data.voltage.MachineLevel;
+import c_y.meknh_core.decor.description.MachineNames;
 import com.mojang.serialization.MapCodec;
 import mekanism.common.item.ItemConfigurator;
 import mekanism.common.item.ItemConfigurator.ConfiguratorMode;
 import mekanism.common.registries.MekanismDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -76,6 +79,31 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
      */
     public int amp() {
         return this.amp;
+    }
+
+    /**
+     * 仓室显示名：电压/安培 + 功能名；能源输出仓统一以「动力仓」结尾。
+     */
+    public MutableComponent displayName() {
+        if (this.partType == MultiblockPartType.STEAM_INPUT
+                || this.partType == MultiblockPartType.COKE_OVEN_HATCH) {
+            return Component.translatable("multiblock.meknh_core.part." + this.partType.id());
+        }
+        MutableComponent tier = MachineNames.gtTierName(this.level);
+        if (this.amp > 2) {
+            tier = Component.translatable("multiblock.meknh_core.amp", this.amp).append(tier);
+        }
+        return Component.translatable("multiblock.meknh_core.hatch",
+                tier,
+                Component.translatable("multiblock.meknh_core.part." + this.partType.id()));
+    }
+
+    /**
+     * 让方块名、物品名、Jade/GUI 标题使用同一套显示名。
+     */
+    @Override
+    public MutableComponent getName() {
+        return this.displayName();
     }
 
     @Override
