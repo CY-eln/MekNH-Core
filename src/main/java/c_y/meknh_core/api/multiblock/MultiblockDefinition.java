@@ -21,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
  *   "time": 200,
  *   "energy": 1.0,
  *   "结构": [
- *     ["aaa", "a@a", "aaa"],
- *     ["aaa", "aHa", "aaa"]
+ *     ["aaa", "aHa", "aaa"],
+ *     ["aaa", "a@a", "aaa"]
  *   ],
  *   "组成": {
  *     "a": "meknh_core:lv_machine_casing",
