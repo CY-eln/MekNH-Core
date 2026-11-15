@@ -17,7 +17,12 @@ public final class DropperInteraction {
 
     public static boolean isDropper() {
         Minecraft minecraft = Minecraft.getInstance();
-        return minecraft.player != null && isDropper(minecraft.player.containerMenu.getCarried());
+        if (minecraft.player == null) {
+            return false;
+        }
+        return isDropper(minecraft.player.containerMenu.getCarried())
+                || isDropper(minecraft.player.getMainHandItem())
+                || isDropper(minecraft.player.getOffhandItem());
     }
 
     public static boolean isDropper(ItemStack stack) {

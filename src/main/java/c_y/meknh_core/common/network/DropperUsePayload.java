@@ -53,7 +53,13 @@ public record DropperUsePayload(BlockPos pos, int action, int tankType, int tank
                 return;
             }
             ItemStack carried = player.containerMenu.getCarried();
-            if (carried.isEmpty() || !(carried.getItem() instanceof ItemGaugeDropper)) {
+            if (!isDropper(carried)) {
+                carried = player.getMainHandItem();
+            }
+            if (!isDropper(carried)) {
+                carried = player.getOffhandItem();
+            }
+            if (!isDropper(carried)) {
                 return;
             }
             BlockEntity be = player.level().getBlockEntity(payload.pos);
@@ -151,8 +157,15 @@ public record DropperUsePayload(BlockPos pos, int action, int tankType, int tank
         }
     }
 
+    private static boolean isDropper(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() instanceof ItemGaugeDropper;
+    }
+
     private static void syncCarried(ServerPlayer player) {
         ItemStack carried = player.containerMenu.getCarried();
         net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, new CarriedItemPayload(carried));
+        // 滴管也可能在主手/副手，同步背包与容器。
+        player.getInventory().setChanged();
+        player.containerMenu.broadcastChanges();
     }
 }
