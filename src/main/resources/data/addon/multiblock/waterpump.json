@@ -17,19 +17,15 @@
       ".A."
     ],
     [
-      "CaC",
+      "C@C",
       ".A.",
       ".A."
     ]
   ],
   "组成": {
-    "A": [
-      "meknh_core:treated_wood_frame",
-      "meknh_core:treated_wood_frame"
-    ],
+    "A": "meknh_core:treated_wood_frame",
     "C": "meknh_core:pump_deck",
-    "B": "meknh_core:pump_hatch",
-    "a": "controller"
+    "B": "meknh_core:pump_hatch"
   },
   "导入说明": "仅静态几何模板，不是已解析材料的游戏蓝图。gtnh_unresolved 是占位标签；需在工坊替换真实材料。可提取的局部Java材料表达式保存在gtnhSource中，完整成型规则仍以源码为准；编辑不会自动重算这些表达式。",
   "gtnhSource": {

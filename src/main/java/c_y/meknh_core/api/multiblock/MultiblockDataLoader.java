@@ -41,7 +41,6 @@ public final class MultiblockDataLoader {
     public static int loadFromMods() {
         java.util.List<MultiblockDefinition> definitions = new java.util.ArrayList<>();
         java.util.List<ControllerBindingPlan.Request> requests = new java.util.ArrayList<>();
-        java.util.List<String> errors = new java.util.ArrayList<>();
         for (IModFileInfo info : ModList.get().getModFiles()) {
             IModFile modFile = info.getFile();
             Path directory = modFile.getSecureJar().getRootPath().resolve(DATA_ROOT)
@@ -54,7 +53,9 @@ public final class MultiblockDataLoader {
                         String name = file.getFileName().toString();
                         ResourceLocation fileId = ResourceLocation.tryBuild(MekNHCore.MODID,
                                 name.substring(0, name.length() - JSON_SUFFIX.length()));
-                        if (fileId == null) throw new IllegalArgumentException("Invalid definition filename ResourceLocation: " + name);
+                        if (fileId == null) {
+                            throw new IllegalArgumentException("Invalid definition filename ResourceLocation: " + name);
+                        }
                         JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                         MultiblockDefinition definition = MultiblockDefinition.parse(fileId, json);
                         String controller = null;
@@ -72,24 +73,22 @@ public final class MultiblockDataLoader {
                         requests.add(new ControllerBindingPlan.Request(definition.id().toString(), definition.noVoltage(),
                                 controller, MultiblockRegistration.generatedControllerIds(definition)));
                     } catch (IOException | RuntimeException e) {
-                        errors.add(file + ": " + e.getMessage());
+                        // 单个第三方定义坏了就跳过，不能让它阻止整个游戏启动。
+                        LOGGER.error("Skipping invalid multiblock definition {}: {}", file, e.toString());
                     }
                 }
             } catch (IOException e) {
-                errors.add(modFile.getFileName() + ": " + e.getMessage());
+                LOGGER.error("Failed to scan multiblock directory in {}: {}", modFile.getFileName(), e.toString());
             }
         }
-        // Fail closed: no registry writes (including legacy fallback) after any invalid explicit declaration.
-        java.util.Map<String, String> plan = null;
+        // 绑定预检失败时退回“全部按普通多方块注册”，避免一个冲突/坏显式声明导致启动崩溃。
+        java.util.Map<String, String> plan = java.util.Map.of();
         try {
             plan = ControllerBindingPlan.plan(requests, MultiblockRegistration.controllerCandidates(),
                     MultiblockRegistration.reservedControllerBlockIds());
         } catch (IllegalArgumentException e) {
-            errors.add(e.getMessage());
-        }
-        if (!errors.isEmpty()) {
-            java.util.Collections.sort(errors);
-            throw new IllegalArgumentException("Multiblock preflight failed before registration: " + String.join("; ", errors));
+            LOGGER.error("Multiblock controller binding preflight failed; external bindings disabled: {}",
+                    e.getMessage());
         }
         MultiblockRegistration.applyControllerPlan(plan);
         definitions.sort(java.util.Comparator.comparing(d -> d.id().toString()));
