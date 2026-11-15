@@ -1,4 +1,4 @@
-# Mekanism NH（MekNH Core）
+# Mekanism：New Horizon Core（MekNH Core）
 
 > ## ⚠️ 重要说明
 >
@@ -9,4 +9,4 @@
 > - 只有在该整合包环境中才会进行测试与问题修复；其它环境的崩溃、配方冲突、世界生成异常不在支持范围内。
 > - 如需在自己的整合包中使用，请自行验证并承担相应风险。
 
-Mekanism NH 是 Mekanism：New Horizon 整合包的核心模组。
+MekNH Core 是 Mekanism：New Horizon 整合包的核心模组。

@@ -210,7 +210,7 @@ public final class MultiblockStructure {
             throw new IllegalArgumentException("Multiblock " + id + ": '结构' must not be empty");
         }
 
-        // 外层 [] = 深度 z（第一个是正面，往后是背面）；内层字符串 = 高度 y（第一个是底层）。
+        // 外层 [] = 深度 z（第一个是背面，最后一个是正面）；内层字符串 = 高度 y（第一个是底层）。
         int sizeZ = slices.size();
         int sizeY = slices.getFirst().size();
         int sizeX = 0;
@@ -389,7 +389,7 @@ public final class MultiblockStructure {
     /**
      * 读取结构为“深度切片”列表。
      *
-     * <p>外层 {@code []} 是深度 z：第一个是正面；内层字符串是高度 y：第一个是底层。
+     * <p>外层 {@code []} 是深度 z：第一个是背面，最后一个是正面；内层字符串是高度 y：第一个是底层。
      * 因此 JSON 的读取顺序是 {@code 结构[z][y][x]}。</p>
      */
     private static List<List<String>> readSlices(ResourceLocation id, JsonElement element) {
