@@ -11,6 +11,6 @@
   "组成": {
     "A": "meknh_core:treated_wood_frame",
     "C": "meknh_core:pump_deck",
-    "B": "part:pump_hatch"
+    "B": ["meknh_core:pump_deck",{"allow":"part:pump_hatch"}]
   }
 }

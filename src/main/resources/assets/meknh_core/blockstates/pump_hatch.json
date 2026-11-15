@@ -1,25 +1,48 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,formed=false,casing=0": {
       "model": "meknh_core:block/machine/pump_hatch"
     },
-    "facing=east": {
+    "facing=east,formed=false,casing=0": {
       "model": "meknh_core:block/machine/pump_hatch",
       "y": 90
     },
-    "facing=south": {
+    "facing=south,formed=false,casing=0": {
       "model": "meknh_core:block/machine/pump_hatch",
       "y": 180
     },
-    "facing=west": {
+    "facing=west,formed=false,casing=0": {
       "model": "meknh_core:block/machine/pump_hatch",
       "y": 270
     },
-    "facing=up": {
+    "facing=up,formed=false,casing=0": {
       "model": "meknh_core:block/machine/pump_hatch",
       "x": 90
     },
-    "facing=down": {
+    "facing=down,formed=false,casing=0": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "x": 270
+    },
+    "facing=north,formed=true,casing=0": {
+      "model": "meknh_core:block/machine/pump_hatch"
+    },
+    "facing=east,formed=true,casing=0": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "y": 90
+    },
+    "facing=south,formed=true,casing=0": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "y": 180
+    },
+    "facing=west,formed=true,casing=0": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "y": 270
+    },
+    "facing=up,formed=true,casing=0": {
+      "model": "meknh_core:block/machine/pump_hatch",
+      "x": 90
+    },
+    "facing=down,formed=true,casing=0": {
       "model": "meknh_core:block/machine/pump_hatch",
       "x": 270
     }

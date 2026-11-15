@@ -272,6 +272,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     @Override
     public void linkController(BlockPos controllerPos) {
         this.controllerPos = controllerPos.immutable();
+        this.updateFormedAppearance(true);
         this.setChanged();
     }
 
@@ -279,8 +280,59 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     public void unlinkController(BlockPos controllerPos) {
         if (controllerPos.equals(this.controllerPos)) {
             this.controllerPos = null;
+            this.updateFormedAppearance(false);
             this.setChanged();
         }
+    }
+
+    /**
+     * 结构成型时把仓室外壳切换成控制器等级的外壳贴图；水泵仓同时把覆盖层转到上方。
+     */
+    private void updateFormedAppearance(boolean formed) {
+        if (this.level == null || this.level.isClientSide) {
+            return;
+        }
+        BlockState state = this.getBlockState();
+        if (!state.hasProperty(MultiblockPartBlock.FORMED)) {
+            return;
+        }
+        if (this.partType == MultiblockPartType.PUMP_HATCH) {
+            if (formed && state.getValue(MultiblockPartBlock.FACING) != Direction.UP) {
+                this.level.setBlock(this.worldPosition,
+                        state.setValue(MultiblockPartBlock.FACING, Direction.UP),
+                        net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+            return;
+        }
+        if (!formed) {
+            if (state.getValue(MultiblockPartBlock.FORMED) || state.getValue(MultiblockPartBlock.CASING) != 0) {
+                this.level.setBlock(this.worldPosition,
+                        state.setValue(MultiblockPartBlock.FORMED, false)
+                                .setValue(MultiblockPartBlock.CASING, 0),
+                        net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+            return;
+        }
+        if (this.controllerPos == null
+                || !(this.level.getBlockEntity(this.controllerPos) instanceof MultiblockControllerBlockEntity controller)
+                || controller.definition().noVoltage()) {
+            return;
+        }
+        int casing = casingIndex(controller.level());
+        if (state.getValue(MultiblockPartBlock.FORMED) && state.getValue(MultiblockPartBlock.CASING) == casing) {
+            return;
+        }
+        this.level.setBlock(this.worldPosition,
+                state.setValue(MultiblockPartBlock.FORMED, true)
+                        .setValue(MultiblockPartBlock.CASING, casing),
+                net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+    }
+
+    private static int casingIndex(MachineLevel level) {
+        if (level.isSteam()) {
+            return level.steam() == c_y.meknh_core.common.machine.steam.SteamVariant.HIGH ? 2 : 1;
+        }
+        return 2 + level.voltage().level();
     }
 
     @Override

@@ -6,6 +6,7 @@ import c_y.meknh_core.api.machine.MachineVariant;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import c_y.meknh_core.api.multiblock.MultiblockVariant;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
+import c_y.meknh_core.common.data.voltage.VoltageTier;
 import c_y.meknh_core.common.machine.steam.SteamVariant;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -129,10 +130,16 @@ public final class MachineModelResources {
             }
             String path = part.id().getPath();
             String model = "meknh_core:block/multiblock/part/" + path;
-            put(resources, "blockstates/" + path + ".json", facingPartBlockstate(model));
+            put(resources, "blockstates/" + path + ".json", facingPartBlockstate(path, model));
             put(resources, "models/block/multiblock/part/" + path + ".json",
                     partModel(partCasingTexture(part.level(), part.type()), partVisual(part.type(), part.amp()),
                             part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH));
+            // 结构成型后的外壳贴图：按控制器等级生成 7 套外壳模型。
+            for (int casing = 1; casing <= 7; casing++) {
+                put(resources, "models/block/multiblock/part/" + path + "_formed_" + casing + ".json",
+                        partModel(casingTexture(casing), partVisual(part.type(), part.amp()),
+                                part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.COKE_OVEN_HATCH));
+            }
             put(resources, "models/item/" + path + ".json", parentItemModel(model));
         }
 
@@ -215,25 +222,34 @@ public final class MachineModelResources {
     }
 
     /**
-     * 仓室 blockstate：6 个朝向共用一个「北面带覆盖层」的模型，按朝向旋转。
+     * 仓室 blockstate：未成型用自身外壳，成型后按控制器等级切换外壳贴图。
      *
      * <p>旋转取值与 Mek 的 {@code basic_energy_cube.json} 一致：
      * 北 0、东 y=90、南 y=180、西 y=270、上 x=-90、下 x=90。</p>
      */
-    private static JsonObject facingPartBlockstate(String model) {
+    private static JsonObject facingPartBlockstate(String path, String model) {
         JsonObject blockstate = new JsonObject();
         JsonObject variants = new JsonObject();
-        partVariant(variants, model, "north", 0, 0);
-        partVariant(variants, model, "east", 0, 90);
-        partVariant(variants, model, "south", 0, 180);
-        partVariant(variants, model, "west", 0, 270);
-        partVariant(variants, model, "up", -90, 0);
-        partVariant(variants, model, "down", 90, 0);
+        String[] facings = {"north", "east", "south", "west", "up", "down"};
+        int[][] rotations = {{0, 0}, {0, 90}, {0, 180}, {0, 270}, {-90, 0}, {90, 0}};
+        for (int index = 0; index < facings.length; index++) {
+            String facing = facings[index];
+            int x = rotations[index][0];
+            int y = rotations[index][1];
+            partVariant(variants, model, facing, x, y,
+                    "facing=" + facing + ",formed=false,casing=0");
+            partVariant(variants, model, facing, x, y,
+                    "facing=" + facing + ",formed=true,casing=0");
+            for (int casing = 1; casing <= 7; casing++) {
+                partVariant(variants, "meknh_core:block/multiblock/part/" + path + "_formed_" + casing,
+                        facing, x, y, "facing=" + facing + ",formed=true,casing=" + casing);
+            }
+        }
         blockstate.add("variants", variants);
         return blockstate;
     }
 
-    private static void partVariant(JsonObject variants, String model, String facing, int x, int y) {
+    private static void partVariant(JsonObject variants, String model, String facing, int x, int y, String key) {
         JsonObject entry = new JsonObject();
         entry.addProperty("model", model);
         if (x != 0) {
@@ -242,7 +258,7 @@ public final class MachineModelResources {
         if (y != 0) {
             entry.addProperty("y", y);
         }
-        variants.add("facing=" + facing, entry);
+        variants.add(key, entry);
     }
 
     /**
@@ -396,6 +412,17 @@ public final class MachineModelResources {
             case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted", false);
             case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted", false);
         };
+    }
+
+    private static String casingTexture(int casing) {
+        if (casing == 1) {
+            return "meknh_core:block/casings/steam/bricked_bronze";
+        }
+        if (casing == 2) {
+            return "meknh_core:block/casings/steam/bricked_steel";
+        }
+        int tier = Math.max(1, Math.min(5, casing - 2));
+        return "meknh_core:block/casings/voltage/" + VoltageTier.ELECTRIC.get(tier - 1).getSerializedName();
     }
 
     private static String casingTexture(MachineLevel level) {
