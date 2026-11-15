@@ -376,7 +376,9 @@ public final class MachineModelResources {
         String base = "meknh_core:block/overlay/machine/";
         String ringIn = base + "overlay_pipe_in_emissive";
         String ringOut = base + "overlay_pipe_out_emissive";
-        String energy = "overlay_energy_" + amp + "a_";
+        // 2A 是基础能源仓，统一使用 1A 覆盖层；2A 覆盖层已弃用。
+        int visualAmp = amp == 2 ? 1 : amp;
+        String energy = "overlay_energy_" + visualAmp + "a_";
         return switch (type) {
             case ITEM_INPUT -> new PartVisual(base + "overlay_item_hatch_input", ringIn, null, true);
             case ITEM_OUTPUT -> new PartVisual(base + "overlay_item_hatch_output", ringOut, null, true);
