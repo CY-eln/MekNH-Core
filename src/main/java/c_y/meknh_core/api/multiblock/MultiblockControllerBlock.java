@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import mekanism.common.item.ItemGaugeDropper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -137,6 +138,10 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
                                                                  BlockPos pos, Player player,
                                                                  net.minecraft.world.InteractionHand hand,
                                                                  BlockHitResult hit) {
+        // 滴管只走仓室/机器 GUI 的统一交互，避免原版 FluidUtil 抢先右键取走或清空。
+        if (stack.getItem() instanceof ItemGaugeDropper) {
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
         if (level.getBlockEntity(pos) instanceof BucketFluidController buckets
                 && net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(
                         player, hand, buckets.bucketFluidHandler())) {

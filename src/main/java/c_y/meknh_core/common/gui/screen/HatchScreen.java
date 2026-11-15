@@ -147,6 +147,24 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
         }
 
         @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (c_y.meknh_core.common.gui.element.DropperInteraction.isDropper()) {
+                int kind = this.menu.data(HatchMenu.DATA_KIND);
+                int tankType = kind == HatchMenu.KIND_CHEMICAL
+                        || (kind == HatchMenu.KIND_EMPTY
+                        && this.menu.partType() == c_y.meknh_core.api.multiblock.MultiblockPartType.STEAM_INPUT)
+                        ? c_y.meknh_core.common.network.DropperUsePayload.TANK_CHEMICAL
+                        : c_y.meknh_core.common.network.DropperUsePayload.TANK_FLUID;
+                c_y.meknh_core.common.gui.element.DropperInteraction.click(
+                        this.menu.blockPos(), tankType, 0, button,
+                        net.minecraft.client.gui.screens.Screen.hasShiftDown());
+                // 无论手持滴管是否有对应动作，都吞掉，避免 Mek 原版 Gauge 再执行右键取走/清空。
+                return true;
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
         public int getScaledLevel() {
             long stored = this.menu.stored();
             long capacity = this.menu.capacity();
