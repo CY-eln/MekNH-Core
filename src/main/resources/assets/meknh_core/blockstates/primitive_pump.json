@@ -1,19 +1,23 @@
 {
   "variants": {
     "facing=north": {
-      "model": "meknh_core:block/machine/primitive_pump"
+      "model": "meknh_core:block/machine/primitive_pump",
+      "uvlock": true
     },
     "facing=east": {
       "model": "meknh_core:block/machine/primitive_pump",
-      "y": 90
+      "y": 90,
+      "uvlock": true
     },
     "facing=south": {
       "model": "meknh_core:block/machine/primitive_pump",
-      "y": 180
+      "y": 180,
+      "uvlock": true
     },
     "facing=west": {
       "model": "meknh_core:block/machine/primitive_pump",
-      "y": 270
+      "y": 270,
+      "uvlock": true
     }
   }
 }

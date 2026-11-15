@@ -212,6 +212,7 @@ public final class MachineModelResources {
         for (String facing : FACINGS) {
             JsonObject entry = new JsonObject();
             entry.addProperty("model", model);
+            entry.addProperty("uvlock", true);
             variants.add("facing=" + facing, entry);
         }
         blockstate.add("variants", variants);
