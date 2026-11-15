@@ -77,7 +77,8 @@ public final class MultiblockRegistration {
                             c_y.meknh_core.common.gui.menu.HatchMenu::new,
                     net.minecraft.world.flag.FeatureFlags.VANILLA_SET));
 
-    private record ControllerBinding(DeferredBlock<MultiblockControllerBlock> block, DeferredItem<?> item) {}
+    private record ControllerBinding(DeferredBlock<? extends net.minecraft.world.level.block.Block> block,
+                                     DeferredItem<?> item) {}
     private static final Map<ResourceLocation, ControllerBinding> EXTERNAL_CONTROLLERS = new HashMap<>();
 
     private static final Map<ResourceLocation, ControllerBinding> CONTROLLER_CANDIDATES = new LinkedHashMap<>();
@@ -86,7 +87,7 @@ public final class MultiblockRegistration {
 
     /** Catalog only: getId is safe before registry events, unlike holder.get(). */
     public static synchronized void registerControllerCandidate(ResourceLocation fallbackId,
-            DeferredBlock<MultiblockControllerBlock> block, DeferredItem<?> item) {
+            DeferredBlock<? extends net.minecraft.world.level.block.Block> block, DeferredItem<?> item) {
         ResourceLocation blockId = block.getId();
         if (CONTROLLER_CANDIDATES.putIfAbsent(blockId, new ControllerBinding(block, item)) != null) {
             throw new IllegalStateException("Duplicate controller candidate: " + blockId);
@@ -256,7 +257,10 @@ public final class MultiblockRegistration {
         List<Map.Entry<MachineLevel, DeferredBlock<MultiblockControllerBlock>>> blocks = new ArrayList<>();
         for (MachineLevel level : definition.levels()) {
             if (binding != null) {
-                blocks.add(Map.entry(level, binding.block()));
+                @SuppressWarnings("unchecked")
+                DeferredBlock<MultiblockControllerBlock> externalBlock =
+                        (DeferredBlock<MultiblockControllerBlock>) binding.block();
+                blocks.add(Map.entry(level, externalBlock));
                 continue;
             }
             String path = definition.noVoltage()

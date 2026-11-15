@@ -4,7 +4,8 @@ import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.common.casing.FireboxCasingBlock;
 import c_y.meknh_core.common.casing.PumpFacingBlock;
 import c_y.meknh_core.common.casing.PrimitivePumpControllerBlock;
-import c_y.meknh_core.api.multiblock.MultiblockControllerBlock;
+import c_y.meknh_core.api.multiblock.MultiblockRegistration;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Block;
@@ -53,9 +54,15 @@ public final class CasingRegistration {
             ITEMS.registerItem("bronze_firebox_casing",
                     properties -> new BlockItem(BRONZE_FIREBOX_CASING.get(), properties));
 
-    // 与 GTCEu 对应的泵结构方块，仅注册方块与外观。
-    public static final DeferredBlock<MultiblockControllerBlock> PRIMITIVE_PUMP = BLOCKS.register("primitive_pump",
-            () -> new PrimitivePumpControllerBlock(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
+    /** 与 GTCEu 对应的泵结构方块，仅注册方块与外观。 */
+    public static final ResourceLocation PRIMITIVE_PUMP_ID = MekNHCore.rl("primitive_pump");
+
+    public static final DeferredBlock<Block> PRIMITIVE_PUMP = BLOCKS.register("primitive_pump",
+            () -> MultiblockRegistration.controllerDefinition(PRIMITIVE_PUMP_ID) != null
+                    ? new PrimitivePumpControllerBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F, 3.0F).sound(SoundType.WOOD))
+                    : new PumpFacingBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F, 3.0F).sound(SoundType.WOOD)));
     public static final DeferredBlock<Block> PUMP_DECK = BLOCKS.register("pump_deck",
             () -> new Block(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
     public static final DeferredBlock<Block> TREATED_WOOD_FRAME = BLOCKS.register("treated_wood_frame",

@@ -20,19 +20,9 @@ public final class PrimitivePumpControllerBlock extends MultiblockControllerBloc
     }
 
     private static MultiblockDefinition definitionRequired() {
-        MultiblockDefinition selected = MultiblockRegistration.controllerDefinition(BLOCK_ID);
-        if (selected != null) {
-            return selected;
-        }
-        // 绑定预检失败时仍允许方块注册：优先找水泵定义，再退回任意已加载定义。
-        MultiblockDefinition fallback = MultiblockRegistration.definition(STRUCTURE_ID);
-        if (fallback != null) {
-            MekNHCore.LOGGER.warn("primitive_pump is not explicitly bound; falling back to {}", STRUCTURE_ID);
-            return fallback;
-        }
-        return MultiblockRegistration.definitions().stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "primitive_pump has no multiblock definition; add waterpump.json or remove the block"));
+        // 只有绑定预检选中 primitive_pump 时 CasingRegistration 才会构造这个类。
+        return java.util.Objects.requireNonNull(MultiblockRegistration.controllerDefinition(BLOCK_ID),
+                "Missing selected controller definition for block: " + BLOCK_ID);
     }
 
     @Override
