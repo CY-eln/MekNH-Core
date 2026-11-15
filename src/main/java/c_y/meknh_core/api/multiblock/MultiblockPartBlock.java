@@ -86,7 +86,8 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
      */
     public MutableComponent displayName() {
         if (this.partType == MultiblockPartType.STEAM_INPUT
-                || this.partType == MultiblockPartType.COKE_OVEN_HATCH) {
+                || this.partType == MultiblockPartType.COKE_OVEN_HATCH
+                || this.partType == MultiblockPartType.PUMP_HATCH) {
             return Component.translatable("multiblock.meknh_core.part." + this.partType.id());
         }
         MutableComponent tier = MachineNames.gtTierName(this.level);

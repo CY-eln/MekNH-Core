@@ -109,8 +109,7 @@ public final class MultiblockRegistration {
                 c_y.meknh_core.api.casing.CasingRegistration.BRONZE_FIREBOX_CASING,
                 c_y.meknh_core.api.casing.CasingRegistration.PRIMITIVE_PUMP,
                 c_y.meknh_core.api.casing.CasingRegistration.PUMP_DECK,
-                c_y.meknh_core.api.casing.CasingRegistration.TREATED_WOOD_FRAME,
-                c_y.meknh_core.api.casing.CasingRegistration.PUMP_HATCH);
+                c_y.meknh_core.api.casing.CasingRegistration.TREATED_WOOD_FRAME);
         casing.forEach(holder -> ids.add(holder.getId().toString()));
         return java.util.Set.copyOf(ids);
     }
@@ -318,7 +317,8 @@ public final class MultiblockRegistration {
      */
     private static void registerHatches() {
         for (MultiblockPartType type : MultiblockPartType.values()) {
-            if (type == MultiblockPartType.STEAM_INPUT || type == MultiblockPartType.COKE_OVEN_HATCH) {
+            if (type == MultiblockPartType.STEAM_INPUT || type == MultiblockPartType.COKE_OVEN_HATCH
+                    || type == MultiblockPartType.PUMP_HATCH) {
                 continue;
             }
             // 能量仓只有电力版本；物品/流体仓额外提供 ULV（蒸汽）版本。
@@ -369,6 +369,7 @@ public final class MultiblockRegistration {
         }
         registerSteamHatch();
         registerCokeOvenHatch();
+        registerPumpHatch();
     }
 
     /**
@@ -457,6 +458,41 @@ public final class MultiblockRegistration {
     }
 
     /**
+     * 水泵仓：固定 1000 mB 的专用输出仓，GUI 与普通输出仓一致。
+     */
+    private static void registerPumpHatch() {
+        MachineLevel level = MachineLevel.steam(SteamVariant.LOW);
+        String path = "pump_hatch";
+        DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
+                path,
+                properties -> new MultiblockPartBlock(properties, MultiblockPartType.PUMP_HATCH, level),
+                BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+        );
+        DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
+                path,
+                properties -> new MultiblockBlockItem(block.get(), properties)
+        );
+        ALL_ITEMS.add(item);
+        PART_BLOCK_INFOS.add(new PartBlockInfo(block.getId(), level, MultiblockPartType.PUMP_HATCH, 2));
+        PART_BLOCK_HOLDERS.put(MultiblockPartType.PUMP_HATCH, List.of(block));
+
+        DeferredHolder<BlockEntityType<?>, BlockEntityType<MultiblockPartBlockEntity>> holder =
+                BLOCK_ENTITIES.register("pump_hatch", () -> BlockEntityType.Builder.of(
+                        (pos, state) -> {
+                            if (state.getBlock() instanceof MultiblockPartBlock part) {
+                                return new MultiblockPartBlockEntity(
+                                        getPartBlockEntityType(MultiblockPartType.PUMP_HATCH), pos, state,
+                                        part.partType(), part.level());
+                            }
+                            throw new IllegalStateException("Block " + state.getBlock()
+                                    + " is not a pump hatch");
+                        },
+                        block.get()
+                ).build(null));
+        PART_TYPES.add(new PartTypeEntry(MultiblockPartType.PUMP_HATCH, holder));
+    }
+
+    /**
      * 兜底：方块注册完成后填充「方块 → 功能类型 / 控制器版本」反查表。
      *
      * <p>不依赖 {@code RegisterEvent} 的监听器顺序：第一次查询时再建表，
@@ -497,7 +533,7 @@ public final class MultiblockRegistration {
                         net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
                         type,
                         (blockEntity, side) -> blockEntity.externalItemHandler());
-                case FLUID_INPUT, FLUID_OUTPUT -> {
+                case FLUID_INPUT, FLUID_OUTPUT, PUMP_HATCH -> {
                     event.registerBlockEntity(
                             net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
                             type,

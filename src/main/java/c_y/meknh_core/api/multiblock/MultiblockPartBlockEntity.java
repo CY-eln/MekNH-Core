@@ -162,6 +162,14 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                 this.energyStorage = new HatchEnergyStorage(energyCapacity(this.machineLevel, this.amp), false, true, this::setChanged);
                 this.strictEnergyHandler = this.energyStorage.strictHandler();
             }
+            case PUMP_HATCH -> {
+                // 水泵仓：固定 1000 mB 的专用输出仓，GUI 与普通流体输出仓一致。
+                this.createMekSlot(1_000);
+                this.items = new MachineItemHandler(limits(1), limits(1), this::setChanged);
+                this.externalFluidHandler = new DirectionalFluidHandler(this.fluidTank, false, true);
+                this.externalChemicalHandler = new c_y.meknh_core.common.machine.config.SidedChemicalHandler(
+                        new CombinedChemicalHandler(this.chemicalTank), false, true);
+            }
             case COKE_OVEN_HATCH -> {
                 // 焦炉仓本身没有容器，全部代理焦炉控制器的输入/输出槽与输出罐。
                 this.externalItemHandler = new ControllerItemProxy(this);
@@ -216,7 +224,10 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
      * 控制器把两个罐都当作输入/输出源，因此配方写流体或化学品都能匹配。</p>
      */
     private void createMekSlot(MachineLevel level) {
-        int capacity = (int) Math.min(Integer.MAX_VALUE, fluidCapacity(level));
+        this.createMekSlot((int) Math.min(Integer.MAX_VALUE, fluidCapacity(level)));
+    }
+
+    private void createMekSlot(int capacity) {
         this.fluidTank = new FluidTank(capacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
@@ -333,6 +344,10 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
      * 覆盖层所在面：输出仓是弹出口，输入仓是吸入口；没有该属性时退回北面。
      */
     public Direction ioFace() {
+        // 水泵仓成型后固定从上方弹出，不依赖方块朝向。
+        if (this.partType == MultiblockPartType.PUMP_HATCH && this.controllerPos != null) {
+            return Direction.UP;
+        }
         BlockState state = this.getBlockState();
         return state.hasProperty(MultiblockPartBlock.FACING)
                 ? state.getValue(MultiblockPartBlock.FACING)
@@ -407,6 +422,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
             case STEAM_INPUT -> this.pullChemical(face, target);
             case ENERGY_INPUT -> this.pullEnergy(face, target);
             case ENERGY_OUTPUT -> this.ejectEnergy(face, target);
+            case PUMP_HATCH -> this.ejectFluid(face, target);
             // 焦炉仓没有自动搬运（GT 里也是靠相邻管道/漏斗）。
             case COKE_OVEN_HATCH -> {
             }
@@ -712,7 +728,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         return switch (this.partType) {
             case ITEM_INPUT -> this.insertHeldItem(player);
             case ITEM_OUTPUT -> this.takeOutputItem(player);
-            case FLUID_INPUT, FLUID_OUTPUT -> this.externalFluidHandler != null
+            case FLUID_INPUT, FLUID_OUTPUT, PUMP_HATCH -> this.externalFluidHandler != null
                     && FluidUtil.interactWithFluidHandler(player, InteractionHand.MAIN_HAND, this.externalFluidHandler);
             default -> false;
         };
@@ -828,7 +844,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     private void resizeItems() {
         int expected = switch (this.partType) {
             case ITEM_INPUT, ITEM_OUTPUT -> itemSlots(this.machineLevel);
-            case FLUID_INPUT, FLUID_OUTPUT, STEAM_INPUT, ENERGY_INPUT, ENERGY_OUTPUT -> 2;
+            case FLUID_INPUT, FLUID_OUTPUT, STEAM_INPUT, ENERGY_INPUT, ENERGY_OUTPUT, PUMP_HATCH -> 2;
             // 焦炉仓没有自己的槽位，全部代理控制器。
             case COKE_OVEN_HATCH -> 0;
         };

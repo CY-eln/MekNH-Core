@@ -49,6 +49,9 @@ public final class RuntimeLootTables {
             paths.add(variant.path());
         }
         for (MultiblockRegistration.PartBlockInfo part : MultiblockRegistration.partBlockInfos()) {
+            if (part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.PUMP_HATCH) {
+                continue;
+            }
             paths.add(part.id().getPath());
         }
         for (BoilerRegistration.Variant variant : BoilerRegistration.variants()) {

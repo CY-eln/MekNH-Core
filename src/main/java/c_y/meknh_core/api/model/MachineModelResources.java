@@ -123,6 +123,10 @@ public final class MachineModelResources {
         }
         // 仓室：电压外壳 + 正面功能覆盖层（物品/流体/能量），按朝向旋转。
         for (MultiblockRegistration.PartBlockInfo part : MultiblockRegistration.partBlockInfos()) {
+            // 水泵仓自带静态 blockstate/model，避免运行时生成覆盖掉多层贴图。
+            if (part.type() == c_y.meknh_core.api.multiblock.MultiblockPartType.PUMP_HATCH) {
+                continue;
+            }
             String path = part.id().getPath();
             String model = "meknh_core:block/multiblock/part/" + path;
             put(resources, "blockstates/" + path + ".json", facingPartBlockstate(model));
@@ -387,6 +391,7 @@ public final class MachineModelResources {
             case FLUID_INPUT -> new PartVisual(base + "overlay_fluid_hatch_input", ringIn, null, true);
             case FLUID_OUTPUT -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null, true);
             case STEAM_INPUT -> new PartVisual("meknh_core:block/cover/pump", null, null, false);
+            case PUMP_HATCH -> new PartVisual(base + "overlay_fluid_hatch_output", ringOut, null, true);
             case COKE_OVEN_HATCH -> new PartVisual(base + "overlay_hatch", null, null, false);
             case ENERGY_INPUT -> new PartVisual(base + energy + "in", base + energy + "in_emissive", base + energy + "tinted", false);
             case ENERGY_OUTPUT -> new PartVisual(base + energy + "out", base + energy + "out_emissive", base + energy + "tinted", false);

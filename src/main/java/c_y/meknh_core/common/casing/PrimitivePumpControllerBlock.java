@@ -4,10 +4,15 @@ import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.api.multiblock.MultiblockControllerBlock;
 import c_y.meknh_core.api.multiblock.MultiblockDefinition;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 /** Existing primitive_pump ID and visuals with real structure checking, but no water production. */
 public final class PrimitivePumpControllerBlock extends MultiblockControllerBlock {
@@ -23,6 +28,13 @@ public final class PrimitivePumpControllerBlock extends MultiblockControllerBloc
         // 只有绑定预检选中 primitive_pump 时 CasingRegistration 才会构造这个类。
         return java.util.Objects.requireNonNull(MultiblockRegistration.controllerDefinition(BLOCK_ID),
                 "Missing selected controller definition for block: " + BLOCK_ID);
+    }
+
+    @Override
+    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                            BlockHitResult hit) {
+        // 原始水泵没有 GUI，也不在右键时刷结构提示文本。
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

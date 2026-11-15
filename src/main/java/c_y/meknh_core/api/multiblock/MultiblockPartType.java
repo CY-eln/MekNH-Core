@@ -33,6 +33,9 @@ public enum MultiblockPartType {
     /** 能量输出仓：预留给发电机类多方块，当前内核不主动输出。 */
     ENERGY_OUTPUT("energy_output", false, true),
 
+    /** 水泵仓：固定 1000 mB 的专用输出仓，成型后从上方弹出。 */
+    PUMP_HATCH("pump_hatch", false, true),
+
     /**
      * 焦炉仓：焦炉专属仓室，代理焦炉控制器的输入/输出槽与输出罐。
      * 没有 GUI、没有自动搬运，只靠漏斗/管道交互。

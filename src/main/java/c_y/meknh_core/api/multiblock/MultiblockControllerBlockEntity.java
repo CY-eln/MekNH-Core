@@ -644,7 +644,8 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
                 break;
             }
             if (part instanceof MultiblockPartBlockEntity partEntity
-                    && partEntity.partType() == MultiblockPartType.FLUID_OUTPUT
+                    && (partEntity.partType() == MultiblockPartType.FLUID_OUTPUT
+                    || partEntity.partType() == MultiblockPartType.PUMP_HATCH)
                     && partEntity.fluidTank() != null) {
                 int filled = partEntity.fluidTank().fill(
                         stack.copyWithAmount((int) Math.min(Integer.MAX_VALUE, remaining)), action);
