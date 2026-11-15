@@ -1,5 +1,8 @@
 package c_y.meknh_core.common.integration.jade;
 
+import c_y.meknh_core.api.machine.MachineBlockEntity;
+import c_y.meknh_core.api.multiblock.MultiblockPartBlockEntity;
+import c_y.meknh_core.common.coke.CokeOvenControllerBlockEntity;
 import c_y.meknh_core.common.generator.boiler.BoilerBlockEntity;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
@@ -18,5 +21,8 @@ public final class BoilerJadePlugin implements IWailaPlugin {
     @Override
     public void register(IWailaCommonRegistration registration) {
         registration.registerBlockDataProvider(BoilerJadeDataProvider.INSTANCE, BoilerBlockEntity.class);
+        registration.registerBlockDataProvider(MeknhTankJadeDataProvider.INSTANCE, MultiblockPartBlockEntity.class);
+        registration.registerBlockDataProvider(MeknhTankJadeDataProvider.INSTANCE, MachineBlockEntity.class);
+        registration.registerBlockDataProvider(MeknhTankJadeDataProvider.INSTANCE, CokeOvenControllerBlockEntity.class);
     }
 }
