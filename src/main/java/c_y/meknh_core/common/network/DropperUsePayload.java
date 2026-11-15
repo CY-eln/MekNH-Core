@@ -141,10 +141,7 @@ public record DropperUsePayload(BlockPos pos, int action, int tankType, int tank
                 break;
             }
             movedAny = true;
-            // 滴管单次传输上限可能小于容量；继续直到满或源空。
-            if (extracted.getAmount() < amount) {
-                break;
-            }
+            // 单次传输上限可能小于容量，继续循环。
         }
         if (movedAny) {
             syncCarried(player);
@@ -176,10 +173,7 @@ public record DropperUsePayload(BlockPos pos, int action, int tankType, int tank
                 break;
             }
             movedAny = true;
-            // 滴管单次传输上限可能小于容量；继续直到满或源空。
-            if (filled < accepted) {
-                break;
-            }
+            // 单次传输上限可能小于容量，继续循环。
         }
         if (movedAny) {
             syncCarried(player);
