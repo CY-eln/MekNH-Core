@@ -32,12 +32,16 @@ public final class DropperInteraction {
             return false;
         }
         int action;
-        if (shift) {
+        // 与 Mekanism 滴管一致：
+        // 左键：从槽位取走，尽量填满滴管；
+        // Shift+左键：清空槽位；
+        // 右键：把滴管内容倒回槽位。
+        if (shift && mouseButton == 0) {
             action = DropperUsePayload.ACTION_DUMP;
         } else if (mouseButton == 0) {
-            action = DropperUsePayload.ACTION_FILL;
-        } else if (mouseButton == 1) {
             action = DropperUsePayload.ACTION_DRAIN;
+        } else if (mouseButton == 1) {
+            action = DropperUsePayload.ACTION_FILL;
         } else {
             return false;
         }
