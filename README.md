@@ -1,4 +1,4 @@
-# Mekanism NH（MekNH Core）
+# Mekanism：New Horizon Core（MekNH Core）
 
 > ## ⚠️ 重要说明
 >
