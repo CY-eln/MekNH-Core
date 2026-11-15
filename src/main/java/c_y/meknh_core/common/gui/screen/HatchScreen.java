@@ -89,8 +89,31 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
         return "gui.meknh_core.hatch." + action + (this.menu.autoIo() ? ".on" : ".off");
     }
 
+    /**
+     * 宽罐的可点击区域；与 Mek 的 WIDE gauge 尺寸一致。
+     */
+    private boolean isOverTank(double mouseX, double mouseY) {
+        boolean energy = this.menu.partType() == c_y.meknh_core.api.multiblock.MultiblockPartType.ENERGY_INPUT
+                || this.menu.partType() == c_y.meknh_core.api.multiblock.MultiblockPartType.ENERGY_OUTPUT;
+        int x = this.leftPos + (energy ? GAUGE_X_ENERGY : GAUGE_X_FLUID);
+        int y = this.topPos + GAUGE_Y;
+        return mouseX >= x && mouseX < x + 64 && mouseY >= y && mouseY < y + 48;
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.isOverTank(mouseX, mouseY)) {
+            int kind = this.menu.data(HatchMenu.DATA_KIND);
+            int tankType = kind == HatchMenu.KIND_CHEMICAL
+                    || (kind == HatchMenu.KIND_EMPTY && this.menu.partType() == c_y.meknh_core.api.multiblock.MultiblockPartType.STEAM_INPUT)
+                    ? c_y.meknh_core.common.network.DropperUsePayload.TANK_CHEMICAL
+                    : c_y.meknh_core.common.network.DropperUsePayload.TANK_FLUID;
+            if (c_y.meknh_core.common.gui.element.DropperInteraction.click(
+                    this.menu.blockPos(), tankType, 0, button,
+                    net.minecraft.client.gui.screens.Screen.hasShiftDown())) {
+                return true;
+            }
+        }
         if (button == 0 && TabStrip.isOverAutoIo(mouseX, mouseY, this.leftPos, this.topPos)) {
             // 只发目标状态，服务端写回后由 ContainerData 同步，客户端不本地翻转。
             net.neoforged.neoforge.network.PacketDistributor.sendToServer(
@@ -178,8 +201,14 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
         @Override
         public List<Component> getTooltipText() {
             return switch (this.menu.data(HatchMenu.DATA_KIND)) {
-                case HatchMenu.KIND_ENERGY -> List.of(Component.translatable("gui.meknh_core.hatch.energy",
-                        EnergyText.shortFe(this.menu.stored()), EnergyText.shortFe(this.menu.capacity())));
+                case HatchMenu.KIND_ENERGY -> {
+                    if (this.menu.stored() <= 0L) {
+                        yield List.of(Component.translatable("gui.meknh_core.hatch.empty"));
+                    }
+                    yield List.of(Component.literal(
+                            EnergyText.shortFe(this.menu.stored()).getString() + " / "
+                                    + EnergyText.shortFe(this.menu.capacity()).getString()));
+                }
                 case HatchMenu.KIND_FLUID -> {
                     FluidStack fluid = this.menu.fluid();
                     if (fluid == null || fluid.isEmpty()) {

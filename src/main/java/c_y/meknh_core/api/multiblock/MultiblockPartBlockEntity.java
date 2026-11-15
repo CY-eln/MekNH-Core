@@ -3,6 +3,7 @@ package c_y.meknh_core.api.multiblock;
 import c_y.meknh_core.api.machine.CombinedChemicalHandler;
 import c_y.meknh_core.api.machine.MachineItemHandler;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
+import c_y.meknh_core.common.machine.DropperTankHolder;
 import java.util.List;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
@@ -45,7 +46,7 @@ import org.jetbrains.annotations.Nullable;
  * <p>控制器直接读取本对象的原始容器；对外暴露的能力则按输入/输出方向收窄。
  * 因此管道只能按仓室的方向工作，而控制器总能拿到完整的读写权限。</p>
  */
-public class MultiblockPartBlockEntity extends BlockEntity implements MultiblockPart {
+public class MultiblockPartBlockEntity extends BlockEntity implements MultiblockPart, DropperTankHolder {
 
     /**
      * 物品仓的槽位数。
@@ -283,6 +284,22 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
             this.updateFormedAppearance(false);
             this.setChanged();
         }
+    }
+
+    /**
+     * 滴管访问仓室内的非物品罐；按单罐（tank 0）处理。
+     */
+    @Override
+    @Nullable
+    public IFluidHandler dropperFluidHandler(int index) {
+        return index == 0 ? this.fluidTank : null;
+    }
+
+    @Override
+    @Nullable
+    public IChemicalHandler dropperChemicalHandler(int index) {
+        return index == 0 && this.chemicalTank != null
+                ? new CombinedChemicalHandler(this.chemicalTank) : null;
     }
 
     /**
