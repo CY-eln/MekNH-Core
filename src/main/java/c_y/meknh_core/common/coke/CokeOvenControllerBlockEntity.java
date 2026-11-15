@@ -7,7 +7,9 @@ import c_y.meknh_core.api.multiblock.MultiblockControllerGui;
 import c_y.meknh_core.api.multiblock.MultiblockDefinition;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
+import c_y.meknh_core.common.machine.DropperTankHolder;
 import java.util.List;
+import mekanism.api.chemical.IChemicalHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -29,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
  * {@code COKE_OVEN_HATCH}），所以管道/漏斗可以从仓室那一侧交互。</p>
  */
 public class CokeOvenControllerBlockEntity extends MultiblockControllerBlockEntity
-        implements MultiblockControllerGui, BucketFluidController {
+        implements MultiblockControllerGui, BucketFluidController, DropperTankHolder {
 
     /**
      * 杂酚油输出罐容量（mB），对齐 GT 的 32 B。
@@ -201,6 +203,21 @@ public class CokeOvenControllerBlockEntity extends MultiblockControllerBlockEnti
     @Override
     public IFluidHandler bucketFluidHandler() {
         return this.bucketTank;
+    }
+
+    /**
+     * 滴管交互：焦炉的杂酚油罐同时允许倒入和抽出。
+     */
+    @Override
+    @Nullable
+    public IFluidHandler dropperFluidHandler(int index) {
+        return index == 0 ? this.tank : null;
+    }
+
+    @Override
+    @Nullable
+    public IChemicalHandler dropperChemicalHandler(int index) {
+        return null;
     }
 
     @Override

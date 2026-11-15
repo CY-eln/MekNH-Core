@@ -765,7 +765,11 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     public void setRemoved() {
         super.setRemoved();
         Level world = this.getLevel();
+        // 不能在这里调用 getBlockEntity：区块卸载/世界保存时它可能加载控制器所在区块，
+        // 与 ChunkMap 的保存锁互相等待，表现为“卡在保存世界中”。
+        // 只对已加载的控制器做立即失效；未加载的控制器会在重新加载时自行复检。
         if (this.controllerPos != null && world != null && !world.isClientSide
+                && world.isLoaded(this.controllerPos)
                 && world.getBlockEntity(this.controllerPos) instanceof MultiblockControllerBlockEntity controller) {
             controller.invalidateStructure();
         }
@@ -854,7 +858,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
      * 焦炉仓 → 焦炉控制器的物品代理：槽位 0 进、槽位 1 出。
      */
     public c_y.meknh_core.common.coke.CokeOvenControllerBlockEntity cokeOvenController() {
-        if (this.level == null || this.controllerPos == null) {
+        if (this.level == null || this.controllerPos == null || !this.level.isLoaded(this.controllerPos)) {
             return null;
         }
         return this.level.getBlockEntity(this.controllerPos)

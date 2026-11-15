@@ -31,6 +31,7 @@
   "jei.meknh_core.total": "Total: %1$s EU",
   "jei.meknh_core.power": "Power: %1$sA @ %2$s",
   "gui.meknh_core.progress": "Progress: %s%%",
+  "gui.meknh_core.show_recipe": "Click to show recipes",
   "gui.meknh_core.energy_stored": "Energy: %s / %s",
   "gui.meknh_core.energy_using": "Using: %s/t",
   "gui.meknh_core.energy_needed": "Needed: %s",

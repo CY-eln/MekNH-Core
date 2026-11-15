@@ -180,10 +180,22 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
             return switch (this.menu.data(HatchMenu.DATA_KIND)) {
                 case HatchMenu.KIND_ENERGY -> List.of(Component.translatable("gui.meknh_core.hatch.energy",
                         EnergyText.shortFe(this.menu.stored()), EnergyText.shortFe(this.menu.capacity())));
-                case HatchMenu.KIND_FLUID -> List.of(Component.translatable("gui.meknh_core.hatch.fluid",
-                        this.menu.stored(), this.menu.capacity()));
-                case HatchMenu.KIND_CHEMICAL -> List.of(Component.translatable("gui.meknh_core.hatch.chemical",
-                        this.menu.stored(), this.menu.capacity()));
+                case HatchMenu.KIND_FLUID -> {
+                    FluidStack fluid = this.menu.fluid();
+                    if (fluid == null || fluid.isEmpty()) {
+                        yield List.of(Component.translatable("gui.meknh_core.hatch.empty"));
+                    }
+                    yield List.of(Component.literal(fluid.getHoverName().getString() + "："
+                            + this.menu.stored() + " / " + this.menu.capacity() + " mB"));
+                }
+                case HatchMenu.KIND_CHEMICAL -> {
+                    ChemicalStack chemical = this.menu.chemical();
+                    if (chemical == null || chemical.isEmpty()) {
+                        yield List.of(Component.translatable("gui.meknh_core.hatch.empty"));
+                    }
+                    yield List.of(Component.literal(chemical.getChemical().getTextComponent().getString() + "："
+                            + this.menu.stored() + " / " + this.menu.capacity() + " mB"));
+                }
                 default -> List.of(Component.translatable("gui.meknh_core.hatch.empty"));
             };
         }

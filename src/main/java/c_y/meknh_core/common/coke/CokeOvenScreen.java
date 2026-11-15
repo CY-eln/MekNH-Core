@@ -109,19 +109,34 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
         super.render(graphics, mouseX, mouseY, partialTick);
         if (this.isOverTank(mouseX, mouseY)) {
             FluidStack fluid = this.menu.fluid();
-            if (fluid == null) {
+            if (fluid == null || fluid.isEmpty()) {
                 graphics.renderTooltip(this.font,
                         Component.translatable("gui.meknh_core.hatch.empty"), mouseX, mouseY);
             } else {
-                graphics.renderComponentTooltip(this.font,
-                        List.of(Component.translatable("gui.meknh_core.hatch.fluid",
-                                this.menu.amount(), this.menu.capacity())), mouseX, mouseY);
+                graphics.renderTooltip(this.font,
+                        Component.literal(fluid.getHoverName().getString() + "："
+                                + this.menu.amount() + " / " + this.menu.capacity() + " mB"), mouseX, mouseY);
             }
         } else if (this.isOverProgress(mouseX, mouseY)) {
             graphics.renderTooltip(this.font,
-                    Component.translatable("gui.meknh_core.progress", Math.round(this.menu.progressRatio() * 100.0F)),
-                    mouseX, mouseY);
+                    Component.translatableWithFallback("gui.meknh_core.show_recipe", "显示配方"), mouseX, mouseY);
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.isOverTank(mouseX, mouseY)
+                && c_y.meknh_core.common.gui.element.DropperInteraction.click(
+                        this.menu.blockPos(), c_y.meknh_core.common.network.DropperUsePayload.TANK_FLUID, 0,
+                        button, net.minecraft.client.gui.screens.Screen.hasShiftDown())) {
+            return true;
+        }
+        if (button == 0 && this.isOverProgress(mouseX, mouseY)
+                && c_y.meknh_core.client.jei.MeknhJeiPlugin.openMultiblockRecipes(
+                        c_y.meknh_core.MekNHCore.rl("coke_oven"))) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

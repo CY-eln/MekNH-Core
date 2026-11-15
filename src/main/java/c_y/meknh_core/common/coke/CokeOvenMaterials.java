@@ -77,6 +77,7 @@ public final class CokeOvenMaterials {
     public static final DeferredBlock<LiquidBlock> CREOSOTE_BLOCK = BLOCKS.register("creosote",
             () -> new LiquidBlock(CREOSOTE.get(), BlockBehaviour.Properties.of()
                     .noCollission()
+                    .replaceable()
                     .strength(100.0F)
                     .noLootTable()
                     .liquid()

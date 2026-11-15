@@ -419,7 +419,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
      * 当前可用的“能源等级”。
      *
      * <ul>
-     *     <li>电力多方块：取所有 {@code energy_input} 仓室中的最高电压；没有能源仓返回 {@code null}；</li>
+     *     <li>电力多方块：统计所有 {@code energy_input} 仓室的等级；
+     *     两个同等级能源仓合并视为高一级（4 个同等级 = 高两级，以此类推），
+     *     最后取合并后的最高等级；没有能源仓返回 {@code null}；</li>
      *     <li>蒸汽多方块：必须有至少一个 {@code steam_input} 仓，等级固定 ULV
      *     （低压/高压由控制器决定）。</li>
      * </ul>
@@ -436,18 +438,30 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
             }
             return null;
         }
-        VoltageTier best = null;
+        VoltageTier[] tiers = VoltageTier.values();
+        int[] counts = new int[tiers.length];
         for (MultiblockPart part : this.parts) {
             if (part instanceof MultiblockPartBlockEntity partEntity
                     && partEntity.partType() == MultiblockPartType.ENERGY_INPUT
                     && partEntity.energyStorage() != null) {
                 VoltageTier tier = partEntity.level().voltage();
-                if (best == null || tier.level() > best.level()) {
-                    best = tier;
-                }
+                counts[tier.level()]++;
             }
         }
-        return best == null ? null : MachineLevel.electric(best);
+        // 两个同等级合成一个高一级：从低到高逐级进位，4 个同等级会自然升两级。
+        for (int level = 0; level < counts.length - 1; level++) {
+            int pairs = counts[level] / 2;
+            if (pairs > 0) {
+                counts[level] -= pairs * 2;
+                counts[level + 1] += pairs;
+            }
+        }
+        for (int level = counts.length - 1; level >= 0; level--) {
+            if (counts[level] > 0) {
+                return MachineLevel.electric(tiers[level]);
+            }
+        }
+        return null;
     }
 
     private void resolvePendingRecipe(Level world) {

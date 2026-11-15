@@ -31,6 +31,7 @@
   "jei.meknh_core.total": "总计：%1$s EU",
   "jei.meknh_core.power": "功耗：%1$sA @ %2$s",
   "gui.meknh_core.progress": "进度：%s%%",
+  "gui.meknh_core.show_recipe": "显示配方",
   "gui.meknh_core.energy_stored": "能量：%s / %s",
   "gui.meknh_core.energy_using": "能耗：%s/t",
   "gui.meknh_core.energy_needed": "需要：%s",
