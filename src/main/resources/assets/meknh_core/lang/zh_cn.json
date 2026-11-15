@@ -214,5 +214,6 @@
   "message.meknh_core.multiblock_terminal.built": "已放置 %1$s 个方块",
   "message.meknh_core.multiblock_terminal.complete": "结构已经完整",
   "jade.meknh_core.multiblock.formed": "结构已成型",
-  "jade.meknh_core.multiblock.unformed": "结构不完整"
+  "jade.meknh_core.multiblock.unformed": "结构不完整",
+  "config.jade.plugin_meknh_core.multiblock_status": "结构状态"
 }

@@ -214,5 +214,6 @@
   "message.meknh_core.multiblock_terminal.built": "Placed %1$s block(s)",
   "message.meknh_core.multiblock_terminal.complete": "Structure is already complete",
   "jade.meknh_core.multiblock.formed": "Structure formed",
-  "jade.meknh_core.multiblock.unformed": "Structure incomplete"
+  "jade.meknh_core.multiblock.unformed": "Structure incomplete",
+  "config.jade.plugin_meknh_core.multiblock_status": "Structure Status"
 }
