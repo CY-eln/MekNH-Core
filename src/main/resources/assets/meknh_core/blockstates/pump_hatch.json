@@ -1,50 +1,33 @@
 {
-  "variants": {
-    "facing=north,formed=false,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch"
+  "multipart": [
+    {
+      "apply": {
+        "model": "meknh_core:block/machine/pump_hatch_base"
+      }
     },
-    "facing=east,formed=false,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "y": 90
+    {
+      "when": {"facing": "north"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay"}
     },
-    "facing=south,formed=false,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "y": 180
+    {
+      "when": {"facing": "east"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "y": 90}
     },
-    "facing=west,formed=false,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "y": 270
+    {
+      "when": {"facing": "south"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "y": 180}
     },
-    "facing=up,formed=false,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "x": 90
+    {
+      "when": {"facing": "west"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "y": 270}
     },
-    "facing=down,formed=false,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "x": 270
+    {
+      "when": {"facing": "up"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "x": -90}
     },
-    "facing=north,formed=true,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch"
-    },
-    "facing=east,formed=true,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "y": 90
-    },
-    "facing=south,formed=true,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "y": 180
-    },
-    "facing=west,formed=true,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "y": 270
-    },
-    "facing=up,formed=true,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "x": 90
-    },
-    "facing=down,formed=true,casing=0": {
-      "model": "meknh_core:block/machine/pump_hatch",
-      "x": 270
+    {
+      "when": {"facing": "down"},
+      "apply": {"model": "meknh_core:block/machine/pump_hatch_overlay", "x": 90}
     }
-  }
+  ]
 }

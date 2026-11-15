@@ -33,8 +33,8 @@ public final class PrimitivePumpControllerBlock extends MultiblockControllerBloc
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                             BlockHitResult hit) {
-        // 原始水泵没有 GUI，也不在右键时刷结构提示文本。
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        // 原始水泵没有 GUI、没有结构提示，也不产生右键事件。
+        return InteractionResult.PASS;
     }
 
     @Override
