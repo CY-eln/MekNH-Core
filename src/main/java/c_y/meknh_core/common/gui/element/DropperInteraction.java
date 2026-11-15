@@ -16,13 +16,18 @@ public final class DropperInteraction {
     }
 
     public static boolean isDropper() {
+        return isCarriedDropper() || isHandDropper();
+    }
+
+    private static boolean isCarriedDropper() {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) {
-            return false;
-        }
-        return isDropper(minecraft.player.containerMenu.getCarried())
-                || isDropper(minecraft.player.getMainHandItem())
-                || isDropper(minecraft.player.getOffhandItem());
+        return minecraft.player != null && isDropper(minecraft.player.containerMenu.getCarried());
+    }
+
+    private static boolean isHandDropper() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.player != null && (isDropper(minecraft.player.getMainHandItem())
+                || isDropper(minecraft.player.getOffhandItem()));
     }
 
     public static boolean isDropper(ItemStack stack) {
@@ -33,7 +38,16 @@ public final class DropperInteraction {
      * @return true 表示这次点击已经被滴管消费。
      */
     public static boolean click(BlockPos pos, int tankType, int tankId, int mouseButton, boolean shift) {
-        if (pos == null || !isDropper()) {
+        if (pos == null) {
+            return false;
+        }
+        boolean carried = isCarriedDropper();
+        boolean hand = !carried && isHandDropper();
+        if (!carried && !hand) {
+            return false;
+        }
+        // 手持滴管只保留右键填入；左键、Shift+左键只对光标上的滴管生效。
+        if (hand && (mouseButton != 1 || shift)) {
             return false;
         }
         int action;
