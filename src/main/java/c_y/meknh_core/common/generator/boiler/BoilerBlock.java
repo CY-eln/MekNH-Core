@@ -6,9 +6,7 @@ import c_y.meknh_core.api.generator.boiler.BoilerTier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +26,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import mekanism.common.item.ItemGaugeDropper;
 import org.jetbrains.annotations.Nullable;
 
 public class BoilerBlock extends Block implements EntityBlock {
@@ -72,15 +69,6 @@ public class BoilerBlock extends Block implements EntityBlock {
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                               Player player, InteractionHand hand, BlockHitResult hit) {
-        if (stack.getItem() instanceof ItemGaugeDropper) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     @Override
