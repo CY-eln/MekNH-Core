@@ -77,6 +77,71 @@ public final class MultiblockRegistration {
                             c_y.meknh_core.common.gui.menu.HatchMenu::new,
                     net.minecraft.world.flag.FeatureFlags.VANILLA_SET));
 
+    private record ControllerBinding(DeferredBlock<MultiblockControllerBlock> block, DeferredItem<?> item) {}
+    private static final Map<ResourceLocation, ControllerBinding> EXTERNAL_CONTROLLERS = new HashMap<>();
+
+    private static final Map<ResourceLocation, ControllerBinding> CONTROLLER_CANDIDATES = new LinkedHashMap<>();
+    private static final Map<ResourceLocation, ResourceLocation> CONTROLLER_FALLBACKS = new LinkedHashMap<>();
+    private static final Map<ResourceLocation, ResourceLocation> SELECTED_DEFINITIONS = new LinkedHashMap<>();
+
+    /** Catalog only: getId is safe before registry events, unlike holder.get(). */
+    public static synchronized void registerControllerCandidate(ResourceLocation fallbackId,
+            DeferredBlock<MultiblockControllerBlock> block, DeferredItem<?> item) {
+        ResourceLocation blockId = block.getId();
+        if (CONTROLLER_CANDIDATES.putIfAbsent(blockId, new ControllerBinding(block, item)) != null) {
+            throw new IllegalStateException("Duplicate controller candidate: " + blockId);
+        }
+        CONTROLLER_FALLBACKS.put(blockId, fallbackId);
+    }
+
+    public static List<ControllerBindingPlan.Candidate> controllerCandidates() {
+        return CONTROLLER_FALLBACKS.entrySet().stream()
+                .map(e -> new ControllerBindingPlan.Candidate(e.getKey().toString(), e.getValue().toString())).toList();
+    }
+
+    /** Known Core registrations only; never resolve holder values during preflight. */
+    public static java.util.Set<String> reservedControllerBlockIds() {
+        java.util.Set<String> ids = new java.util.TreeSet<>();
+        BLOCKS.getEntries().forEach(holder -> ids.add(holder.getId().toString()));
+        var casing = java.util.List.of(
+                c_y.meknh_core.api.casing.CasingRegistration.STEAM_MACHINE_CASING,
+                c_y.meknh_core.api.casing.CasingRegistration.BRONZE_FIREBOX_CASING,
+                c_y.meknh_core.api.casing.CasingRegistration.PRIMITIVE_PUMP,
+                c_y.meknh_core.api.casing.CasingRegistration.PUMP_DECK,
+                c_y.meknh_core.api.casing.CasingRegistration.TREATED_WOOD_FRAME,
+                c_y.meknh_core.api.casing.CasingRegistration.PUMP_HATCH);
+        casing.forEach(holder -> ids.add(holder.getId().toString()));
+        return java.util.Set.copyOf(ids);
+    }
+
+    public static List<String> generatedControllerIds(MultiblockDefinition definition) {
+        return definition.levels().stream().map(level -> MekNHCore.rl(definition.noVoltage()
+                ? definition.id().getPath() : MachineNames.internalPath(definition.id(), level)).toString()).toList();
+    }
+
+    /** Apply only a fully validated plan, before registering any definitions. */
+    public static synchronized void applyControllerPlan(Map<String, String> plan) {
+        if (!DEFINITIONS.isEmpty()) throw new IllegalStateException("Binding plan must precede registration");
+        EXTERNAL_CONTROLLERS.clear();
+        SELECTED_DEFINITIONS.clear();
+        plan.forEach((block, definition) -> {
+            ResourceLocation blockId = ResourceLocation.parse(block);
+            ResourceLocation definitionId = ResourceLocation.parse(definition);
+            EXTERNAL_CONTROLLERS.put(definitionId, java.util.Objects.requireNonNull(CONTROLLER_CANDIDATES.get(blockId)));
+            SELECTED_DEFINITIONS.put(blockId, definitionId);
+        });
+    }
+
+    public static MultiblockDefinition controllerDefinition(ResourceLocation blockId) {
+        ResourceLocation selected = SELECTED_DEFINITIONS.get(blockId);
+        return selected == null ? null : DEFINITIONS.get(selected);
+    }
+
+    /** Existing controllers supply their own static blockstates, models and textures. */
+    public static boolean hasExternalController(ResourceLocation id) {
+        return EXTERNAL_CONTROLLERS.containsKey(id);
+    }
+
     private static final Map<ResourceLocation, MultiblockDefinition> DEFINITIONS = new LinkedHashMap<>();
     private static final Map<ResourceLocation, MultiblockVariant> VARIANTS = new LinkedHashMap<>();
     private static final Map<Block, MultiblockVariant> VARIANTS_BY_BLOCK = new HashMap<>();
@@ -182,10 +247,18 @@ public final class MultiblockRegistration {
             MekNHCore.LOGGER.warn("Multiblock {} is already registered, ignoring duplicate definition", definition.id());
             return;
         }
+        ControllerBinding binding = EXTERNAL_CONTROLLERS.get(definition.id());
+        if (binding != null && !definition.noVoltage()) {
+            throw new IllegalArgumentException("Externally bound controller requires level:none: " + definition.id());
+        }
         DEFINITIONS.put(definition.id(), definition);
 
         List<Map.Entry<MachineLevel, DeferredBlock<MultiblockControllerBlock>>> blocks = new ArrayList<>();
         for (MachineLevel level : definition.levels()) {
+            if (binding != null) {
+                blocks.add(Map.entry(level, binding.block()));
+                continue;
+            }
             String path = definition.noVoltage()
                     ? definition.id().getPath()
                     : MachineNames.internalPath(definition.id(), level);
@@ -221,7 +294,7 @@ public final class MultiblockRegistration {
             String path = definition.noVoltage()
                     ? definition.id().getPath()
                     : MachineNames.internalPath(definition.id(), entry.getKey());
-            DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
+            DeferredItem<?> item = binding != null ? binding.item() : ITEMS.registerItem(
                     path,
                     properties -> new MultiblockBlockItem(entry.getValue().get(), properties)
             );

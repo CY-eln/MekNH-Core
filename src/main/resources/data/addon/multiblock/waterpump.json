@@ -1,0 +1,81 @@
+{
+  "id": "layout_mtesteamwaterpump",
+  "结构": [
+    [
+      "CCC",
+      ".A.",
+      ".A."
+    ],
+    [
+      "CBC",
+      "A.A",
+      "AAA"
+    ],
+    [
+      "CCC",
+      "...",
+      ".A."
+    ],
+    [
+      "CaC",
+      ".A.",
+      ".A."
+    ]
+  ],
+  "组成": {
+    "A": [
+      "meknh_core:treated_wood_frame",
+      "meknh_core:treated_wood_frame"
+    ],
+    "C": "meknh_core:pump_deck",
+    "B": "meknh_core:pump_hatch",
+    "a": "controller"
+  },
+  "导入说明": "仅静态几何模板，不是已解析材料的游戏蓝图。gtnh_unresolved 是占位标签；需在工坊替换真实材料。可提取的局部Java材料表达式保存在gtnhSource中，完整成型规则仍以源码为准；编辑不会自动重算这些表达式。",
+  "gtnhSource": {
+    "version": "5.09.54.205",
+    "status": "geometry_only_materials_unresolved",
+    "source": "gregtech/common/tileentities/machines/multi/steam/MTESteamWaterPump.java",
+    "line": 133,
+    "shapeName": "main",
+    "shapeExpression": "transpose(\n                        new String[][] {\n                            { \" A \", \" A \", \"AAA\", \" A \" },\n                            { \" A \", \"   \", \"A A\", \" A \" },\n                            { \"C~C\", \"CCC\", \"CCC\", \"CCC\" } })",
+    "transpose": true,
+    "orientation": "NORTH_NORMAL_NONE: x=-A, y=-B, z=C, translated to nonnegative indices",
+    "scope": "one StructureLib piece; not proof of a complete registered machine or valid game structure",
+    "symbolRules": {
+      "A": {
+        "sourceSymbol": "A",
+        "kind": "unresolved_java_constraint",
+        "candidateExpressions": [
+          {
+            "line": 140,
+            "expressionKind": "addElement",
+            "expression": "ofBlocksTiered(MTESteamWaterPump::getFrameTier, ImmutableList.of(Pair.of(GregTechAPI.sBlockFrames, Materials.Bronze.mMetaItemSubID),\n                    Pair.of(GregTechAPI.sBlockFrames, Materials.Steel.mMetaItemSubID)), -1, (pump, tier) -> pump.mSetTier = tier , pump -> pump.mSetTier)",
+            "scope": "local material expression only; not whole machine validation"
+          }
+        ],
+        "ambiguous": false
+      },
+      "C": {
+        "sourceSymbol": "C",
+        "kind": "unresolved_java_constraint",
+        "candidateExpressions": [
+          {
+            "line": 142,
+            "expressionKind": "addElement",
+            "expression": "ofChain(\n                            buildSteamInput(MTESteamWaterPump.class)\n                                .casingIndex(((BlockCasings9) GregTechAPI.sBlockCasings9).getTextureIndex(2))\n                                .hint(1)\n                                .build(),\n                            buildHatchAdder(MTESteamWaterPump.class)\n                                .atLeast(OutputHatch)\n                                .casingIndex(((BlockCasings9) GregTechAPI.sBlockCasings9).getTextureIndex(2))\n                                .hint(1)\n                                .buildAndChain(onElementPass(x -> ++x.mCountCasing, ofBlock(GregTechAPI.sBlockCasings9, 2)))\n                        )",
+            "scope": "local material expression only; not whole machine validation"
+          }
+        ],
+        "ambiguous": false
+      }
+    },
+    "warnings": [
+      "All material constraints require resolution before game use.",
+      "Additional pieces, variable sizes and subclass-specific materials are not assembled.",
+      "No controller MetaTileID or tile NBT has been fabricated."
+    ]
+  },
+  "level": "none",
+  "controller_block": "meknh_core:primitive_pump"
+}

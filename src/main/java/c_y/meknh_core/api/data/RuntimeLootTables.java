@@ -45,6 +45,7 @@ public final class RuntimeLootTables {
             paths.add(variant.path());
         }
         for (MultiblockVariant variant : MultiblockRegistration.variants()) {
+            if (MultiblockRegistration.hasExternalController(variant.definition().id())) continue;
             paths.add(variant.path());
         }
         for (MultiblockRegistration.PartBlockInfo part : MultiblockRegistration.partBlockInfos()) {
