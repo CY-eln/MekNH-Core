@@ -51,16 +51,16 @@
       "from": [
         0,
         0,
-        -0.01
+        16.01
       ],
       "to": [
         16,
         16,
-        -0.01
+        16.01
       ],
       "shade": true,
       "faces": {
-        "north": {
+        "south": {
           "uv": [
             0,
             0,
@@ -68,7 +68,7 @@
             16
           ],
           "texture": "#overlay_front",
-          "cullface": "north"
+          "cullface": "south"
         }
       }
     }

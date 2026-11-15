@@ -269,7 +269,7 @@ public class MachineRecipe implements Recipe<MachineRecipeInput> {
                 return 0;
             }
         }
-        return max == Integer.MAX_VALUE ? 0 : max;
+        return max;
     }
 
     /**
