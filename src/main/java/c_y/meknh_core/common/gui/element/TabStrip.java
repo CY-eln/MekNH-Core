@@ -25,7 +25,7 @@ public final class TabStrip {
    /**
     * 仓室 GUI 的「自动搬运」Tab：位置在窗口右上角，与 Mek 机器右上角的红石 Tab 对齐。
     */
-   public static final int AUTO_IO_X = 176;
+   public static final int AUTO_IO_X = -TAB_SIZE;
    public static final int AUTO_IO_Y = 6;
    /** Mek {@code SpecialColors.TAB_REDSTONE_CONTROL}。 */
    public static final int AUTO_IO_TINT = 13174559;
@@ -39,7 +39,7 @@ public final class TabStrip {
    public static void renderAutoIo(GuiGraphics graphics, int left, int top, boolean enabled) {
       drawInset(
             graphics,
-            MekGuiTextures.TAB_HOLDER_RIGHT,
+            MekGuiTextures.TAB_HOLDER_LEFT,
             enabled ? MekGuiTextures.TAB_REDSTONE_HIGH : MekGuiTextures.TAB_REDSTONE_DISABLED,
             left + AUTO_IO_X,
             top + AUTO_IO_Y,

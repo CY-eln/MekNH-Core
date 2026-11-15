@@ -4,6 +4,7 @@ import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.common.data.voltage.VoltageTier;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -53,6 +54,20 @@ public class MachineRecipe implements Recipe<MachineRecipeInput> {
     );
 
     /**
+     * 输入列表；支持 {@code "input": "none"} 表示不需要任何输入。
+     */
+    public static final Codec<List<MachineIngredient>> INPUT_CODEC = Codec.either(
+            MachineIngredient.CODEC.listOf(), Codec.STRING
+    ).flatXmap(
+            either -> either.map(
+                    list -> DataResult.success(list),
+                    value -> value.equalsIgnoreCase("none") || value.isBlank()
+                            ? DataResult.success(List.of())
+                            : DataResult.error(() -> "input must be an array or \"none\"")),
+            list -> DataResult.success(Either.left(list))
+    );
+
+    /**
      * 机器配方的默认等级：配方没写 {@code level} 时按最低等级处理。
      */
     public static final VoltageTier DEFAULT_LEVEL = VoltageTier.ULV;
@@ -70,7 +85,7 @@ public class MachineRecipe implements Recipe<MachineRecipeInput> {
             VoltageTier.CODEC.optionalFieldOf("level", DEFAULT_LEVEL).forGetter(MachineRecipe::level),
             TIME_CODEC.optionalFieldOf("time", -1).forGetter(MachineRecipe::time),
             Codec.DOUBLE.optionalFieldOf("energy", -1.0D).forGetter(MachineRecipe::energy),
-            MachineIngredient.CODEC.listOf().optionalFieldOf("input", List.of()).forGetter(MachineRecipe::inputs),
+            INPUT_CODEC.optionalFieldOf("input", List.of()).forGetter(MachineRecipe::inputs),
             MachineOutput.Product.CODEC.listOf().optionalFieldOf("output", List.of()).forGetter(MachineRecipe::outputs),
             MACHINE_ID_CODEC.listOf().optionalFieldOf("extra_type", List.of()).forGetter(MachineRecipe::extraTypes),
             Codec.STRING.optionalFieldOf("vanilla", "").forGetter(recipe -> recipe.vanilla() == null ? "" : recipe.vanilla().toString())

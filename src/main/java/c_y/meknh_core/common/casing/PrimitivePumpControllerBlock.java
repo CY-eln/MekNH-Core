@@ -17,7 +17,7 @@ import net.minecraft.world.phys.BlockHitResult;
 /** Existing primitive_pump ID and visuals with real structure checking, but no water production. */
 public final class PrimitivePumpControllerBlock extends MultiblockControllerBlock {
     /** Fallback definition ID used when the explicit controller binding is unavailable. */
-    public static final ResourceLocation STRUCTURE_ID = MekNHCore.rl("layout_mtesteamwaterpump");
+    public static final ResourceLocation STRUCTURE_ID = MekNHCore.rl("primitive_pump");
     public static final ResourceLocation BLOCK_ID = MekNHCore.rl("primitive_pump");
 
     public PrimitivePumpControllerBlock(Properties properties) {
