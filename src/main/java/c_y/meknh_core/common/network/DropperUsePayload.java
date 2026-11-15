@@ -115,44 +115,73 @@ public record DropperUsePayload(BlockPos pos, int action, int tankType, int tank
     }
 
     private static void transferChemical(IChemicalHandler drain, IChemicalHandler fill, ServerPlayer player) {
-        ChemicalStack stack = drain.getChemicalInTank(0);
-        if (stack.isEmpty() || fill.getChemicalTanks() <= 0) {
-            return;
+        boolean movedAny = false;
+        while (true) {
+            ChemicalStack stack = drain.getChemicalInTank(0);
+            if (stack.isEmpty() || fill.getChemicalTanks() <= 0) {
+                break;
+            }
+            long room = Math.max(0L, fill.getChemicalTankCapacity(0) - fill.getChemicalInTank(0).getAmount());
+            if (room <= 0) {
+                break;
+            }
+            ChemicalStack offer = stack.copyWithAmount(Math.min(stack.getAmount(), room));
+            ChemicalStack remainder = fill.insertChemical(0, offer, Action.SIMULATE);
+            long amount = offer.getAmount() - remainder.getAmount();
+            if (amount <= 0) {
+                break;
+            }
+            ChemicalStack extracted = drain.extractChemical(0, amount, Action.EXECUTE);
+            if (extracted.isEmpty()) {
+                break;
+            }
+            ChemicalStack rejected = fill.insertChemical(0, extracted, Action.EXECUTE);
+            long accepted = extracted.getAmount() - rejected.getAmount();
+            if (accepted <= 0) {
+                break;
+            }
+            movedAny = true;
+            // 滴管单次传输上限可能小于容量；继续直到满或源空。
+            if (extracted.getAmount() < amount) {
+                break;
+            }
         }
-        long room = Math.max(0L, fill.getChemicalTankCapacity(0) - fill.getChemicalInTank(0).getAmount());
-        if (room <= 0) {
-            return;
-        }
-        ChemicalStack offer = stack.copyWithAmount(Math.min(stack.getAmount(), room));
-        ChemicalStack remainder = fill.insertChemical(0, offer, Action.SIMULATE);
-        long amount = offer.getAmount() - remainder.getAmount();
-        if (amount <= 0) {
-            return;
-        }
-        ChemicalStack extracted = drain.extractChemical(0, amount, Action.EXECUTE);
-        if (!extracted.isEmpty()) {
-            fill.insertChemical(0, extracted, Action.EXECUTE);
+        if (movedAny) {
             syncCarried(player);
         }
     }
 
     private static void transferFluid(IFluidHandler source, IFluidHandler sink, ServerPlayer player) {
-        FluidStack stack = source.getFluidInTank(0);
-        if (stack.isEmpty()) {
-            return;
+        boolean movedAny = false;
+        while (true) {
+            FluidStack stack = source.getFluidInTank(0);
+            if (stack.isEmpty()) {
+                break;
+            }
+            int room = sink.getTankCapacity(0) - sink.getFluidInTank(0).getAmount();
+            if (room <= 0) {
+                break;
+            }
+            FluidStack offer = stack.copyWithAmount(Math.min(stack.getAmount(), room));
+            int accepted = sink.fill(offer, IFluidHandler.FluidAction.SIMULATE);
+            if (accepted <= 0) {
+                break;
+            }
+            FluidStack drained = source.drain(offer.copyWithAmount(accepted), IFluidHandler.FluidAction.EXECUTE);
+            if (drained.isEmpty()) {
+                break;
+            }
+            int filled = sink.fill(drained, IFluidHandler.FluidAction.EXECUTE);
+            if (filled <= 0) {
+                break;
+            }
+            movedAny = true;
+            // 滴管单次传输上限可能小于容量；继续直到满或源空。
+            if (filled < accepted) {
+                break;
+            }
         }
-        int room = sink.getTankCapacity(0) - sink.getFluidInTank(0).getAmount();
-        if (room <= 0) {
-            return;
-        }
-        FluidStack offer = stack.copyWithAmount(Math.min(stack.getAmount(), room));
-        int accepted = sink.fill(offer, IFluidHandler.FluidAction.SIMULATE);
-        if (accepted <= 0) {
-            return;
-        }
-        FluidStack drained = source.drain(offer.copyWithAmount(accepted), IFluidHandler.FluidAction.EXECUTE);
-        if (!drained.isEmpty()) {
-            sink.fill(drained, IFluidHandler.FluidAction.EXECUTE);
+        if (movedAny) {
             syncCarried(player);
         }
     }
