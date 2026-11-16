@@ -90,7 +90,12 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide) {
-            return null;
+            if (!this.definition.id().equals(c_y.meknh_core.MekNHCore.rl("primitive_blast_furnace"))) return null;
+            return (tickLevel, pos, tickState, blockEntity) -> {
+                if (blockEntity instanceof c_y.meknh_core.common.blast.PrimitiveBlastFurnaceControllerBlockEntity furnace) {
+                    furnace.clientTick();
+                }
+            };
         }
         return (tickLevel, pos, tickState, blockEntity) -> {
             if (blockEntity instanceof MultiblockControllerBlockEntity controller) {

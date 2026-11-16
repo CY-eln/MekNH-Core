@@ -117,6 +117,20 @@ public sealed interface MultiblockMatcher {
         }
     }
 
+    /** Air or snow in the primitive furnace hearth; never accepts a real lava block. */
+    record AirOrSnow() implements MultiblockMatcher {
+        @Override
+        public boolean test(Level level, BlockPos pos) {
+            BlockState state = level.getBlockState(pos);
+            return state.isAir() || state.is(Blocks.SNOW) || state.is(Blocks.SNOW_BLOCK);
+        }
+
+        @Override
+        public String describe() {
+            return "air_or_snow";
+        }
+    }
+
     /**
      * 任意方块（包括空气）。
      */
@@ -166,6 +180,9 @@ public sealed interface MultiblockMatcher {
         }
         if (lower.equals("air") || lower.equals("minecraft:air")) {
             return new Air();
+        }
+        if (lower.equals("air_or_snow")) {
+            return new AirOrSnow();
         }
         if (lower.equals("any") || lower.equals("*")) {
             return new Any();

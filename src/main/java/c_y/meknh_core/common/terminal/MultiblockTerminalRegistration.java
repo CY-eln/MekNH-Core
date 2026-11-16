@@ -96,7 +96,8 @@ public final class MultiblockTerminalRegistration {
             BlockPos target = MultiblockStructure.offset(controller.getBlockPos(),
                     cell.dx(), cell.dy(), cell.dz(), facing);
             // 结构要求空气的位置：把挡路的方块清掉，否则永远配不上。
-            if (matcher instanceof MultiblockMatcher.Air) {
+            if (matcher instanceof MultiblockMatcher.Air
+                    || (matcher instanceof MultiblockMatcher.AirOrSnow && !matcher.test(level, target))) {
                 if (!level.getBlockState(target).isAir()) {
                     plan.add(new Placement(target, Blocks.AIR));
                 }

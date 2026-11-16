@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "meknh_core:steam_machine_casing",
-    "meknh_core:bronze_firebox_casing"
+    "meknh_core:bronze_firebox_casing",
+    "meknh_core:primitive_blast_furnace",
+    "meknh_core:primitive_blast_furnace_bricks"
   ]
 }

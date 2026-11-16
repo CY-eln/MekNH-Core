@@ -65,6 +65,7 @@ public class MekNHCore {
 
         // 焦炉：焦炉砖 + 焦炉控制器 GUI + 焦炉仓（仓室在 MultiblockRegistration 里注册）
         c_y.meknh_core.common.coke.CokeOvenRegistration.initialize(modEventBus);
+        c_y.meknh_core.common.blast.PrimitiveBlastFurnaceRegistration.initialize(modEventBus);
         c_y.meknh_core.common.coke.CokeOvenMaterials.initialize(modEventBus);
         // 多方块终端：潜行右键控制器一键搭结构。
         c_y.meknh_core.common.terminal.MultiblockTerminalRegistration.initialize(modEventBus);

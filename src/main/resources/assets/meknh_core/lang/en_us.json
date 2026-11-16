@@ -1,5 +1,11 @@
 {
+  "block.meknh_core.primitive_blast_furnace": "Primitive Blast Furnace",
+  "block.meknh_core.primitive_blast_furnace_bricks": "Primitive Blast Furnace Bricks",
+  "item.meknh_core.dust_tiny_dark_ash": "Tiny Pile of Dark Ash",
+  "item.meknh_core.dust_ash": "Ash Dust",
+  "multiblock.meknh_core.primitive_blast_furnace": "Primitive Blast Furnace",
   "multiblock.meknh_core.layout_mtesteamwaterpump": "Primitive Water Pump",
+  "multiblock.meknh_core.gtnh_layout_mtesteamwaterpump_main_133": "Primitive Water Pump",
   "block.meknh_core.primitive_pump": "Primitive Water Pump",
   "block.meknh_core.pump_deck": "Pump Deck",
   "block.meknh_core.treated_wood_frame": "Treated Wood Frame",

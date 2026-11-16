@@ -32,7 +32,17 @@ public final class ClientEvents {
      * 机器容器对应的界面（原版 {@code AbstractContainerScreen} 机制，与 Mekanism 一致）。
      */
     @SubscribeEvent
+    public static void registerBlockEntityRenderers(
+            net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(
+                MultiblockRegistration.getBlockEntityType(MekNHCore.rl("primitive_blast_furnace")),
+                c_y.meknh_core.client.render.PrimitiveBlastFurnaceRenderer::new);
+    }
+
+    @SubscribeEvent
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(c_y.meknh_core.common.blast.PrimitiveBlastFurnaceRegistration.PRIMITIVE_BLAST_FURNACE_MENU.get(),
+                c_y.meknh_core.common.blast.PrimitiveBlastFurnaceScreen::new);
         event.register(MachineRegistration.MACHINE_MENU.get(), MachineScreen::create);
         event.register(BoilerRegistration.BOILER_MENU.get(), BoilerScreen::new);
         event.register(MultiblockRegistration.HATCH_MENU.get(), HatchScreen::new);
