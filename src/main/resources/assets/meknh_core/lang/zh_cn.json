@@ -230,5 +230,7 @@
   "jade.meknh_core.multiblock.formed": "结构已成型",
   "jade.meknh_core.multiblock.unformed": "结构不完整",
   "jade.meknh_core.waterpump.output": "产出：%s mB/s",
-  "config.jade.plugin_meknh_core.multiblock_status": "结构状态"
+  "config.jade.plugin_meknh_core.multiblock_status": "结构状态",
+  "block.meknh_core.treated_wood_planks": "防腐木板",
+  "item.meknh_core.treated_wood_rod": "防腐木棍"
 }
