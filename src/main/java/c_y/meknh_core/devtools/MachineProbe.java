@@ -416,6 +416,11 @@ public final class MachineProbe {
     private record ProbeOutput(MachineItemHandler items) implements MachineOutput {
 
         @Override
+        public MachineOutput outputSnapshot() {
+            return c_y.meknh_core.common.recipe.OutputReservation.snapshot(this.items, null, null);
+        }
+
+        @Override
         public int insertItem(ItemStack stack, boolean simulate) {
             return this.items.insertOutput(stack, simulate);
         }

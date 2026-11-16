@@ -127,6 +127,7 @@ public class CokeOvenControllerBlockEntity extends MultiblockControllerBlockEnti
      */
     @Override
     protected void tickRecipe(net.minecraft.world.level.Level world) {
+        this.setOutputBlocked(false);
         if (!this.isFormed()) {
             this.cokeProgress = 0;
             this.cokeRecipe = null;
@@ -137,9 +138,13 @@ public class CokeOvenControllerBlockEntity extends MultiblockControllerBlockEnti
             this.cokeRecipe = this.findRecipe(world);
         }
         if (this.cokeRecipe == null
-                || !this.cokeRecipe.matches(this.recipeInput(), world)
-                || !this.cokeRecipe.canFitOutputs(this)) {
+                || !this.cokeRecipe.matches(this.recipeInput(), world)) {
             this.cokeProgress = 0;
+            this.setActiveState(false);
+            return;
+        }
+        if (!this.cokeRecipe.canFitOutputs(this)) {
+            this.setOutputBlocked(true);
             this.setActiveState(false);
             return;
         }
@@ -173,6 +178,11 @@ public class CokeOvenControllerBlockEntity extends MultiblockControllerBlockEnti
     /**
      * 产物进控制器自己的输出槽（不写仓室）。
      */
+    @Override
+    public c_y.meknh_core.common.recipe.MachineOutput outputSnapshot() {
+        return c_y.meknh_core.common.recipe.OutputReservation.snapshot(this.items, this.tank, null);
+    }
+
     @Override
     public int insertItem(ItemStack stack, boolean simulate) {
         return this.items.insertOutput(stack, simulate);

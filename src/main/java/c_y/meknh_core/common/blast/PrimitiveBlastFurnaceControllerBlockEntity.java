@@ -75,6 +75,7 @@ public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockContro
         }
     }
     private void resetProgress() {
+        setOutputBlocked(false);
         if (blastProgress != 0 || recipeId != null) setChanged();
         blastProgress = 0;
         recipeId = null;
@@ -82,6 +83,7 @@ public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockContro
         setActiveState(false);
     }
     @Override protected void tickRecipe(Level world) {
+        setOutputBlocked(false);
         // Fresh lookup every tick deliberately avoids stale input/reload caches.
         ItemStackHandler remaining = new ItemStackHandler(3);
         for (int i = 0; i < 3; i++) remaining.setStackInSlot(i, items.getStackInSlot(i).copy());
@@ -95,19 +97,14 @@ public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockContro
                 resetProgress(); return;
             }
         }
-        MachineItemHandler reserved = new MachineItemHandler(List.of(), List.of(64,64,64), () -> {});
-        for (int i = 0; i < 3; i++) reserved.setStackInSlot(i, items.getStackInSlot(i + 3).copy());
-        // Execute on a shadow inventory, not independent simulate calls competing for the same space.
-        for (var product : recipe.outputs()) {
-            if (!(product instanceof MachineOutput.ItemProduct item)) { resetProgress(); return; }
-            var type = MachineOutput.findItem(item.id());
-            if (type == null || reserved.insertOutput(new ItemStack(type, item.count()), false) != item.count()) {
-                resetProgress(); return;
-            }
-        }
         if (!holder.id().equals(recipeId) || previousRecipe != null && previousRecipe != recipe) blastProgress = 0;
         recipeId = holder.id();
         previousRecipe = recipe;
+        if (!recipe.canFitOutputs(this)) {
+            setOutputBlocked(true);
+            setActiveState(false);
+            return;
+        }
         blastTotalTicks = Math.max(1, recipe.time() > 0 ? recipe.time() : definition().time());
         workedThisTick = true;
         setActiveState(true);
@@ -138,6 +135,9 @@ public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockContro
         super.onControllerRemoved();
     }
 
+    @Override public MachineOutput outputSnapshot() {
+        return c_y.meknh_core.common.recipe.OutputReservation.snapshot(items, null, null);
+    }
     @Override public int insertItem(ItemStack stack, boolean simulate) { return items.insertOutput(stack, simulate); }
     @Override public long insertFluid(net.neoforged.neoforge.fluids.FluidStack stack, boolean simulate) { return 0; }
     @Override public long insertChemical(mekanism.api.chemical.ChemicalStack stack, boolean simulate) { return 0; }

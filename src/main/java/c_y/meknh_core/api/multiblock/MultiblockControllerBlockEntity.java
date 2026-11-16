@@ -7,6 +7,7 @@ import c_y.meknh_core.common.data.overclock.Overclock;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
 import c_y.meknh_core.common.data.voltage.VoltageTier;
 import c_y.meknh_core.common.recipe.MachineOutput;
+import c_y.meknh_core.common.recipe.OutputReservation;
 import c_y.meknh_core.common.recipe.MachineRecipe;
 import c_y.meknh_core.common.recipe.MachineRecipeInput;
 import c_y.meknh_core.common.recipe.MachineRecipeLookup;
@@ -92,6 +93,15 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     private boolean running;
 
     private String lastError = "";
+    private boolean outputBlocked;
+
+    public boolean outputBlocked() {
+        return this.outputBlocked;
+    }
+
+    protected void setOutputBlocked(boolean blocked) {
+        this.outputBlocked = blocked;
+    }
 
     public MultiblockControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                            MultiblockDefinition definition, MachineLevel level) {
@@ -221,6 +231,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         this.energyPerTick = 0L;
         this.steamPerTick = 0L;
         this.running = false;
+        this.setOutputBlocked(false);
         this.setChanged();
     }
 
@@ -285,6 +296,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         this.energyPerTick = 0L;
         this.steamPerTick = 0L;
         this.running = false;
+        this.setOutputBlocked(false);
         this.setFormedState(false);
         this.setActiveState(false);
         this.setChanged();
@@ -327,6 +339,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     // ------------------------------------------------------------------
 
     protected void tickRecipe(Level world) {
+        this.setOutputBlocked(false);
         if (this.activeRecipe == null && this.activeRecipeId != null) {
             this.resolvePendingRecipe(world);
         }
@@ -336,6 +349,12 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
                 this.running = false;
                 return;
             }
+        }
+        if (!this.activeRecipe.canFitOutputs(this, this.activeParallel)) {
+            this.setOutputBlocked(true);
+            this.setActiveState(false);
+            this.running = false;
+            return;
         }
         if (!this.consumePower()) {
             this.setActiveState(false);
@@ -376,10 +395,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         if (parallel < 1) {
             return false;
         }
-        while (parallel > 1 && !recipe.canFitOutputs(this, parallel)) {
-            parallel--;
-        }
-        if (!recipe.canFitOutputs(this, parallel)) {
+        parallel = recipe.limitParallelByOutputs(this, parallel);
+        if (parallel == 0) {
+            this.setOutputBlocked(true);
             return false;
         }
 
@@ -502,6 +520,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         this.energyPerTick = 0L;
         this.steamPerTick = 0L;
         this.running = false;
+        this.setOutputBlocked(false);
         this.setActiveState(false);
         this.setChanged();
     }
@@ -623,6 +642,25 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     }
 
     @Override
+    public MachineOutput outputSnapshot() {
+        List<MachineOutput> snapshots = new ArrayList<>();
+        for (MultiblockPart part : this.parts) {
+            if (!(part instanceof MultiblockPartBlockEntity partEntity)) {
+                continue;
+            }
+            if (partEntity.partType() == MultiblockPartType.ITEM_OUTPUT) {
+                snapshots.add(OutputReservation.snapshotHatch(partEntity.items(), null, null));
+            } else if (partEntity.partType() == MultiblockPartType.FLUID_OUTPUT) {
+                snapshots.add(OutputReservation.snapshotHatch(null, partEntity.fluidTank(), partEntity.chemicalTank()));
+            } else if (partEntity.partType() == MultiblockPartType.PUMP_HATCH) {
+                // Match insertFluid: pump hatches accept fluid products, never chemical products.
+                snapshots.add(OutputReservation.snapshotHatch(null, partEntity.fluidTank(), null));
+            }
+        }
+        return OutputReservation.combine(snapshots);
+    }
+
+    @Override
     public int insertItem(ItemStack stack, boolean simulate) {
         int remaining = stack.getCount();
         for (MultiblockPart part : this.parts) {
@@ -694,6 +732,10 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
                             this.progress + "/" + this.totalTicks,
                             this.activeParallel)
                     .withStyle(ChatFormatting.GREEN), false);
+            if (this.outputBlocked) {
+                player.displayClientMessage(Component.translatable("gui.meknh_core.warning.output_full")
+                        .withStyle(ChatFormatting.GOLD), false);
+            }
         } else {
             player.displayClientMessage(Component.translatable("multiblock.meknh_core.status.unformed",
                             this.lastError.isEmpty() ? "-" : this.lastError)

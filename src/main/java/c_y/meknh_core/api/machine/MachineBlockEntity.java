@@ -705,6 +705,9 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
      */
     public int warningCode() {
         int code = this.redstoneBlocked() ? 8 : 0;
+        if (this.activeRecipe != null && this.lastStartResult == StartResult.NO_OUTPUT_SPACE) {
+            code |= 4;
+        }
         if (!this.running && this.hasInputs()) {
             code |= switch (this.lastStartResult) {
                 case NO_POWER -> 1;
@@ -782,6 +785,14 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
                 return;
             }
         }
+        // Recheck the whole batch against one shared shadow inventory before spending this tick.
+        // Players/automation may occupy output space after the batch consumed its inputs.
+        if (!this.activeRecipe.canFitOutputs(this, this.activeParallel)) {
+            this.lastStartResult = StartResult.NO_OUTPUT_SPACE;
+            this.setActive(false);
+            return;
+        }
+        this.lastStartResult = StartResult.STARTED;
         if (!this.consumePower()) {
             this.setActive(false);
             return;
@@ -918,10 +929,8 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
             this.lastStartResult = StartResult.NO_RECIPE;
             return false;
         }
-        while (parallel > 1 && !recipe.canFitOutputs(this, parallel)) {
-            parallel--;
-        }
-        if (!recipe.canFitOutputs(this, parallel)) {
+        parallel = recipe.limitParallelByOutputs(this, parallel);
+        if (parallel == 0) {
             this.lastStartResult = StartResult.NO_OUTPUT_SPACE;
             return false;
         }
@@ -1170,6 +1179,12 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         public boolean isItemValid(int slot, ItemStack stack) {
             return slot >= 0 && slot < this.getSlots() && this.handler.isItemValid(slot, stack);
         }
+    }
+
+    @Override
+    public MachineOutput outputSnapshot() {
+        return c_y.meknh_core.common.recipe.OutputReservation.snapshot(
+                this.inventory, this.outputFluidTank, this.outputGasTank);
     }
 
     @Override

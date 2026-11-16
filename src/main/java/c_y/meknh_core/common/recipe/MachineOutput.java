@@ -20,6 +20,12 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface MachineOutput {
 
+    /** 独立可写的输出影子；不支持安全预留的旧实现返回 null。 */
+    @Nullable
+    default MachineOutput outputSnapshot() {
+        return null;
+    }
+
     /**
      * 尝试插入物品，返回实际插入数量。
      */
@@ -70,6 +76,35 @@ public interface MachineOutput {
         double chance();
 
         boolean canProduce(MachineOutput output);
+
+        /** 在可写影子中预留最大可能产量，不掷随机数。 */
+        default boolean reserve(MachineOutput output, int multiplier) {
+            if (multiplier < 1) {
+                return false;
+            }
+            // 真实产出接口中的物品/流体数量为 int；拒绝无法表示的并行产量。
+            return switch (this) {
+                case ItemProduct item -> {
+                    long total = (long) item.count * multiplier;
+                    ItemStack stack = item.stack();
+                    yield !stack.isEmpty() && total <= Integer.MAX_VALUE
+                            && output.insertItem(stack.copyWithCount((int) total), false) == total;
+                }
+                case FluidProduct fluid -> {
+                    long total = (long) fluid.amount * multiplier;
+                    FluidStack stack = fluid.stack();
+                    yield !stack.isEmpty() && total <= Integer.MAX_VALUE
+                            && output.insertFluid(stack.copyWithAmount((int) total), false) == total;
+                }
+                case GasProduct gas -> {
+                    long total = (long) gas.amount * multiplier;
+                    ChemicalStack stack = gas.stack();
+                    // 当前真实 produce 的乘法也是 int，超出时不能安全执行。
+                    yield !stack.isEmpty() && total <= Integer.MAX_VALUE
+                            && output.insertChemical(stack.copyWithAmount(total), false) == total;
+                }
+            };
+        }
 
         void produce(MachineOutput output, RandomSource random);
 

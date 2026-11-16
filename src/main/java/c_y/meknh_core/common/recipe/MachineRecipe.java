@@ -237,15 +237,10 @@ public class MachineRecipe implements Recipe<MachineRecipeInput> {
     }
 
     /**
-     * 确认输出空间足够放下全部必定产出的产物。
+     * 确认输出空间足够放下全部产物（含概率产物的最大可能值）。
      */
     public boolean canFitOutputs(MachineOutput output) {
-        for (MachineOutput.Product product : this.outputs) {
-            if (product.chance() >= 1.0D && !product.canProduce(output)) {
-                return false;
-            }
-        }
-        return true;
+        return this.canFitOutputs(output, 1);
     }
 
     /**
@@ -273,11 +268,28 @@ public class MachineRecipe implements Recipe<MachineRecipeInput> {
     }
 
     /**
-     * 确认输出空间足够放下指定并行数的全部必定产出的产物。
+     * 返回不超过机器给定上限、且全部产物可装下的最大并行份数；连一份也放不下时返回 0。
      */
+    public int limitParallelByOutputs(MachineOutput output, int upperLimit) {
+        for (int parallel = upperLimit; parallel > 0; parallel--) {
+            if (this.canFitOutputs(output, parallel)) {
+                return parallel;
+            }
+        }
+        return 0;
+    }
+
+    /** 确认指定批次数的全部产物（含概率产物最大可能值）可完整放入输出。 */
     public boolean canFitOutputs(MachineOutput output, int multiplier) {
+        if (multiplier < 1) {
+            return false;
+        }
+        MachineOutput snapshot = output.outputSnapshot();
+        if (snapshot == null) {
+            return false;
+        }
         for (MachineOutput.Product product : this.outputs) {
-            if (product.chance() >= 1.0D && !product.canProduce(output, multiplier)) {
+            if (!product.reserve(snapshot, multiplier)) {
                 return false;
             }
         }
