@@ -25,6 +25,19 @@ public final class ProgressElement {
    }
 
    /**
+    * Mek ProgressType.DOWN：11x20，贴图 24x20，左侧箭头底图，右侧 11x20 为填充。
+    */
+   public static void renderDown(GuiGraphics graphics, float ratio, int x, int y) {
+      final int width = 11;
+      final int height = 20;
+      graphics.blit(MachineGuiTextures.PROGRESS_DOWN, x, y, 0, 0, width, height, 24, 20);
+      int filled = Math.round((float)height * Mth.clamp(ratio, 0.0F, 1.0F));
+      if (filled > 0) {
+         graphics.blit(MachineGuiTextures.PROGRESS_DOWN, x, y, 12, 0, width, filled, 24, 20);
+      }
+   }
+
+   /**
     * Mekanism 电力机器/熔炉的 {@code ProgressType.BAR}：25×9，左右各留 1px 内边距。
     */
    public static void renderMekBar(GuiGraphics graphics, float ratio, int x, int y) {

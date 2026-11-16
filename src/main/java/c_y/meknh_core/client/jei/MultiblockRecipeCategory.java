@@ -176,6 +176,10 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
         AnimatedProgressBar.INSTANCE.draw(graphics, x, y);
     }
 
+    static void drawDownProgress(GuiGraphics graphics, int x, int y) {
+        c_y.meknh_core.common.gui.element.ProgressElement.renderDown(graphics, 0.65F, x, y);
+    }
+
     private static final class GuiBackground implements IDrawable {
 
         @Override

@@ -2,7 +2,6 @@ package c_y.meknh_core.client.jei;
 
 import c_y.meknh_core.common.blast.PrimitiveBlastFurnaceLayout;
 import c_y.meknh_core.common.gui.layout.MachineGuiTextures;
-import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
 import c_y.meknh_core.common.recipe.MachineIngredient;
 import c_y.meknh_core.common.recipe.MachineOutput;
@@ -14,7 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 /**
- * 土高炉的 JEI 布局：3 个竖向输入槽、3 个横向输出槽，没有储罐。
+ * 土高炉的 JEI 布局：上方 3 个 input 槽，下方 3 个 output 槽，没有储罐。
  */
 final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout {
 
@@ -34,8 +33,8 @@ final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout 
         for (MachineIngredient ingredient : recipe.inputs()) {
             if (ingredient instanceof MachineIngredient.Item && input < 3) {
                 MachineRecipeCategory.addIngredient(builder.addInputSlot(
-                        PrimitiveBlastFurnaceLayout.INPUT_X,
-                        PrimitiveBlastFurnaceLayout.INPUT_Y + input++ * PrimitiveBlastFurnaceLayout.SLOT_STEP), ingredient);
+                        PrimitiveBlastFurnaceLayout.INPUT_X + input++ * PrimitiveBlastFurnaceLayout.SLOT_STEP,
+                        PrimitiveBlastFurnaceLayout.INPUT_Y), ingredient);
             }
         }
         int output = 0;
@@ -50,7 +49,7 @@ final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout 
 
     @Override
     public void draw(GuiGraphics graphics, MachineRecipe recipe, int time) {
-        MultiblockRecipeCategory.drawProgress(graphics,
+        MultiblockRecipeCategory.drawDownProgress(graphics,
                 PrimitiveBlastFurnaceLayout.PROGRESS_X, PrimitiveBlastFurnaceLayout.PROGRESS_Y);
         graphics.drawString(Minecraft.getInstance().font,
                 Component.translatable("jei.meknh_core.time", MachineRecipeCategory.seconds(time)),
@@ -72,11 +71,11 @@ final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout 
         public void draw(GuiGraphics graphics, int x, int y) {
             GuiDraw.nineSlice(graphics, MachineGuiTextures.BASE, x, y, WIDTH, HEIGHT, 4, 256, 256);
             for (int i = 0; i < 3; i++) {
-                GuiDraw.nineSlice(graphics, MekGuiTextures.SLOT_NORMAL,
-                        x + PrimitiveBlastFurnaceLayout.INPUT_X - 1,
-                        y + PrimitiveBlastFurnaceLayout.INPUT_Y + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
+                GuiDraw.nineSlice(graphics, MachineGuiTextures.SLOT_INPUT,
+                        x + PrimitiveBlastFurnaceLayout.INPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
+                        y + PrimitiveBlastFurnaceLayout.INPUT_Y - 1,
                         18, 18, 1, 18, 18);
-                GuiDraw.nineSlice(graphics, MekGuiTextures.SLOT_NORMAL,
+                GuiDraw.nineSlice(graphics, MachineGuiTextures.SLOT_OUTPUT,
                         x + PrimitiveBlastFurnaceLayout.OUTPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
                         y + PrimitiveBlastFurnaceLayout.OUTPUT_Y - 1,
                         18, 18, 1, 18, 18);

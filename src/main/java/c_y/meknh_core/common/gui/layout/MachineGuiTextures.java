@@ -20,6 +20,7 @@ public final class MachineGuiTextures {
    public static final ResourceLocation GAUGE_GAS_INPUT = texture("gauge/yellow.png");
    public static final ResourceLocation GAUGE_GAS_OUTPUT = texture("gauge/blue.png");
    public static final ResourceLocation PROGRESS = texture("progress/right.png");
+   public static final ResourceLocation PROGRESS_DOWN = texture("progress/down.png");
    public static final ResourceLocation PROGRESS_BAR = texture("progress/bar.png");
    public static final ResourceLocation POWER_BAR = texture("bar/base.png");
    public static final ResourceLocation POWER_FILL = texture("bar/vertical_power.png");

@@ -33,10 +33,12 @@ public class PrimitiveBlastFurnaceMenu extends AbstractContainerMenu {
         this.furnace = furnace;
         this.data = data;
         MachineItemHandler items = furnace == null ? new MachineItemHandler(List.of(64,64,64), List.of(64,64,64), () -> {}) : furnace.items();
-        for (int i = 0; i < 3; i++) addSlot(new SlotItemHandler(items, i, PrimitiveBlastFurnaceLayout.INPUT_X,
-                PrimitiveBlastFurnaceLayout.INPUT_Y + i * PrimitiveBlastFurnaceLayout.SLOT_STEP));
+        for (int i = 0; i < 3; i++) addSlot(new SlotItemHandler(items, i,
+                PrimitiveBlastFurnaceLayout.INPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP,
+                PrimitiveBlastFurnaceLayout.INPUT_Y));
         for (int i = 0; i < 3; i++) addSlot(new SlotItemHandler(items, i + 3,
-                PrimitiveBlastFurnaceLayout.OUTPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP, PrimitiveBlastFurnaceLayout.OUTPUT_Y));
+                PrimitiveBlastFurnaceLayout.OUTPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP,
+                PrimitiveBlastFurnaceLayout.OUTPUT_Y));
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++)
             addSlot(new Slot(inventory, 9 + row * 9 + col, 8 + col * 18, PrimitiveBlastFurnaceLayout.PLAYER_INVENTORY_Y + row * 18));
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 8 + col * 18, 142));
