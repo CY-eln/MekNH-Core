@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BIB",
+    "I I",
+    "BIB"
+  ],
+  "key": {
+    "B": {
+      "item": "meknh_core:coke_oven_bricks"
+    },
+    "I": {
+      "item": "meknh_ores:plate_iron"
+    }
+  },
+  "result": {
+    "id": "meknh_core:coke_oven",
+    "count": 1
+  }
+}
