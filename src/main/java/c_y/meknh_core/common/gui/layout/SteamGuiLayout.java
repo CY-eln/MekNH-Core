@@ -11,6 +11,8 @@ public final class SteamGuiLayout {
 
     public static final int PANEL_WIDTH = 176;
     public static final int SLOT_SIZE = 18;
+    /** 相邻输入槽重叠 1px，避免两个 1px 边框并排变成 2px。 */
+    public static final int SLOT_STEP = SLOT_SIZE - 1;
     public static final int SLOT_Y = 37;
     public static final int PROGRESS_WIDTH = 25;
     public static final int PROGRESS_HEIGHT = 9;
@@ -20,8 +22,12 @@ public final class SteamGuiLayout {
     private SteamGuiLayout() {
     }
 
+    private static int inputStripWidth(int inputs) {
+        return inputs <= 0 ? 0 : SLOT_SIZE + (inputs - 1) * SLOT_STEP;
+    }
+
     public static int contentWidth(int inputs, int outputs) {
-        return inputs * SLOT_SIZE
+        return inputStripWidth(inputs)
                 + (inputs > 0 ? GAP : 0)
                 + PROGRESS_WIDTH
                 + (outputs > 0 ? GAP : 0) + outputs * SLOT_SIZE + Math.max(0, outputs - 1) * GAP;
@@ -32,14 +38,14 @@ public final class SteamGuiLayout {
     }
 
     /**
-     * 槽位背景的起始 x；物品槽本身的位置是它 +1。输入槽之间紧挨。
+     * 槽位背景的起始 x；物品槽本身的位置是它 +1。输入槽之间重叠 1px。
      */
     public static int inputX(int inputs, int outputs, int index) {
-        return startX(inputs, outputs) + index * SLOT_SIZE;
+        return startX(inputs, outputs) + index * SLOT_STEP;
     }
 
     public static int progressX(int inputs, int outputs) {
-        return startX(inputs, outputs) + inputs * SLOT_SIZE + (inputs > 0 ? GAP : 0);
+        return startX(inputs, outputs) + inputStripWidth(inputs) + (inputs > 0 ? GAP : 0);
     }
 
     /**

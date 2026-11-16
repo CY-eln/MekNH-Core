@@ -33,8 +33,8 @@ final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout 
         for (MachineIngredient ingredient : recipe.inputs()) {
             if (ingredient instanceof MachineIngredient.Item && input < 3) {
                 MachineRecipeCategory.addIngredient(builder.addInputSlot(
-                        PrimitiveBlastFurnaceLayout.INPUT_X + input++ * PrimitiveBlastFurnaceLayout.SLOT_STEP,
-                        PrimitiveBlastFurnaceLayout.INPUT_Y), ingredient);
+                        PrimitiveBlastFurnaceLayout.INPUT_X,
+                        PrimitiveBlastFurnaceLayout.INPUT_Y + input++ * PrimitiveBlastFurnaceLayout.SLOT_STEP), ingredient);
             }
         }
         int output = 0;
@@ -72,8 +72,8 @@ final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout 
             GuiDraw.nineSlice(graphics, MachineGuiTextures.BASE, x, y, WIDTH, HEIGHT, 4, 256, 256);
             for (int i = 0; i < 3; i++) {
                 GuiDraw.nineSlice(graphics, MachineGuiTextures.SLOT_INPUT,
-                        x + PrimitiveBlastFurnaceLayout.INPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
-                        y + PrimitiveBlastFurnaceLayout.INPUT_Y - 1,
+                        x + PrimitiveBlastFurnaceLayout.INPUT_X - 1,
+                        y + PrimitiveBlastFurnaceLayout.INPUT_Y + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
                         18, 18, 1, 18, 18);
                 GuiDraw.nineSlice(graphics, MachineGuiTextures.SLOT_OUTPUT,
                         x + PrimitiveBlastFurnaceLayout.OUTPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP - 1,
