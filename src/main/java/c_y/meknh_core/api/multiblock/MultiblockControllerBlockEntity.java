@@ -150,6 +150,12 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     /**
      * 服务端每 tick 调用。
      */
+    /**
+     * 客户端每 tick 的扩展点；默认无行为，特殊控制器可覆盖。
+     */
+    public void clientTick() {
+    }
+
     public void serverTick() {
         Level world = this.getLevel();
         if (world == null || world.isClientSide) {

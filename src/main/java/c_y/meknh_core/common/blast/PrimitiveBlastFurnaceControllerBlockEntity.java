@@ -2,6 +2,7 @@ package c_y.meknh_core.common.blast;
 
 import c_y.meknh_core.api.machine.MachineItemHandler;
 import c_y.meknh_core.api.multiblock.*;
+import c_y.meknh_core.api.wrench.DismantleAware;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
 import c_y.meknh_core.common.data.voltage.VoltageTier;
 import c_y.meknh_core.common.recipe.*;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 /** Solid-fuel GT primitive furnace: no energy, steam, fluid or overclock processing. */
-public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockControllerBlockEntity implements MultiblockControllerGui {
+public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockControllerBlockEntity implements MultiblockControllerGui, DismantleAware {
     private final MachineItemHandler items = new MachineItemHandler(List.of(64,64,64), List.of(64,64,64), this::setChanged);
     private int blastProgress, blastTotalTicks;
     private ResourceLocation recipeId;
@@ -118,8 +119,11 @@ public class PrimitiveBlastFurnaceControllerBlockEntity extends MultiblockContro
         }
         setChanged();
     }
-    /** Called only after WrenchDismantle has captured this BE's complete NBT. */
-    public void packInventoryForDismantle() { inventoryPacked = true; }
+    /** 拆除掉落已经写入完整 NBT，移除方块时不再重复掉库存。 */
+    @Override
+    public void onDismantleSaved(ItemStack drop) {
+        inventoryPacked = true;
+    }
 
     @Override public void onControllerRemoved() {
         if (!inventoryPacked && level != null && !level.isClientSide) {

@@ -142,6 +142,19 @@ public final class MultiblockRegistration {
         return EXTERNAL_CONTROLLERS.containsKey(id);
     }
 
+    private static final java.util.Set<ResourceLocation> STATIC_CONTROLLER_ASSETS = new java.util.HashSet<>();
+
+    /**
+     * 标记该多方块使用自带的静态控制器模型资源，跳过运行时模型生成。
+     */
+    public static synchronized void registerStaticControllerAssets(ResourceLocation id) {
+        STATIC_CONTROLLER_ASSETS.add(id);
+    }
+
+    public static synchronized boolean hasStaticControllerAssets(ResourceLocation id) {
+        return STATIC_CONTROLLER_ASSETS.contains(id);
+    }
+
     private static final Map<ResourceLocation, MultiblockDefinition> DEFINITIONS = new LinkedHashMap<>();
     private static final Map<ResourceLocation, MultiblockVariant> VARIANTS = new LinkedHashMap<>();
     private static final Map<Block, MultiblockVariant> VARIANTS_BY_BLOCK = new HashMap<>();

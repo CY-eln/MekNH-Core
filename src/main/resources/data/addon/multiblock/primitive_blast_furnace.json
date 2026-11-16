@@ -1,34 +1,13 @@
 {
   "id": "primitive_blast_furnace",
   "level": "none",
-  "time": 1800,
+  "time": "90s",
   "结构": [
-    [
-      "bbb",
-      "bbb",
-      "bbb",
-      "bbb"
-    ],
-    [
-      "bbb",
-      "b&b",
-      "b#b",
-      "b#b"
-    ],
-    [
-      "bbb",
-      "b@b",
-      "bbb",
-      "bbb"
-    ]
+    ["bbb", "bbb", "bbb", "bbb"],
+    ["bbb", "b_b", "b_b", "b_b"],
+    ["bbb", "b@b", "bbb", "bbb"]
   ],
   "组成": {
-    "b": [
-      "meknh_core:primitive_blast_furnace_bricks"
-    ],
-    "&": [
-      "air_or_snow"
-    ]
-  },
-  "controller_block": "meknh_core:primitive_blast_furnace"
+    "b": "meknh_core:primitive_blast_furnace_bricks"
+  }
 }
