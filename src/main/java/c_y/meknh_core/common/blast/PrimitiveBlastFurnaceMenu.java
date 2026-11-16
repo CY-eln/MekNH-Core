@@ -34,8 +34,8 @@ public class PrimitiveBlastFurnaceMenu extends AbstractContainerMenu {
         this.data = data;
         MachineItemHandler items = furnace == null ? new MachineItemHandler(List.of(64,64,64), List.of(64,64,64), () -> {}) : furnace.items();
         for (int i = 0; i < 3; i++) addSlot(new SlotItemHandler(items, i,
-                PrimitiveBlastFurnaceLayout.INPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP,
-                PrimitiveBlastFurnaceLayout.INPUT_Y));
+                PrimitiveBlastFurnaceLayout.INPUT_X,
+                PrimitiveBlastFurnaceLayout.INPUT_Y + i * PrimitiveBlastFurnaceLayout.SLOT_STEP));
         for (int i = 0; i < 3; i++) addSlot(new SlotItemHandler(items, i + 3,
                 PrimitiveBlastFurnaceLayout.OUTPUT_X + i * PrimitiveBlastFurnaceLayout.SLOT_STEP,
                 PrimitiveBlastFurnaceLayout.OUTPUT_Y));

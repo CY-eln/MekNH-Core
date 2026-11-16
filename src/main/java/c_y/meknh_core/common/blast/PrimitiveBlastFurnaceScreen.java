@@ -41,7 +41,7 @@ public class PrimitiveBlastFurnaceScreen extends GuiMekanism<PrimitiveBlastFurna
                         return PrimitiveBlastFurnaceScreen.this.menu.progressRatio();
                     }
                 };
-        this.addRenderableWidget(new GuiProgress(handler, ProgressType.DOWN, this,
+        this.addRenderableWidget(new GuiProgress(handler, ProgressType.RIGHT, this,
                 PrimitiveBlastFurnaceLayout.PROGRESS_X, PrimitiveBlastFurnaceLayout.PROGRESS_Y));
     }
 

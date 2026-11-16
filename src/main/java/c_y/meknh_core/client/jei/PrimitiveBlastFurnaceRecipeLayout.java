@@ -49,7 +49,7 @@ final class PrimitiveBlastFurnaceRecipeLayout implements MultiblockRecipeLayout 
 
     @Override
     public void draw(GuiGraphics graphics, MachineRecipe recipe, int time) {
-        MultiblockRecipeCategory.drawDownProgress(graphics,
+        MultiblockRecipeCategory.drawProgress(graphics,
                 PrimitiveBlastFurnaceLayout.PROGRESS_X, PrimitiveBlastFurnaceLayout.PROGRESS_Y);
         graphics.drawString(Minecraft.getInstance().font,
                 Component.translatable("jei.meknh_core.time", MachineRecipeCategory.seconds(time)),
