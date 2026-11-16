@@ -39,6 +39,7 @@ public final class PrimitiveBlastFurnaceRegistration {
         ITEMS.register(bus);
         MENUS.register(bus);
         MultiblockRegistration.registerControllerFactory(MekNHCore.rl("primitive_blast_furnace"), PrimitiveBlastFurnaceControllerBlockEntity::new);
+        MultiblockRegistration.registerStaticControllerAssets(MekNHCore.rl("primitive_blast_furnace"));
         bus.addListener(PrimitiveBlastFurnaceRegistration::registerCapabilities);
         bus.addListener((net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent event) -> {
             if (event.getTabKey() == net.minecraft.world.item.CreativeModeTabs.BUILDING_BLOCKS)

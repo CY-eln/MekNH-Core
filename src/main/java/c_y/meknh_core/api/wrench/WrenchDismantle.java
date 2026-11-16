@@ -107,9 +107,8 @@ public final class WrenchDismantle {
             drops = List.of(self);
         }
         attachBlockEntityData(serverLevel, blockEntity, drops, state.getBlock());
-        if (blockEntity instanceof c_y.meknh_core.common.blast.PrimitiveBlastFurnaceControllerBlockEntity furnace
-                && drops.size() == 1 && drops.getFirst().has(DataComponents.BLOCK_ENTITY_DATA)) {
-            furnace.packInventoryForDismantle();
+        if (blockEntity instanceof DismantleAware aware) {
+            aware.onDismantleSaved(drops.getFirst());
         }
         // 先取掉落再移除方块，保证 BlockEntity 还在。
         level.removeBlock(pos, false);

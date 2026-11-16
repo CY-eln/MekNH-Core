@@ -89,6 +89,8 @@ public final class MeknhJeiPlugin implements IModPlugin {
         this.multiblockCategories.clear();
         MACHINE_TYPES.clear();
         MULTIBLOCK_TYPES.clear();
+        MultiblockRecipeLayouts.register(MekNHCore.rl("primitive_blast_furnace"),
+                new PrimitiveBlastFurnaceRecipeLayout());
         for (var definition : MachineRegistration.definitions()) {
             MachineRecipeCategory category = new MachineRecipeCategory(definition, registration.getJeiHelpers().getGuiHelper());
             this.machineCategories.add(category);
