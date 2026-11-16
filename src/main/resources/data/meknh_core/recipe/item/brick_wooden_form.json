@@ -1,4 +1,4 @@
-{
+﻿{
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
@@ -10,7 +10,7 @@
     }
   ],
   "result": {
-    "id": "gtceu:brick_wooden_form",
+    "id": "meknh_core:brick_wooden_form",
     "count": 1
   }
 }

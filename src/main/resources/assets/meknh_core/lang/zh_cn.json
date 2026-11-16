@@ -1,7 +1,7 @@
 {
-  "item.gtceu.brick_wooden_form": "木制砖模具",
-  "item.gtceu.compressed_coke_clay": "压缩焦黏土",
-  "item.gtceu.coke_oven_brick": "焦炉砖",
+  "item.meknh_core.brick_wooden_form": "木制砖模具",
+  "item.meknh_core.compressed_coke_clay": "压缩焦黏土",
+  "item.meknh_core.coke_oven_brick": "焦炉砖",
   "block.meknh_core.primitive_blast_furnace": "土高炉",
   "block.meknh_core.primitive_blast_furnace_bricks": "耐火砖块",
   "item.meknh_core.dust_tiny_dark_ash": "小撮深灰",

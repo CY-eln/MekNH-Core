@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "gtceu:item/compressed_coke_clay"
+    "layer0": "meknh_core:item/compressed_coke_clay"
   }
 }

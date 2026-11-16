@@ -50,19 +50,17 @@ public final class CokeOvenMaterials {
      */
     public static final DeferredItem<Item> COKE_GEM = ITEMS.registerItem("coke_gem", Item::new);
 
-    private static final DeferredRegister.Items GT_ITEMS = DeferredRegister.createItems("gtceu");
-
     /**
-     * 格雷科技焦炉前置材料；使用 gtceu 命名空间，配方与 GT 保持一致。
+     * 焦炉前置材料，使用本模组命名空间；贴图取自 GT。
      */
     public static final DeferredItem<Item> BRICK_WOODEN_FORM =
-            GT_ITEMS.registerItem("brick_wooden_form", properties -> new BrickWoodenFormItem(properties.stacksTo(1)));
+            ITEMS.registerItem("brick_wooden_form", properties -> new BrickWoodenFormItem(properties.stacksTo(1)));
 
     public static final DeferredItem<Item> COMPRESSED_COKE_CLAY =
-            GT_ITEMS.registerItem("compressed_coke_clay", Item::new);
+            ITEMS.registerItem("compressed_coke_clay", Item::new);
 
     public static final DeferredItem<Item> COKE_OVEN_BRICK =
-            GT_ITEMS.registerItem("coke_oven_brick", Item::new);
+            ITEMS.registerItem("coke_oven_brick", Item::new);
 
     public static final DeferredHolder<FluidType, FluidType> CREOSOTE_TYPE = FLUID_TYPES.register("creosote",
             () -> new DataFluidType(FluidType.Properties.create()
@@ -113,7 +111,6 @@ public final class CokeOvenMaterials {
     public static synchronized void initialize(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
-        GT_ITEMS.register(bus);
         FLUID_TYPES.register(bus);
         FLUIDS.register(bus);
         bus.addListener(CokeOvenMaterials::addCreativeTab);
