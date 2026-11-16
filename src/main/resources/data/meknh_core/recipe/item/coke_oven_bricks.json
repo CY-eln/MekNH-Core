@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "meknh_core:coke_oven_brick"
+    },
+    {
+      "item": "meknh_core:coke_oven_brick"
+    },
+    {
+      "item": "meknh_core:coke_oven_brick"
+    },
+    {
+      "item": "meknh_core:coke_oven_brick"
+    }
+  ],
+  "result": {
+    "id": "meknh_core:coke_oven_bricks",
+    "count": 1
+  }
+}
