@@ -147,37 +147,33 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             GuiDraw.nineSliceXY(graphics, MekGuiTextures.SLOT_OUTPUT, x, y,
                   18, 58, 1, 1, 18, 18, 0, 0, 18, 18);
             // 一个 MEK 槽同时容纳流体或化学品，按当前内容绘制液面。
-            MachineBlockEntity machine = ((MachineMenu)this.menu).machine();
-            if (machine != null) {
-               ChemicalStack gas = machine.outputGasTank() == null ? ChemicalStack.EMPTY : machine.outputGasTank().getStack();
-               net.neoforged.neoforge.fluids.FluidStack fluid = machine.outputFluidTank() == null
-                     ? net.neoforged.neoforge.fluids.FluidStack.EMPTY : machine.outputFluidTank().getFluid();
-               int capacity = machine.outputGasTank() != null ? (int)machine.outputGasTank().getCapacity()
-                     : machine.outputFluidTank() == null ? 0 : machine.outputFluidTank().getCapacity();
-               int amount = !gas.isEmpty() ? (int)gas.getAmount() : fluid.getAmount();
-               if (amount > 0 && capacity > 0) {
-                  int innerHeight = 56;
-                  int fill = Math.max(1, Math.round(innerHeight * Math.min(1.0F, amount / (float)capacity)));
-                  TextureAtlasSprite sprite = null;
-                  boolean colored = false;
-                  if (!gas.isEmpty()) {
-                     sprite = MekanismRenderer.getChemicalTexture(gas);
-                     int tint = gas.getChemicalTint();
-                     graphics.setColor(((tint >> 16) & 0xFF) / 255.0F,
-                           ((tint >> 8) & 0xFF) / 255.0F, (tint & 0xFF) / 255.0F, 1.0F);
-                     colored = true;
-                  } else if (!fluid.isEmpty()) {
-                     sprite = MekanismRenderer.getFluidTexture(fluid, FluidTextureType.STILL);
-                     MekanismRenderer.color(graphics, fluid);
-                     colored = true;
-                  }
-                  if (sprite != null) {
-                     // drawTiledSprite 的 yPosition 是“底部”，从罐底向上铺。
-                     GuiUtils.drawTiledSprite(graphics, x + 1, y + 1 + innerHeight,
-                           0, 16, fill, sprite, 16, 16, 0, TilingDirection.DOWN_RIGHT);
-                     if (colored) {
-                        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-                     }
+            MachineMenu menu = (MachineMenu) this.menu;
+            ChemicalStack gas = menu.syncedChemical(MachineMenu.DATA_GAS_OUT, MachineMenu.DATA_GAS_OUT_ID);
+            net.neoforged.neoforge.fluids.FluidStack fluid =
+                    menu.syncedFluid(MachineMenu.DATA_FLUID_OUT, MachineMenu.DATA_FLUID_OUT_ID);
+            int capacity = (int) Math.min(Integer.MAX_VALUE, menu.mekOutputCapacity());
+            int amount = !gas.isEmpty() ? (int) gas.getAmount() : fluid.getAmount();
+            if (amount > 0 && capacity > 0) {
+               int innerHeight = 56;
+               int fill = Math.max(1, Math.round(innerHeight * Math.min(1.0F, amount / (float)capacity)));
+               TextureAtlasSprite sprite = null;
+               boolean colored = false;
+               if (!gas.isEmpty()) {
+                  sprite = MekanismRenderer.getChemicalTexture(gas);
+                  int tint = gas.getChemicalTint();
+                  graphics.setColor(((tint >> 16) & 0xFF) / 255.0F,
+                        ((tint >> 8) & 0xFF) / 255.0F, (tint & 0xFF) / 255.0F, 1.0F);
+                  colored = true;
+               } else if (!fluid.isEmpty()) {
+                  sprite = MekanismRenderer.getFluidTexture(fluid, FluidTextureType.STILL);
+                  MekanismRenderer.color(graphics, fluid);
+                  colored = true;
+               }
+               if (sprite != null) {
+                  GuiUtils.drawTiledSprite(graphics, x + 1, y + 1 + innerHeight,
+                        0, 16, fill, sprite, 16, 16, 0, TilingDirection.DOWN_RIGHT);
+                  if (colored) {
+                     graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
                   }
                }
             }
@@ -204,20 +200,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
          }
 
          float storage = this.storageRatio();
-         MachineBlockEntity machine = ((MachineMenu)this.menu).machine();
-
+         MachineMenu menu = (MachineMenu) this.menu;
          for (UiElement element : elements) {
-            GaugeElement.Content content = null;
-            if (machine != null) {
-               content = switch (element.kind()) {
-                  case STEAM -> machine.steamTank() == null ? null : GaugeElement.Content.of(machine.steamTank().getStack());
-                  case FLUID_IN -> machine.inputFluidTank() == null ? null : GaugeElement.Content.of(machine.inputFluidTank().getFluid());
-                  case FLUID_OUT -> machine.outputFluidTank() == null ? null : GaugeElement.Content.of(machine.outputFluidTank().getFluid());
-                  case GAS_IN -> machine.inputGasTank() == null ? null : GaugeElement.Content.of(machine.inputGasTank().getStack());
-                  case GAS_OUT -> machine.outputGasTank() == null ? null : GaugeElement.Content.of(machine.outputGasTank().getStack());
-                  default -> null;
-               };
-            }
+            GaugeElement.Content content = switch (element.kind()) {
+               case STEAM -> this.steamStack().isEmpty() ? null : GaugeElement.Content.of(this.steamStack());
+               case FLUID_IN -> GaugeElement.Content.of(menu.syncedFluid(MachineMenu.DATA_FLUID_IN, MachineMenu.DATA_FLUID_IN_ID));
+               case FLUID_OUT -> GaugeElement.Content.of(menu.syncedFluid(MachineMenu.DATA_FLUID_OUT, MachineMenu.DATA_FLUID_OUT_ID));
+               case GAS_IN -> GaugeElement.Content.of(menu.syncedChemical(MachineMenu.DATA_GAS_IN, MachineMenu.DATA_GAS_IN_ID));
+               case GAS_OUT -> GaugeElement.Content.of(menu.syncedChemical(MachineMenu.DATA_GAS_OUT, MachineMenu.DATA_GAS_OUT_ID));
+               default -> null;
+            };
             UiElementRenderer.render(graphics, element, this.leftPos, this.topPos, storage,
                   this.progressRatio(), this.steamRatio(), content);
          }
@@ -349,21 +341,21 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       }
 
       if (this.isOverMekSlot(mouseX, mouseY)) {
-         MachineBlockEntity machine = ((MachineMenu)this.menu).machine();
-         if (machine != null) {
-            if (machine.outputGasTank() != null && !machine.outputGasTank().isEmpty()) {
-               graphics.renderTooltip(this.font, Component.literal(
-                     machine.outputGasTank().getStack().getChemical().getTextComponent().getString()
-                           + "：" + machine.outputGasTank().getStored() + " / "
-                           + machine.outputGasTank().getCapacity() + " mB"), mouseX, mouseY);
-            } else if (machine.outputFluidTank() != null && !machine.outputFluidTank().isEmpty()) {
-               graphics.renderTooltip(this.font, Component.literal(
-                     machine.outputFluidTank().getFluid().getHoverName().getString()
-                           + "：" + machine.outputFluidTank().getFluidAmount() + " / "
-                           + machine.outputFluidTank().getCapacity() + " mB"), mouseX, mouseY);
-            } else {
-               graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.empty"), mouseX, mouseY);
-            }
+         MachineMenu menu = (MachineMenu) this.menu;
+         ChemicalStack gas = menu.syncedChemical(MachineMenu.DATA_GAS_OUT, MachineMenu.DATA_GAS_OUT_ID);
+         net.neoforged.neoforge.fluids.FluidStack fluid =
+                 menu.syncedFluid(MachineMenu.DATA_FLUID_OUT, MachineMenu.DATA_FLUID_OUT_ID);
+         long capacity = menu.mekOutputCapacity();
+         if (!gas.isEmpty()) {
+            graphics.renderTooltip(this.font, Component.literal(
+                  gas.getChemical().getTextComponent().getString()
+                        + "：" + gas.getAmount() + " / " + capacity + " mB"), mouseX, mouseY);
+         } else if (!fluid.isEmpty()) {
+            graphics.renderTooltip(this.font, Component.literal(
+                  fluid.getHoverName().getString()
+                        + "：" + fluid.getAmount() + " / " + capacity + " mB"), mouseX, mouseY);
+         } else {
+            graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.empty"), mouseX, mouseY);
          }
          return;
       }

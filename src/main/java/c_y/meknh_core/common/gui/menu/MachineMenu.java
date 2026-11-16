@@ -9,6 +9,7 @@ import c_y.meknh_core.common.gui.layout.MachineGuiLayout;
 import c_y.meknh_core.common.gui.layout.SteamGuiLayout;
 import mekanism.api.MekanismAPI;
 import mekanism.api.chemical.Chemical;
+import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalTank;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -224,6 +225,36 @@ public class MachineMenu extends AbstractContainerMenu {
       } else {
          return input ? this.definition.chemicalInputCapacity() : this.definition.chemicalOutputCapacity();
       }
+   }
+
+   /**
+    * 用同步到菜单的 id/amount 构造流体，客户端不依赖方块实体里的实际罐体。
+    */
+   public FluidStack syncedFluid(int amountIndex, int idIndex) {
+      int amount = this.data.get(amountIndex);
+      int id = this.data.get(idIndex);
+      if (amount <= 0 || id < 0) {
+         return FluidStack.EMPTY;
+      }
+      Fluid fluid = BuiltInRegistries.FLUID.byId(id);
+      return fluid == null ? FluidStack.EMPTY : new FluidStack(fluid, amount);
+   }
+
+   /**
+    * 用同步到菜单的 id/amount 构造化学品，客户端不依赖方块实体里的实际罐体。
+    */
+   public ChemicalStack syncedChemical(int amountIndex, int idIndex) {
+      int amount = this.data.get(amountIndex);
+      int id = this.data.get(idIndex);
+      if (amount <= 0 || id < 0) {
+         return ChemicalStack.EMPTY;
+      }
+      Chemical chemical = MekanismAPI.CHEMICAL_REGISTRY.byId(id);
+      return chemical == null ? ChemicalStack.EMPTY : new ChemicalStack(chemical, amount);
+   }
+
+   public long mekOutputCapacity() {
+      return this.level == null ? 0L : MachineBlockEntity.mekOutputCapacity(this.level);
    }
 
    public boolean stillValid(Player player) {
