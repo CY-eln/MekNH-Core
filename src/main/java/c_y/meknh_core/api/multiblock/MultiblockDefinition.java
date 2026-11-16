@@ -43,7 +43,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public record MultiblockDefinition(ResourceLocation id, List<MachineLevel> levels,
                                    MultiblockStructure structure, int time, double energy,
-                                   boolean noVoltage) {
+                                   boolean noVoltage, boolean share) {
 
     /**
      * 结构 JSON 的时间默认值（tick）。
@@ -127,8 +127,17 @@ public record MultiblockDefinition(ResourceLocation id, List<MachineLevel> level
                     : MachineRecipe.parseTicks(element.getAsString());
         }
         double energy = json.has("energy") ? json.get("energy").getAsDouble() : DEFAULT_ENERGY;
+        boolean share = false;
+        if (json.has("share")) {
+            JsonElement element = json.get("share");
+            if (element.isJsonPrimitive()) {
+                share = element.getAsJsonPrimitive().isBoolean()
+                        ? element.getAsBoolean()
+                        : "true".equalsIgnoreCase(element.getAsString().trim());
+            }
+        }
 
-        return new MultiblockDefinition(id, levels, structure, Math.max(1, time), energy, noVoltage);
+        return new MultiblockDefinition(id, levels, structure, Math.max(1, time), energy, noVoltage, share);
     }
 
     /**

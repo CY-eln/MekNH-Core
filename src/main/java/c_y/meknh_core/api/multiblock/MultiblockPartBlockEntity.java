@@ -272,6 +272,9 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
 
     @Override
     public void linkController(BlockPos controllerPos) {
+        if (this.controllerPos != null && !this.controllerPos.equals(controllerPos)) {
+            return;
+        }
         this.controllerPos = controllerPos.immutable();
         this.updateFormedAppearance(true);
         this.setChanged();
