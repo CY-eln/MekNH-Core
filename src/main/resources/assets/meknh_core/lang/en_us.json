@@ -1,4 +1,7 @@
 {
+  "item.gtceu.brick_wooden_form": "Brick Wooden Form",
+  "item.gtceu.compressed_coke_clay": "Compressed Coke Clay",
+  "item.gtceu.coke_oven_brick": "Coke Oven Brick",
   "block.meknh_core.primitive_blast_furnace": "Primitive Blast Furnace",
   "block.meknh_core.primitive_blast_furnace_bricks": "Primitive Blast Furnace Bricks",
   "item.meknh_core.dust_tiny_dark_ash": "Tiny Pile of Dark Ash",

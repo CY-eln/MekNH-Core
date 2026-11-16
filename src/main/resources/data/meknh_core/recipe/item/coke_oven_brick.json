@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "gtceu:compressed_coke_clay"
+  },
+  "result": {
+    "id": "gtceu:coke_oven_brick"
+  },
+  "experience": 0.3,
+  "cookingtime": 200
+}

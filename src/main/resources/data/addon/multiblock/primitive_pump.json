@@ -2,6 +2,7 @@
   "id": "primitive_pump",
   "level": "none",
   "time": "1s",
+  "share": "true",
   "结构": [
     ["CCC", ".A.", ".A."],
     ["CBC", "A.A", "AAA"],
