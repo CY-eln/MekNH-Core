@@ -8,6 +8,7 @@ import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -67,6 +68,9 @@ public final class CasingRegistration {
             () -> new Block(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
     public static final DeferredBlock<Block> TREATED_WOOD_FRAME = BLOCKS.register("treated_wood_frame",
             () -> new Block(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD).noOcclusion()));
+    public static final DeferredBlock<Block> TREATED_WOOD_PLANKS = BLOCKS.register("treated_wood_planks",
+            () -> new Block(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.WOOD)));
+    public static final DeferredItem<Item> TREATED_WOOD_ROD = ITEMS.registerSimpleItem("treated_wood_rod");
 
     public static final DeferredItem<BlockItem> PRIMITIVE_PUMP_ITEM =
             ITEMS.registerItem("primitive_pump", properties -> new BlockItem(PRIMITIVE_PUMP.get(), properties));
@@ -74,6 +78,9 @@ public final class CasingRegistration {
             ITEMS.registerItem("pump_deck", properties -> new BlockItem(PUMP_DECK.get(), properties));
     public static final DeferredItem<BlockItem> TREATED_WOOD_FRAME_ITEM =
             ITEMS.registerItem("treated_wood_frame", properties -> new BlockItem(TREATED_WOOD_FRAME.get(), properties));
+    public static final DeferredItem<BlockItem> TREATED_WOOD_PLANKS_ITEM =
+            ITEMS.registerItem("treated_wood_planks",
+                    properties -> new BlockItem(TREATED_WOOD_PLANKS.get(), properties));
 
     private CasingRegistration() {
     }
@@ -95,6 +102,9 @@ public final class CasingRegistration {
             event.accept(PRIMITIVE_PUMP_ITEM.get());
             event.accept(PUMP_DECK_ITEM.get());
             event.accept(TREATED_WOOD_FRAME_ITEM.get());
+            event.accept(TREATED_WOOD_PLANKS_ITEM.get());
+        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(TREATED_WOOD_ROD.get());
         }
     }
 }

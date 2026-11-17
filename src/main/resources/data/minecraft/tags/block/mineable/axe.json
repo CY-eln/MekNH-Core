@@ -4,6 +4,7 @@
     "meknh_core:primitive_pump",
     "meknh_core:pump_deck",
     "meknh_core:treated_wood_frame",
+    "meknh_core:treated_wood_planks",
     "meknh_core:pump_hatch"
   ]
 }

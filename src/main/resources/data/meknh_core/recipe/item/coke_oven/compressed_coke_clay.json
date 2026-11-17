@@ -1,0 +1,24 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "XXX",
+    "SFS",
+    "SSS"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:clay_ball"
+    },
+    "S": {
+      "tag": "minecraft:sand"
+    },
+    "F": {
+      "item": "meknh_core:brick_wooden_form"
+    }
+  },
+  "result": {
+    "id": "meknh_core:compressed_coke_clay",
+    "count": 3
+  }
+}

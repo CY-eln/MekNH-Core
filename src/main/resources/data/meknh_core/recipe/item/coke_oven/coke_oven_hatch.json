@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CBT"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:chest"
+    },
+    "B": {
+      "item": "meknh_core:coke_oven_bricks"
+    },
+    "T": {
+      "item": "mekanism:basic_fluid_tank"
+    }
+  },
+  "result": {
+    "id": "meknh_core:coke_oven_hatch",
+    "count": 1
+  }
+}

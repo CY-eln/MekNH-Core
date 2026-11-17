@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "meknh_core:block/treated_wood_planks"
+  }
+}

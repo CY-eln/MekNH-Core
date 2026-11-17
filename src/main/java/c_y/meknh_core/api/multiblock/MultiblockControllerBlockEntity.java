@@ -11,7 +11,9 @@ import c_y.meknh_core.common.recipe.MachineRecipe;
 import c_y.meknh_core.common.recipe.MachineRecipeInput;
 import c_y.meknh_core.common.recipe.MachineRecipeLookup;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.chemical.ChemicalStack;
@@ -208,6 +210,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
      * 否则会和移除流程互相覆盖。这里只做内存清理。</p>
      */
     public void onControllerRemoved() {
+        MultiblockStructureClaims.release(this.getLevel(), this.worldPosition);
         for (MultiblockPart part : this.parts) {
             part.unlinkController(this.worldPosition);
         }
@@ -244,6 +247,26 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
             }
             return false;
         }
+        for (MultiblockPart part : result.parts()) {
+            BlockPos owner = part.controllerPos();
+            if (owner != null && !owner.equals(this.worldPosition)) {
+                this.lastError = "仓室已被另一个多方块占用";
+                if (this.formed) {
+                    this.deform();
+                }
+                return false;
+            }
+        }
+        Set<BlockPos> claimedCells = this.claimedCells(world, result.parts());
+        if (!MultiblockStructureClaims.canClaim(world, this.worldPosition, this.definition.share(), claimedCells)) {
+            this.lastError = "结构方块已被另一个多方块占用";
+            if (this.formed) {
+                this.deform();
+            }
+            return false;
+        }
+        MultiblockStructureClaims.release(world, this.worldPosition);
+        MultiblockStructureClaims.claim(world, this.worldPosition, this.definition.share(), claimedCells);
         this.applyParts(result.parts());
         if (!this.formed) {
             this.formed = true;
@@ -259,6 +282,21 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         return this.revalidate();
     }
 
+    private Set<BlockPos> claimedCells(Level world, List<MultiblockPart> matched) {
+        Set<BlockPos> partPositions = new HashSet<>();
+        for (MultiblockPart part : matched) {
+            partPositions.add(part.self().getBlockPos());
+        }
+        Set<BlockPos> cells = new HashSet<>();
+        for (MultiblockStructure.Cell cell : this.definition.structure().cells()) {
+            BlockPos pos = MultiblockStructure.offset(this.worldPosition, cell.dx(), cell.dy(), cell.dz(), this.facing());
+            if (!partPositions.contains(pos) && !world.getBlockState(pos).isAir()) {
+                cells.add(pos);
+            }
+        }
+        return cells;
+    }
+
     private void applyParts(List<MultiblockPart> matched) {
         // 每次复检都重新绑定，避免区块重载后持有失效引用。
         for (MultiblockPart part : this.parts) {
@@ -271,6 +309,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     }
 
     private void deform() {
+        MultiblockStructureClaims.release(this.getLevel(), this.worldPosition);
         for (MultiblockPart part : this.parts) {
             part.unlinkController(this.worldPosition);
         }
@@ -704,6 +743,12 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     // ------------------------------------------------------------------
     // 存档
     // ------------------------------------------------------------------
+
+    @Override
+    public void setRemoved() {
+        MultiblockStructureClaims.release(this.getLevel(), this.worldPosition);
+        super.setRemoved();
+    }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {

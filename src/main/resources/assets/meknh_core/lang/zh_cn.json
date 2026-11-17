@@ -1,4 +1,7 @@
 {
+  "item.meknh_core.brick_wooden_form": "木制砖模具",
+  "item.meknh_core.compressed_coke_clay": "压缩焦黏土",
+  "item.meknh_core.coke_oven_brick": "焦炉砖",
   "block.meknh_core.primitive_blast_furnace": "土高炉",
   "block.meknh_core.primitive_blast_furnace_bricks": "耐火砖块",
   "item.meknh_core.dust_tiny_dark_ash": "小撮深灰",
@@ -227,5 +230,7 @@
   "jade.meknh_core.multiblock.formed": "结构已成型",
   "jade.meknh_core.multiblock.unformed": "结构不完整",
   "jade.meknh_core.waterpump.output": "产出：%s mB/s",
-  "config.jade.plugin_meknh_core.multiblock_status": "结构状态"
+  "config.jade.plugin_meknh_core.multiblock_status": "结构状态",
+  "block.meknh_core.treated_wood_planks": "防腐木板",
+  "item.meknh_core.treated_wood_rod": "防腐木棍"
 }

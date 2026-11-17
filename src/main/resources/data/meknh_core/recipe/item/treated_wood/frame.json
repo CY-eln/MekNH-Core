@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RRR",
+    "R R",
+    "RRR"
+  ],
+  "key": {
+    "R": {
+      "item": "meknh_core:treated_wood_rod"
+    }
+  },
+  "result": {
+    "id": "meknh_core:treated_wood_frame",
+    "count": 1
+  }
+}

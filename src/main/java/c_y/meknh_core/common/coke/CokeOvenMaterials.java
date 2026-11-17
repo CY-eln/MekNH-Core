@@ -50,6 +50,18 @@ public final class CokeOvenMaterials {
      */
     public static final DeferredItem<Item> COKE_GEM = ITEMS.registerItem("coke_gem", Item::new);
 
+    /**
+     * 焦炉前置材料，使用本模组命名空间；贴图取自 GT。
+     */
+    public static final DeferredItem<Item> BRICK_WOODEN_FORM =
+            ITEMS.registerItem("brick_wooden_form", properties -> new BrickWoodenFormItem(properties.stacksTo(1)));
+
+    public static final DeferredItem<Item> COMPRESSED_COKE_CLAY =
+            ITEMS.registerItem("compressed_coke_clay", Item::new);
+
+    public static final DeferredItem<Item> COKE_OVEN_BRICK =
+            ITEMS.registerItem("coke_oven_brick", Item::new);
+
     public static final DeferredHolder<FluidType, FluidType> CREOSOTE_TYPE = FLUID_TYPES.register("creosote",
             () -> new DataFluidType(FluidType.Properties.create()
                     .descriptionId("fluid_type." + MODID + ".creosote")
@@ -107,6 +119,9 @@ public final class CokeOvenMaterials {
     private static void addCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(COKE_GEM.get());
+            event.accept(BRICK_WOODEN_FORM.get());
+            event.accept(COMPRESSED_COKE_CLAY.get());
+            event.accept(COKE_OVEN_BRICK.get());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(CREOSOTE_BUCKET.get());
         }
