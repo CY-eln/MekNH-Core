@@ -24,6 +24,10 @@ import c_y.meknh_core.common.gui.machine.AlloySmelterScreen;
 import c_y.meknh_core.common.gui.machine.MaceratorScreen;
 import c_y.meknh_core.common.gui.menu.MachineMenu;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MachineBackgroundState;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
+import c_y.meknh_core.common.machine.steam.SteamVariant;
 import c_y.meknh_core.common.machine.config.RedstoneMode;
 import java.util.List;
 import java.util.Locale;
@@ -108,7 +112,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
    }
 
    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-      GuiDraw.nineSlice(graphics, MachineGuiTextures.BASE, this.leftPos, this.topPos, this.imageWidth, this.imageHeight, 4, 256, 256);
+      MetalMachineBackground.render(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
+            MachineBackgroundState.fromSynced(this.menu.data(MachineMenu.DATA_RUNNING) != 0,
+                  this.menu.data(this.menu.isSteam() ? MachineMenu.DATA_STEAM : MachineMenu.DATA_ENERGY)),
+            this.font.width(this.title), MachineBackgroundMaterial.forSteam(this.menu.isSteam(),
+                  this.menu.level() != null && this.menu.level().steam() == SteamVariant.HIGH));
       if (((MachineMenu)this.menu).usesSteamLayout()) {
          // 蒸汽布局：输入槽 - 进度条 - 输出槽；底部横向槽按机器类型绘制。
          int inputSlots = ((MachineMenu)this.menu).definition() == null ? 0 : ((MachineMenu)this.menu).definition().itemInputSlots();
@@ -127,7 +135,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             graphics.blit(texture, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 0.0F, 0.0F, 18, 18, 18, 18);
          }
          // 横向结构：输入槽 - 进度条 - 输出槽。
-         ProgressElement.renderMekBar(graphics, ((MachineMenu)this.menu).data(MachineMenu.DATA_RUNNING) != 0,
+         ProgressElement.renderChargingArrow(graphics, ((MachineMenu)this.menu).data(MachineMenu.DATA_RUNNING) != 0,
                this.progressRatio(),
                this.leftPos + SteamGuiLayout.progressX(inputSlots, outputSlots), this.topPos + SteamGuiLayout.PROGRESS_Y);
          if (((MachineMenu)this.menu).isSteam()) {

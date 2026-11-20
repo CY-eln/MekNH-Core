@@ -2,6 +2,7 @@ package c_y.meknh_core.common.gui.element;
 
 import c_y.meknh_core.common.gui.layout.MachineGuiTextures;
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
+import c_y.meknh_core.common.gui.render.ChargingArrow;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -20,6 +21,16 @@ public final class ProgressElement {
          int filled = Math.round((float)width * Mth.clamp(ratio, 0.0F, 1.0F));
          if (filled > 0) {
             graphics.blit(texture, x, y, filled, height, 0.0F, (float)height, filled, height, width, height * 3);
+         }
+      }
+   }
+
+   /** Previous blue segmented charging arrow inside the unchanged upstream 25x9 area. */
+   public static void renderChargingArrow(GuiGraphics graphics, boolean active, float ratio, int x, int y) {
+      for (int py = 0; py < ChargingArrow.HEIGHT; py++) {
+         for (int px = 0; px < ChargingArrow.WIDTH; px++) {
+            int color = ChargingArrow.color(px, py, active, ratio);
+            if (color != 0) graphics.fill(x + px, y + py, x + px + 1, y + py + 1, color);
          }
       }
    }
