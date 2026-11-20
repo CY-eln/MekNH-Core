@@ -3,6 +3,7 @@ package c_y.meknh_core.common.integration.jade;
 import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.api.machine.MachineBlockEntity;
 import c_y.meknh_core.common.pipe.MekPipeBlock;
+import c_y.meknh_core.common.pipe.FeCableAccess;
 import c_y.meknh_core.common.pipe.MekPipeChemicalAccess;
 import c_y.meknh_core.common.pipe.MekPipeDefinitionHolder;
 import c_y.meknh_core.api.multiblock.MultiblockPartBlockEntity;
@@ -61,6 +62,9 @@ public final class MeknhTankJadeDataProvider implements IServerDataProvider<Bloc
         } else if (blockEntity instanceof mekanism.common.tile.transmitter.TileEntityMechanicalPipe pipe
                 && pipe.getBlockState().getBlock() instanceof MekPipeBlock) {
             added |= addPipeSlot(helper, pipe);
+        } else if (blockEntity instanceof mekanism.common.tile.transmitter.TileEntityUniversalCable cable
+                && cable instanceof FeCableAccess access) {
+            added |= addCableEnergy(helper, access);
         }
         if (!added) {
             return;
@@ -139,6 +143,18 @@ public final class MeknhTankJadeDataProvider implements IServerDataProvider<Bloc
         }
         FluidStack fluid = pipe.getTransmitter().getBufferWithFallback();
         helper.addFluidElement(new FluidElement(fluid, (int) capacity));
+        return true;
+    }
+
+    /** FE 电缆显示我们自己的缓存，而不是 Mek 线缆网络容量。 */
+    private static boolean addCableEnergy(JadeLookingAtHelper helper, FeCableAccess access) {
+        var storage = access.meknh_core$feStorage();
+        if (storage == null) {
+            return false;
+        }
+        helper.addEnergyElement(new EnergyElement(
+                Math.round(storage.getEnergyStored() * 2.5D),
+                Math.round(storage.getMaxEnergyStored() * 2.5D)));
         return true;
     }
 
