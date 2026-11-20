@@ -9,7 +9,7 @@
   "key": {
     "P": {"tag": "c:plates/bronze"},
     "B": {"item": "meknh_core:bronze_brick_casing"},
-    "G": {"item": "mekanism:basic_mechanical_pipe"},
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
     "S": {"tag": "c:plates/silver"}
   },
   "result": {

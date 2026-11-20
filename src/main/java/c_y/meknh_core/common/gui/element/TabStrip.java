@@ -55,14 +55,14 @@ public final class TabStrip {
             && mouseY >= top + AUTO_IO_Y && mouseY < top + AUTO_IO_Y + TAB_SIZE;
    }
 
-   public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode, int warningCode) {
+   public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode, int warningCode, boolean steam) {
       drawInset(graphics, MekGuiTextures.TAB_HOLDER_LEFT, MekGuiTextures.TAB_CONFIG, left - TAB_SIZE, top + 6, 0xFFFFFF);
       drawInset(graphics, MekGuiTextures.TAB_HOLDER_LEFT, MekGuiTextures.TAB_TRANSPORTER, left - TAB_SIZE, top + 34, 0xFFFFFF);
       if (warningCode != 0) {
          // 与 Mek GuiWarningTab(left=true) 一致：左侧、能量 tab 上方。
          graphics.blit(MekGuiTextures.TAB_WARNING_LEFT, left - TAB_SIZE, top + 109, 0.0F, 0.0F, TAB_SIZE, TAB_SIZE, TAB_SIZE, TAB_SIZE);
       }
-      graphics.blit(MekGuiTextures.TAB_ENERGY, left - TAB_SIZE, top + 137, 0.0F, 0.0F, TAB_SIZE, TAB_SIZE, TAB_SIZE, TAB_SIZE);
+      graphics.blit(steam ? MekGuiTextures.TAB_ENERGY_STEAM : MekGuiTextures.TAB_ENERGY, left - TAB_SIZE, top + 137, 0.0F, 0.0F, TAB_SIZE, TAB_SIZE, TAB_SIZE, TAB_SIZE);
 
       // 红石 tab 保持在用户指定位置（右侧最上，原升级 tab 位置）。
       drawInset(graphics, MekGuiTextures.TAB_HOLDER_RIGHT, redstoneIcon(redstoneOrdinal), left + 176, top + 6, 13174559);

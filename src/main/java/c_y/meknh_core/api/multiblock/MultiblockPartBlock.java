@@ -184,7 +184,8 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
         }
         ConfiguratorMode mode = stack.getOrDefault(MekanismDataComponents.CONFIGURATOR_MODE.get(),
                 ConfiguratorMode.CONFIGURATE_ITEMS);
-        return mode.isConfigurating();
+        // 仓室换面用“旋转”模式，而不是配置模式
+        return mode == ConfiguratorMode.ROTATE;
     }
 
     /**

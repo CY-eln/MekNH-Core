@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "c_y.meknh_core.mixin.mek.pipe",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MechanicalPipeMixin",
+    "BlockEntityTypeAccessor",
+    "TileEntityMechanicalPipeMixin",
+    "TileEntityMekanismChemSaveMixin",
+    "TransmitterAcceptorMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
