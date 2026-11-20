@@ -126,6 +126,12 @@ public final class SideConfigPanel {
         return top + 15 + this.dragOffsetY;
     }
 
+    /** Includes type tabs; follows the same dragged origin as rendering and input. */
+    public net.minecraft.client.renderer.Rect2i bounds(int left, int top) {
+        return new net.minecraft.client.renderer.Rect2i(this.originX(left) - TYPE_TAB, this.originY(top),
+                WIDTH + TYPE_TAB, HEIGHT);
+    }
+
     public void init(BlockPos pos) {
         // Screen initialization also runs after a GUI-scale/resolution change.
         // A drag anchor belongs to the previous screen coordinate system.

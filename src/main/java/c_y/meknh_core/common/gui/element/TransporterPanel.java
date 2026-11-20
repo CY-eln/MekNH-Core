@@ -69,6 +69,13 @@ public final class TransporterPanel {
         return this.open;
     }
 
+    /** Screen-space bounds shared with overlay exclusion providers. */
+    public net.minecraft.client.renderer.Rect2i bounds(int left, int top) {
+        int originX = left + (176 - WIDTH) / 2;
+        int originY = top + 15;
+        return new net.minecraft.client.renderer.Rect2i(originX, originY, WIDTH, HEIGHT);
+    }
+
     public void toggle() {
         this.open = !this.open;
     }
@@ -171,8 +178,8 @@ public final class TransporterPanel {
             return true;
         }
         if (mouseX >= originX + 112 && mouseX < originX + 128 && mouseY >= originY + 49 && mouseY < originY + 65) {
-            if (button == 0) {
-                context.sendButton(211);
+            if (button == 0 || button == 1) {
+                context.sendButton(button == 1 ? 221 : 211);
             }
             return true;
         }
@@ -180,8 +187,8 @@ public final class TransporterPanel {
             int x = originX + face.x;
             int y = originY + face.y;
             if (mouseX >= x && mouseX < x + 22 && mouseY >= y && mouseY < y + 22) {
-                if (button == 0) {
-                    context.sendButton(212 + face.direction(context.facing()).ordinal());
+                if (button == 0 || button == 1) {
+                    context.sendButton((button == 1 ? 222 : 212) + face.direction(context.facing()).ordinal());
                 }
                 return true;
             }

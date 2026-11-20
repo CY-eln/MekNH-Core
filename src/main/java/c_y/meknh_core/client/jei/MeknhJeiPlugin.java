@@ -24,6 +24,7 @@ import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
@@ -157,6 +158,17 @@ public final class MeknhJeiPlugin implements IModPlugin {
 
     private static final class TankIngredientHandler<T extends AbstractContainerScreen<?>>
             implements IGuiContainerHandler<T> {
+        @Override
+        public List<Rect2i> getGuiExtraAreas(T screen) {
+            if (screen instanceof MachineScreen machine) {
+                return machine.jeiExtraAreas();
+            }
+            if (screen instanceof BoilerScreen boiler) {
+                return boiler.jeiExtraAreas();
+            }
+            return List.of();
+        }
+
         @Override
         public Optional<? extends IClickableIngredient<?>> getClickableIngredientUnderMouse(
                 IClickableIngredientFactory factory, T screen, double mouseX, double mouseY) {

@@ -20,6 +20,23 @@ public final class ScreenTabs {
     @Nullable
     private Runnable transporterClick;
 
+    /** Extra occupied GUI-space areas for recipe-viewer overlay exclusion. */
+    public java.util.List<net.minecraft.client.renderer.Rect2i> extraAreas(int left, int top, boolean warning) {
+        java.util.List<net.minecraft.client.renderer.Rect2i> areas = new java.util.ArrayList<>();
+        areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 6, 26, 26));
+        areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 34, 26, 26));
+        if (warning) {
+            areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 109, 26, 26));
+        }
+        areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 137, 26, 26));
+        areas.add(new net.minecraft.client.renderer.Rect2i(left + 176, top + 6, 26, 26));
+        areas.add(new net.minecraft.client.renderer.Rect2i(left + 176, top + 34, 26, 26));
+        if (this.sideConfig.isOpen()) {
+            areas.add(this.sideConfig.bounds(left, top));
+        }
+        return areas;
+    }
+
     public void init(BlockPos pos) {
         this.sideConfig.init(pos);
     }

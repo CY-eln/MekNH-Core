@@ -343,6 +343,12 @@ public class MachineMenu extends AbstractContainerMenu {
       } else if (id >= 212 && id < 218) {
          this.machine.cycleInputColor(Direction.values()[id - 212]);
          return true;
+      } else if (id == 221) {
+         this.machine.cycleOutputColor(true);
+         return true;
+      } else if (id >= 222 && id < 228) {
+         this.machine.cycleInputColor(Direction.values()[id - 222], true);
+         return true;
       } else if (id == 201) {
          if (!this.machine.hasOwner()) {
             this.machine.setOwner(player);

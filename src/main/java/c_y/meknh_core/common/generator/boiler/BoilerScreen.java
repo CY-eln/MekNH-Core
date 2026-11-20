@@ -327,6 +327,16 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
         return false;
     }
 
+    /** Prevent recipe-viewer grids from drawing over and consuming clicks on side controls. */
+    public java.util.List<net.minecraft.client.renderer.Rect2i> jeiExtraAreas() {
+        java.util.List<net.minecraft.client.renderer.Rect2i> areas = this.tabs.extraAreas(
+                this.leftPos, this.topPos, this.menu.value(BoilerMenu.DATA_WARNING) != 0);
+        if (this.transporter.isOpen()) {
+            areas.add(this.transporter.bounds(this.leftPos, this.topPos));
+        }
+        return areas;
+    }
+
     public java.util.Optional<? extends mezz.jei.api.runtime.IClickableIngredient<?>> jeiTankIngredient(
             mezz.jei.api.gui.builder.IClickableIngredientFactory factory, double mouseX, double mouseY) {
         int waterX = this.menu.isSolar() ? 18 : 80;

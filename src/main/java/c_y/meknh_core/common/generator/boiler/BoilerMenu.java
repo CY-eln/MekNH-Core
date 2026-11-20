@@ -250,6 +250,12 @@ public class BoilerMenu extends AbstractContainerMenu {
         } else if (id >= 212 && id < 218) {
             this.blockEntity.cycleInputColor(net.minecraft.core.Direction.values()[id - 212]);
             return true;
+        } else if (id == 221) {
+            this.blockEntity.cycleOutputColor(true);
+            return true;
+        } else if (id >= 222 && id < 228) {
+            this.blockEntity.cycleInputColor(net.minecraft.core.Direction.values()[id - 222], true);
+            return true;
         } else if (id == BUTTON_REDSTONE) {
             this.blockEntity.cycleRedstoneMode();
             return true;

@@ -8,14 +8,15 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {execFileSync} from 'node:child_process';
 const source=readFileSync(new URL('../src/main/java/c_y/meknh_core/common/gui/element/SideConfigPanel.java',import.meta.url),'utf8');
-function method(signature) {
- const start=source.indexOf(signature);
+function method(signature, text=source) {
+ const start=text.indexOf(signature);
  if(start<0) throw new Error(`Production method not found: ${signature}`);
- const brace=source.indexOf('{',start); let end=brace+1,depth=1;
- while(depth) {if(end>=source.length) throw new Error(`Unterminated method: ${signature}`); if(source[end]==='{') depth++; else if(source[end]==='}') depth--; end++;}
- return source.slice(start,end);
+ const brace=text.indexOf('{',start); let end=brace+1,depth=1;
+ while(depth) {if(end>=text.length) throw new Error(`Unterminated method: ${signature}`); if(text[end]==='{') depth++; else if(text[end]==='}') depth--; end++;}
+ return text.slice(start,end);
 }
-const methods=['private int originX(', 'private int originY(', 'public void init(', 'public void toggle(', 'public void close(', 'public boolean mouseDragged(', 'public void mouseReleased(', 'public boolean mouseClicked(', 'public boolean keyPressed(', 'private void ensureType('].map(method).join('\n');
+const tabsSource=readFileSync(new URL('../src/main/java/c_y/meknh_core/common/gui/element/ScreenTabs.java',import.meta.url),'utf8');
+const methods=['private int originX(', 'private int originY(', 'public void init(', 'public void toggle(', 'public void close(', 'public boolean mouseDragged(', 'public void mouseReleased(', 'public boolean mouseClicked(', 'public boolean keyPressed(', 'private void ensureType('].map(signature=>method(signature)).join('\n');
 // Narrow render seam ends immediately after close/pin drawing; execute those actual
 // statements with a graphics command recorder rather than bootstrapping Minecraft.
 const render=method('public void render(GuiGraphics graphics, Font font, int left, int top, Context context,\n                       MachineBackgroundMaterial material, int mouseX, int mouseY)');
@@ -59,6 +60,30 @@ public class PopupCoordinateProbe {
         public void sendButton(int id) { throw new AssertionError("unexpected control"); }
     };
 ${methods}
+${method('public boolean isOpen(')}
+${method('public net.minecraft.client.renderer.Rect2i bounds(').replaceAll('net.minecraft.client.renderer.Rect2i','Rect')}
+    static class TabsGeometry {
+        PopupCoordinateProbe sideConfig;
+        TabsGeometry(PopupCoordinateProbe p) { sideConfig=p; }
+${method('public java.util.List<net.minecraft.client.renderer.Rect2i> extraAreas(',tabsSource).replaceAll('net.minecraft.client.renderer.Rect2i','Rect')}
+    }
+    static void extraAreas() {
+        for(int[] base:new int[][]{{125,39},{125,44},{339,166},{339,172}}) {
+            var p=new PopupCoordinateProbe(); var tabs=new TabsGeometry(p);
+            var closed=tabs.extraAreas(base[0],base[1],false);
+            check(closed.size()==5,"closed tab count");
+            for(int[] t:new int[][]{{-26,6},{-26,34},{-26,137},{176,6},{176,34}})
+                check(closed.contains(new Rect(base[0]+t[0],base[1]+t[1],26,26)),"tab exclusion geometry");
+            check(tabs.extraAreas(base[0],base[1],true).contains(new Rect(base[0]-26,base[1]+109,26,26)),"warning exclusion");
+            p.open=true; p.dragOffsetX=73; p.dragOffsetY=-21;
+            Rect bounds=p.bounds(base[0],base[1]);
+            check(bounds.equals(new Rect(p.originX(base[0])-26,p.originY(base[1]),182,135)),"dragged popup bounds");
+            check(tabs.extraAreas(base[0],base[1],false).contains(bounds),"open popup forwarded");
+            p.open=false;
+            check(tabs.extraAreas(base[0],base[1],false).size()==5,"closed popup released exclusion");
+        }
+        System.out.println("PASS: actual side-tab and dragged popup exclusions at 854x510 scales 1/2, warning/open/closed states");
+    }
 ${utilityRender}
 ${utilityTooltip}
 ${method('private static void drawButtonBase(')}
@@ -122,6 +147,7 @@ ${method('private static void drawConfigTypeTabHover(')}
     }
     public static void main(String[] args) {
         utilityRectangles();
+        extraAreas();
         var resized=start();
         resized.init(new BlockPos(1)); // MachineScreen.init -> ScreenTabs.init on resize
         check(!resized.dragging,"resize cancels gesture before reopening");
