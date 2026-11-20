@@ -7,13 +7,13 @@
     "PGP"
   ],
   "key": {
-    "C": {"item": "meknh_core:bronze_machine_casing"},
+    "C": {"item": "meknh_core:bronze_brick_casing"},
     "D": {"item": "minecraft:diamond"},
     "P": [
       {"item": "minecraft:piston"},
       {"item": "minecraft:sticky_piston"}
     ],
-    "G": {"item": "mekanism:basic_mechanical_pipe"}
+    "G": {"item": "meknh_core:bronze_fluid_pipe"}
   },
   "result": {
     "id": "meknh_core:lp_steam_macerator",

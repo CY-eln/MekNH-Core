@@ -9,7 +9,7 @@
   "key": {
     "P": {"tag": "c:plates/bronze"},
     "B": {"item": "meknh_core:bronze_brick_casing"},
-    "G": {"item": "minecraft:glass"}
+    "G": {"tag": "c:glass_blocks"}
   },
   "result": {
     "id": "meknh_core:liquid_boiler_ulv",

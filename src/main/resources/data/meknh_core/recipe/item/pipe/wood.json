@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WGW"
+  ],
+  "key": {
+    "W": {"tag": "minecraft:planks"},
+    "G": {"tag": "c:glass_blocks"}
+  },
+  "result": {
+    "id": "meknh_core:wood_fluid_pipe",
+    "count": 1
+  }
+}

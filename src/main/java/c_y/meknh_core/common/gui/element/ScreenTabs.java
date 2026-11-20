@@ -65,6 +65,13 @@ public final class ScreenTabs {
     }
 
     public void renderTabs(GuiGraphics graphics, int left, int top,
+                           int redstoneOrdinal, boolean privateMode, int warningCode, boolean steam,
+                           MachineBackgroundMaterial material, int mouseX, int mouseY, boolean hoverEnabled) {
+        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, steam, material,
+                mouseX, mouseY, hoverEnabled && !this.sideConfig.isOpen());
+    }
+
+    public void renderTabs(GuiGraphics graphics, int left, int top,
                            int redstoneOrdinal, boolean privateMode, int warningCode, MachineBackgroundMaterial material) {
         TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material);
     }

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "PBC",
+    "GGG"
+  ],
+  "key": {
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
+    "C": {"tag": "c:glass_blocks"},
+    "B": {"item": "meknh_core:bronze_brick_casing"},
+    "P": [
+      {"item": "minecraft:piston"},
+      {"item": "minecraft:sticky_piston"}
+    ]
+  },
+  "result": {
+    "id": "meknh_core:lp_steam_extractor",
+    "count": 1
+  }
+}

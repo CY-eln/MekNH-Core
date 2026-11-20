@@ -262,10 +262,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       int warningCode = ((MachineMenu)this.menu).data(MachineMenu.DATA_WARNING);
       this.tabs.renderTabs(graphics, this.leftPos, this.topPos,
             ((MachineMenu)this.menu).data(MachineMenu.DATA_REDSTONE),
-            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode, this.backgroundMaterial(),
-            mouseX, mouseY, !this.transporter.isOpen());
             ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode,
-            ((MachineMenu)this.menu).isSteam());
+            ((MachineMenu)this.menu).isSteam(), this.backgroundMaterial(),
+            mouseX, mouseY, !this.transporter.isOpen());
       if (this.transporter.isOpen()) {
          this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(), this.backgroundMaterial());
       } else {

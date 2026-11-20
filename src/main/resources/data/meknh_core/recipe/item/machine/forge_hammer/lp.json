@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GPG",
+    "GBG",
+    "GIG"
+  ],
+  "key": {
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
+    "B": {"item": "meknh_core:bronze_brick_casing"},
+    "I": {"item": "minecraft:anvil"},
+    "P": [
+      {"item": "minecraft:piston"},
+      {"item": "minecraft:sticky_piston"}
+    ]
+  },
+  "result": {
+    "id": "meknh_core:lp_steam_forge_hammer",
+    "count": 1
+  }
+}
