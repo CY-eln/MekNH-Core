@@ -2,8 +2,7 @@
   "id": "compressor",
   "level": "all",
   "input": [
-    { "type": "item", "slots": 1, "stack_limit": 64 },
-    { "type": "gas", "slots": 1, "stack_limit": 8 }
+    { "type": "item", "slots": 1, "stack_limit": 64 }
   ],
   "output": [
     { "type": "item", "slots": 1, "stack_limit": 64 }

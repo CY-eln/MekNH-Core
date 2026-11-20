@@ -264,6 +264,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             ((MachineMenu)this.menu).data(MachineMenu.DATA_REDSTONE),
             ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode, this.backgroundMaterial(),
             mouseX, mouseY, !this.transporter.isOpen());
+            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode,
+            ((MachineMenu)this.menu).isSteam());
       if (this.transporter.isOpen()) {
          this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(), this.backgroundMaterial());
       } else {

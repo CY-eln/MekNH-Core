@@ -2,11 +2,15 @@ package c_y.meknh_core.common.integration.jade;
 
 import c_y.meknh_core.MekNHCore;
 import c_y.meknh_core.api.machine.MachineBlockEntity;
+import c_y.meknh_core.common.pipe.MekPipeBlock;
+import c_y.meknh_core.common.pipe.MekPipeChemicalAccess;
+import c_y.meknh_core.common.pipe.MekPipeDefinitionHolder;
 import c_y.meknh_core.api.multiblock.MultiblockPartBlockEntity;
 import c_y.meknh_core.common.coke.CokeOvenControllerBlockEntity;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.common.integration.lookingat.ChemicalElement;
+import mekanism.common.integration.lookingat.EnergyElement;
 import mekanism.common.integration.lookingat.FluidElement;
 import mekanism.common.integration.lookingat.jade.JadeLookingAtHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -44,19 +48,39 @@ public final class MeknhTankJadeDataProvider implements IServerDataProvider<Bloc
             return;
         }
         JadeLookingAtHelper helper = new JadeLookingAtHelper(accessor.getLevel().registryAccess());
-        boolean added;
+        // 注意：本 provider 和 Mek 自带的 JadeDataProvider 都往 MEK_DATA 这一把 key 写，
+        // 后写的会覆盖先写的。所以这里必须把能量也一起写进来，否则有储罐的机器
+        // （压缩机等）会只剩空储罐、能量条消失。
+        boolean added = addEnergy(helper, blockEntity);
         if (blockEntity instanceof MultiblockPartBlockEntity part) {
-            added = addPartTanks(helper, part);
+            added |= addPartTanks(helper, part);
         } else if (blockEntity instanceof MachineBlockEntity machine) {
-            added = addMachineTanks(helper, machine);
+            added |= addMachineTanks(helper, machine);
         } else if (blockEntity instanceof CokeOvenControllerBlockEntity oven) {
-            added = addFluid(helper, oven.creosoteTank());
-        } else {
+            added |= addFluid(helper, oven.creosoteTank());
+        } else if (blockEntity instanceof mekanism.common.tile.transmitter.TileEntityMechanicalPipe pipe
+                && pipe.getBlockState().getBlock() instanceof MekPipeBlock) {
+            added |= addPipeSlot(helper, pipe);
+        }
+        if (!added) {
             return;
         }
         if (added) {
             helper.finalizeData(data);
         }
+    }
+
+    /**
+     * 机器能量条：Mek 的 EnergyElement 用 J，这里按 1 FE = 2.5 J 换算。
+     */
+    private static boolean addEnergy(JadeLookingAtHelper helper, BlockEntity blockEntity) {
+        if (blockEntity instanceof MachineBlockEntity machine && machine.energyStorage() != null) {
+            long stored = Math.round(machine.energyStorage().getEnergyStored() * 2.5D);
+            long capacity = Math.round(machine.energyStorage().getMaxEnergyStored() * 2.5D);
+            helper.addEnergyElement(new EnergyElement(stored, capacity));
+            return true;
+        }
+        return false;
     }
 
     private static boolean addPartTanks(JadeLookingAtHelper helper, MultiblockPartBlockEntity part) {
@@ -69,7 +93,6 @@ public final class MeknhTankJadeDataProvider implements IServerDataProvider<Bloc
         if (chemicalTank != null && chemicalTank.getStored() > 0L) {
             added |= addChemical(helper, chemicalTank);
         }
-        // 空罐也提供一个容量条，避免 Jade 看起来什么都没有。
         if (!added && fluidTank != null && fluidTank.getCapacity() > 0) {
             added = addFluid(helper, fluidTank);
         }
@@ -101,6 +124,22 @@ public final class MeknhTankJadeDataProvider implements IServerDataProvider<Bloc
             }
         }
         return added;
+    }
+
+    /** 管道只显示一个“mek 槽位”：有化学品显示化学品，否则显示流体（空也显示一个空槽）。 */
+    private static boolean addPipeSlot(JadeLookingAtHelper helper,
+                                       mekanism.common.tile.transmitter.TileEntityMechanicalPipe pipe) {
+        long capacity = pipe.getBlockState().getBlock() instanceof MekPipeDefinitionHolder holder
+                ? holder.meknh_core$definition().capacity() : 0L;
+        var network = c_y.meknh_core.common.pipe.MekPipeChemicalNetworkHandler.of(pipe);
+        if (network.getChemicalTanks() > 0 && network.stored() > 0L) {
+            helper.addChemicalElement(new ChemicalElement(
+                    network.getChemicalInTank(0).copyWithAmount(network.stored()), network.capacity()));
+            return true;
+        }
+        FluidStack fluid = pipe.getTransmitter().getBufferWithFallback();
+        helper.addFluidElement(new FluidElement(fluid, (int) capacity));
+        return true;
     }
 
     private static boolean addFluid(JadeLookingAtHelper helper, FluidTank tank) {

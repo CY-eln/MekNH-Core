@@ -1,5 +1,7 @@
 package c_y.meknh_core.common.gui.layout;
 
+import c_y.meknh_core.MekNHCore;
+
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -38,6 +40,7 @@ public final class MekGuiTextures {
     public static final ResourceLocation TAB_REDSTONE_DISABLED = ResourceLocation.fromNamespaceAndPath("mekanism", "gui/redstone_control_disabled.png");
     public static final ResourceLocation TAB_REDSTONE_HIGH = ResourceLocation.fromNamespaceAndPath("mekanism", "gui/redstone_control_high.png");
     public static final ResourceLocation TAB_REDSTONE_LOW = ResourceLocation.fromNamespaceAndPath("mekanism", "gui/redstone_control_low.png");
+    public static final ResourceLocation TAB_ENERGY_STEAM = ResourceLocation.fromNamespaceAndPath(MekNHCore.MODID, "textures/gui/tab/energy_steam.png");
     public static final ResourceLocation TAB_ENERGY = ResourceLocation.fromNamespaceAndPath("mekanism", "gui/tabs/energy_info_fe.png");
     public static final ResourceLocation TAB_WARNING_LEFT = ResourceLocation.fromNamespaceAndPath("mekanism", "gui/tabs/warning_info_left.png");
     public static final ResourceLocation WARNING = ResourceLocation.fromNamespaceAndPath("mekanism", "gui/warning.png");

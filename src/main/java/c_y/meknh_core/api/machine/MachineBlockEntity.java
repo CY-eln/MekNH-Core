@@ -508,6 +508,55 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
     }
 
     @Nullable
+    /**
+     * 机器等级电压（V）；无能量仓时返回 0。
+     */
+    public long feVoltage() {
+        c_y.meknh_core.common.data.voltage.MachineLevel level = this.machineLevel();
+        return level == null ? 0L : level.voltage().voltage();
+    }
+
+    /**
+     * 电缆投递前检查：电压不超等级且缓存还有空间。
+     */
+    public boolean acceptsFePacket(long packetVoltage) {
+        if (this.energyStorage == null || packetVoltage > this.feVoltage()) {
+            return false;
+        }
+        return this.energyStorage.getEnergyStored() < this.energyStorage.getMaxEnergyStored();
+    }
+
+    /**
+     * 接收一个来自本模组电缆的能量包；超压时爆炸。
+     *
+     * @return 实际接收的 FE
+     */
+    public int acceptFePacket(long packetVoltage, int fe) {
+        if (this.energyStorage == null) {
+            return 0;
+        }
+        if (packetVoltage > this.feVoltage()) {
+            this.overvoltageExplode();
+            return 0;
+        }
+        int accepted = this.energyStorage.receiveEnergy(fe, false);
+        if (accepted > 0) {
+            this.setChanged();
+        }
+        return accepted;
+    }
+
+    /**
+     * 机器超压爆炸（威力小于 TNT 的 4.0）。
+     */
+    public void overvoltageExplode() {
+        if (this.level == null || this.level.isClientSide) {
+            return;
+        }
+        this.level.explode(null, this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D,
+                this.worldPosition.getZ() + 0.5D, 2.0F, net.minecraft.world.level.Level.ExplosionInteraction.BLOCK);
+    }
+
     public MachineEnergyStorage energyStorage() {
         return this.energyStorage;
     }
@@ -527,7 +576,8 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         return new net.neoforged.neoforge.energy.IEnergyStorage() {
             @Override
             public int receiveEnergy(int maxReceive, boolean simulate) {
-                return mode.allowsInsert() ? storage.receiveEnergy(maxReceive, simulate) : 0;
+                // 只接受本模组 FE 电缆按能量包规则注入（acceptFePacket），外部 FE 一律拒绝。
+                return 0;
             }
 
             @Override
@@ -552,7 +602,7 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
 
             @Override
             public boolean canReceive() {
-                return mode.allowsInsert() && storage.canReceive();
+                return false;
             }
         };
     }
@@ -561,7 +611,7 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
      * 给 Mekanism LookingAt/Jade 用的严格能量视图。
      */
     public mekanism.api.energy.IStrictEnergyHandler strictEnergyHandler() {
-        return this.strictEnergyHandler(true);
+        return this.strictEnergyHandler(false);
     }
 
     /**
@@ -569,13 +619,11 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
      */
     @Nullable
     public mekanism.api.energy.IStrictEnergyHandler strictEnergyHandlerForSide(@Nullable Direction side) {
-        if (this.energyStorage == null || !this.allowsConnection(
-                c_y.meknh_core.common.machine.config.MachineConfigType.ENERGY, side)) {
+        if (this.energyStorage == null) {
             return null;
         }
-        c_y.meknh_core.common.machine.config.SideMode mode = this.sideMode(
-                c_y.meknh_core.common.machine.config.MachineConfigType.ENERGY, side);
-        return this.strictEnergyHandler(mode.allowsInsert());
+        // Jade/观察按任意面读取存量的严格能量；插入仍然禁止。
+        return this.strictEnergyHandler(false);
     }
 
     private mekanism.api.energy.IStrictEnergyHandler strictEnergyHandler(boolean allowInsert) {

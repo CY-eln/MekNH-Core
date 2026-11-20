@@ -5,6 +5,8 @@ import c_y.meknh_core.api.machine.MachineRegistration;
 import c_y.meknh_core.api.machine.MachineVariant;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
 import c_y.meknh_core.api.multiblock.MultiblockVariant;
+import c_y.meknh_core.common.pipe.FePipeDefinition;
+import c_y.meknh_core.common.pipe.FePipeRegistration;
 import c_y.meknh_core.common.data.voltage.MachineLevel;
 import c_y.meknh_core.common.data.voltage.VoltageTier;
 import c_y.meknh_core.common.machine.steam.SteamVariant;
@@ -15,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
@@ -156,6 +159,7 @@ public final class MachineModelResources {
         put(resources, "models/block/coke_oven_bricks.json", cubeAllModel());
         put(resources, "models/item/coke_oven_bricks.json", parentItemModel("meknh_core:block/coke_oven_bricks"));
 
+        appendFeCables(resources);
         LOGGER.info("Generated {} machine model resource(s)", resources.size());
         return resources;
     }
@@ -691,5 +695,140 @@ public final class MachineModelResources {
             array.add(value);
         }
         return array;
+    }
+
+    /**
+     * FE 电缆模型：核心 6×6×6，臂 6×6 截面，尺寸对齐 Mekanism 的小型线缆。
+     * 用一份指向北方的臂模型 + multipart 旋转覆盖 6 个方向。
+     */
+    private static void appendFeCables(Map<ResourceLocation, byte[]> resources) {
+        for (FePipeDefinition definition : FePipeRegistration.definitions()) {
+            String name = definition.id().getPath();
+            String base = "meknh_core:block/pipe/fe/" + name;
+
+            JsonObject blockstate = new JsonObject();
+            JsonArray multipart = new JsonArray();
+            multipart.add(cablePart(null, base + "_core", null, 0));
+            multipart.add(cablePart("north", base + "_arm", "y", 0));
+            multipart.add(cablePart("south", base + "_arm", "y", 180));
+            multipart.add(cablePart("west", base + "_arm", "y", 90));
+            multipart.add(cablePart("east", base + "_arm", "y", 270));
+            multipart.add(cablePart("up", base + "_arm", "x", 90));
+            multipart.add(cablePart("down", base + "_arm", "x", 270));
+            blockstate.add("multipart", multipart);
+            put(resources, "blockstates/" + name + ".json", blockstate);
+
+            put(resources, "models/block/pipe/fe/" + name + "_core.json",
+                    cableModel(definition.texture(), 5.0D, 5.0D, 5.0D, 11.0D, 11.0D, 11.0D));
+            put(resources, "models/block/pipe/fe/" + name + "_arm.json",
+                    cableModel(definition.texture(), 5.0D, 5.0D, 0.0D, 11.0D, 11.0D, 6.0D));
+            put(resources, "models/item/" + name + ".json", parentItemModel(base + "_core"));
+        }
+        for (c_y.meknh_core.common.pipe.MekPipeDefinition definition
+                : c_y.meknh_core.common.pipe.MekPipeRegistration.definitions()) {
+            String name = definition.id().getPath();
+            String model = "meknh_core:block/pipe/mek/" + name;
+            // 方块：Mek 的 transmitter 模型加载器，单一 variant（连接由 BE 驱动）
+            JsonObject blockstate = new JsonObject();
+            JsonObject variants = new JsonObject();
+            JsonObject only = new JsonObject();
+            only.addProperty("model", model);
+            variants.add("", only);
+            blockstate.add("variants", variants);
+            put(resources, "blockstates/" + name + ".json", blockstate);
+            // 模型：复用 Mek 的大型机械管道父模型，贴图先指向不存在的路径（紫黑）
+            JsonObject modelJson = new JsonObject();
+            modelJson.addProperty("parent", "mekanism:block/transmitter/large/large");
+            JsonObject textures = new JsonObject();
+            textures.addProperty("side", definition.texture().toString());
+            textures.addProperty("center_down", definition.texture().toString());
+            textures.addProperty("side_opaque", definition.texture().toString());
+            textures.addProperty("center_opaque", definition.texture().toString());
+            modelJson.add("textures", textures);
+            put(resources, "models/block/pipe/mek/" + name + ".json", modelJson);
+            put(resources, "models/item/" + name + ".json", parentItemModel(model));
+        }
+    }
+
+    private static JsonObject pipePart(String side, String mode, String model, String axis, int degrees) {
+        JsonObject entry = new JsonObject();
+        JsonObject condition = new JsonObject();
+        if ("normal".equals(mode)) {
+            condition.addProperty(side, "true");
+        }
+        condition.addProperty(side + "_mode", mode);
+        entry.add("when", condition);
+        JsonObject apply = new JsonObject();
+        apply.addProperty("model", model);
+        if (axis != null && degrees != 0) {
+            apply.addProperty(axis, degrees);
+        }
+        entry.add("apply", apply);
+        return entry;
+    }
+
+    private static JsonObject pipeModel(ResourceLocation texture, double[]... boxes) {
+        JsonObject model = new JsonObject();
+        JsonObject textures = new JsonObject();
+        textures.addProperty("particle", texture.toString());
+        textures.addProperty("all", texture.toString());
+        model.add("textures", textures);
+        JsonArray elements = new JsonArray();
+        for (double[] box : boxes) {
+            JsonObject element = new JsonObject();
+            element.add("from", array(box[0], box[1], box[2]));
+            element.add("to", array(box[3], box[4], box[5]));
+            JsonObject faces = new JsonObject();
+            for (String direction : new String[]{"down", "up", "north", "south", "west", "east"}) {
+                JsonObject face = new JsonObject();
+                face.add("uv", array(0.0, 0.0, 16.0, 16.0));
+                face.addProperty("texture", "#all");
+                faces.add(direction, face);
+            }
+            element.add("faces", faces);
+            elements.add(element);
+        }
+        model.add("elements", elements);
+        return model;
+    }
+
+    private static JsonObject cablePart(@Nullable String when, String model, @Nullable String axis, int degrees) {
+        JsonObject entry = new JsonObject();
+        if (when != null) {
+            JsonObject condition = new JsonObject();
+            condition.addProperty(when, "true");
+            entry.add("when", condition);
+        }
+        JsonObject apply = new JsonObject();
+        apply.addProperty("model", model);
+        if (axis != null && degrees != 0) {
+            apply.addProperty(axis, degrees);
+        }
+        entry.add("apply", apply);
+        return entry;
+    }
+
+    private static JsonObject cableModel(ResourceLocation texture, double x0, double y0, double z0,
+                                         double x1, double y1, double z1) {
+        JsonObject model = new JsonObject();
+        JsonObject textures = new JsonObject();
+        textures.addProperty("particle", texture.toString());
+        textures.addProperty("all", texture.toString());
+        model.add("textures", textures);
+        JsonObject element = new JsonObject();
+        element.add("from", array(x0, y0, z0));
+        element.add("to", array(x1, y1, z1));
+        JsonObject faces = new JsonObject();
+        for (String direction : new String[]{"down", "up", "north", "south", "west", "east"}) {
+            JsonObject face = new JsonObject();
+            face.add("uv", array(0.0, 0.0, 16.0, 16.0));
+            face.addProperty("texture", "#all");
+            faces.add(direction, face);
+        }
+        element.add("faces", faces);
+        JsonArray elements = new JsonArray();
+        elements.add(element);
+        model.add("elements", elements);
+        return model;
     }
 }

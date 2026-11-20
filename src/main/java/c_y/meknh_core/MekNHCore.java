@@ -69,6 +69,11 @@ public class MekNHCore {
         c_y.meknh_core.common.coke.CokeOvenMaterials.initialize(modEventBus);
         // 多方块终端：潜行右键控制器一键搭结构。
         c_y.meknh_core.common.terminal.MultiblockTerminalRegistration.initialize(modEventBus);
+        // FE 电缆：data/addon/pipe/fe/*.json
+        c_y.meknh_core.common.pipe.FePipeRegistration.initialize(modEventBus);
+        c_y.meknh_core.common.pipe.FePipeDataLoader.loadFromMods();
+        c_y.meknh_core.common.pipe.MekPipeRegistration.initialize(modEventBus);
+        c_y.meknh_core.common.pipe.MekPipeDataLoader.loadFromMods();
     }
 
     /**
