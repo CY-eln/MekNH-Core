@@ -111,12 +111,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       }
    }
 
+   private MachineBackgroundMaterial backgroundMaterial() {
+      return MachineBackgroundMaterial.forSteam(this.menu.isSteam(),
+            this.menu.level() != null && this.menu.level().steam() == SteamVariant.HIGH);
+   }
+
    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
       MetalMachineBackground.render(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
             MachineBackgroundState.fromSynced(this.menu.data(MachineMenu.DATA_RUNNING) != 0,
                   this.menu.data(this.menu.isSteam() ? MachineMenu.DATA_STEAM : MachineMenu.DATA_ENERGY)),
-            this.font.width(this.title), MachineBackgroundMaterial.forSteam(this.menu.isSteam(),
-                  this.menu.level() != null && this.menu.level().steam() == SteamVariant.HIGH));
+            this.font.width(this.title), this.backgroundMaterial());
       if (((MachineMenu)this.menu).usesSteamLayout()) {
          // 蒸汽布局：输入槽 - 进度条 - 输出槽；底部横向槽按机器类型绘制。
          int inputSlots = ((MachineMenu)this.menu).definition() == null ? 0 : ((MachineMenu)this.menu).definition().itemInputSlots();
@@ -258,11 +262,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       int warningCode = ((MachineMenu)this.menu).data(MachineMenu.DATA_WARNING);
       this.tabs.renderTabs(graphics, this.leftPos, this.topPos,
             ((MachineMenu)this.menu).data(MachineMenu.DATA_REDSTONE),
-            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode);
+            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode, this.backgroundMaterial());
       if (this.transporter.isOpen()) {
-         this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext());
+         this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(), this.backgroundMaterial());
       } else {
-         this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext());
+         this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext(), this.backgroundMaterial());
       }
 
       if (this.editor != null) {

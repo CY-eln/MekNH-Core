@@ -5,6 +5,8 @@ import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -80,6 +82,49 @@ public final class TabStrip {
             top + 34,
             16752992
       );
+   }
+
+   /** Material-aware machine tabs; legacy callers retain the original Mekanism artwork. */
+   public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
+                             int warningCode, MachineBackgroundMaterial material) {
+      drawMaterialInset(graphics, MekGuiTextures.TAB_CONFIG, left - TAB_SIZE, top + 6, 0xFFFFFF, material);
+      drawMaterialInset(graphics, MekGuiTextures.TAB_TRANSPORTER, left - TAB_SIZE, top + 34, 0xFFFFFF, material);
+      if (warningCode != 0) {
+         drawMaterialDisplay(graphics, MekGuiTextures.TAB_WARNING_LEFT, left - TAB_SIZE, top + 109, material);
+      }
+      drawMaterialDisplay(graphics, MekGuiTextures.TAB_ENERGY, left - TAB_SIZE, top + 137, material);
+      drawMaterialInset(graphics, redstoneIcon(redstoneOrdinal), left + 176, top + 6, 13174559, material);
+      if ((warningCode & 8) != 0) {
+         RenderSystem.enableBlend();
+         RenderSystem.blendFunc(SourceFactor.DST_COLOR, DestFactor.ZERO);
+         graphics.blit(MekGuiTextures.WARNING, left + 176, top + 6, 0, 0, TAB_SIZE, TAB_SIZE, 256, 256);
+         RenderSystem.disableBlend();
+      }
+      drawMaterialInset(graphics, privateMode ? MekGuiTextures.TAB_SECURITY_PRIVATE : MekGuiTextures.TAB_SECURITY_PUBLIC,
+            left + 176, top + 34, 16752992, material);
+   }
+
+   private static void drawMaterialBase(GuiGraphics graphics, int x, int y, MachineBackgroundMaterial material) {
+      MetalMachineBackground.renderBase(graphics, x, y, TAB_SIZE, TAB_SIZE, material);
+      MetalMachineBackground.renderBase(graphics, x + BUTTON_INSET, y + BUTTON_INSET, ICON, ICON, material);
+   }
+
+   private static void drawMaterialInset(GuiGraphics graphics, ResourceLocation icon, int x, int y, int tint,
+                                         MachineBackgroundMaterial material) {
+      drawMaterialBase(graphics, x, y, material);
+      // Keep the full metallic face untinted; a narrow holder accent retains the status color.
+      if (tint != 0xFFFFFF) {
+         graphics.fill(x + 6, y + 22, x + 20, y + 24, 0xFF000000 | tint);
+      }
+      graphics.blit(icon, x + BUTTON_INSET, y + BUTTON_INSET, ICON, ICON, 0.0F, 0.0F, ICON, ICON, ICON, ICON);
+   }
+
+   private static void drawMaterialDisplay(GuiGraphics graphics, ResourceLocation texture, int x, int y,
+                                           MachineBackgroundMaterial material) {
+      drawMaterialBase(graphics, x, y, material);
+      // Preserve the original dark display and glyph at native scale, but not its old outer holder.
+      graphics.blit(texture, x + BUTTON_INSET, y + BUTTON_INSET, (float) BUTTON_INSET, (float) BUTTON_INSET,
+            ICON, ICON, TAB_SIZE, TAB_SIZE);
    }
 
    public static net.minecraft.network.chat.Component tooltip(Tab tab, int redstoneOrdinal, boolean privateMode) {

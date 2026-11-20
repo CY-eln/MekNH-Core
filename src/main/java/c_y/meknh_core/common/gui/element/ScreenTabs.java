@@ -1,5 +1,6 @@
 package c_y.meknh_core.common.gui.element;
 
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import java.util.function.IntConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -39,6 +40,16 @@ public final class ScreenTabs {
     public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
                               SideConfigPanel.Context context) {
         this.sideConfig.render(graphics, font, left, top, context);
+    }
+
+    public void renderTabs(GuiGraphics graphics, int left, int top,
+                           int redstoneOrdinal, boolean privateMode, int warningCode, MachineBackgroundMaterial material) {
+        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material);
+    }
+
+    public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
+                              SideConfigPanel.Context context, MachineBackgroundMaterial material) {
+        this.sideConfig.render(graphics, font, left, top, context, material);
     }
 
     public void renderWithConfig(GuiGraphics graphics, Font font, int left, int top,
