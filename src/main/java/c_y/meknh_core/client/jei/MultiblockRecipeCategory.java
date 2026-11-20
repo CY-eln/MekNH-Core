@@ -55,8 +55,6 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
     private final MultiblockRecipeLayout layout;
     private final IDrawable background;
     private final IDrawable icon;
-    private final IDrawable inputSlot;
-    private final IDrawable outputSlot;
 
     public MultiblockRecipeCategory(MultiblockDefinition definition, IGuiHelper guiHelper) {
         this.definition = definition;
@@ -64,8 +62,6 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
                 MachineRecipe.class);
         this.layout = MultiblockRecipeLayouts.get(definition.id());
         this.background = this.layout != null ? this.layout.background() : new GuiBackground();
-        this.inputSlot = guiHelper.createDrawable(MachineGuiTextures.SLOT_INPUT, 0, 0, 18, 18);
-        this.outputSlot = guiHelper.createDrawable(MachineGuiTextures.SLOT_OUTPUT, 0, 0, 18, 18);
         ItemStack iconStack = MultiblockRegistration.variants().stream()
                 .filter(variant -> variant.definition().id().equals(definition.id()))
                 .findFirst()
@@ -90,6 +86,7 @@ public final class MultiblockRecipeCategory implements IRecipeCategory<MachineRe
     }
 
     @Override
+    @SuppressWarnings("removal")
     public IDrawable getBackground() {
         return this.background;
     }

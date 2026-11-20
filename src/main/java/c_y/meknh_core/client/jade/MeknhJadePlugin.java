@@ -1,9 +1,6 @@
 package c_y.meknh_core.client.jade;
 
 import c_y.meknh_core.api.multiblock.MultiblockControllerBlock;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;

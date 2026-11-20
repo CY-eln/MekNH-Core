@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "BBB"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/bronze"},
+    "B": {"item": "minecraft:bricks"}
+  },
+  "result": {
+    "id": "meknh_core:bronze_brick_casing",
+    "count": 1
+  }
+}

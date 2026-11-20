@@ -5,7 +5,6 @@ import c_y.meknh_core.common.gui.render.GuiDraw;
 import c_y.meknh_core.common.machine.config.SideMode;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.IntConsumer;
 import mekanism.api.text.EnumColor;
 import mekanism.common.MekanismLang;
 import net.minecraft.client.Minecraft;

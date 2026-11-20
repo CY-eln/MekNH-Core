@@ -1,7 +1,6 @@
 package c_y.meknh_core.api.multiblock;
 
 import c_y.meknh_core.common.data.voltage.MachineLevel;
-import c_y.meknh_core.decor.description.MachineNames;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredBlock;

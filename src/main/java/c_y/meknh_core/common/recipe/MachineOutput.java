@@ -50,7 +50,7 @@ public interface MachineOutput {
     @Nullable
     static Chemical findChemical(ResourceLocation id) {
         Chemical chemical = MekanismAPI.CHEMICAL_REGISTRY.get(id);
-        return chemical == null || chemical == MekanismAPI.EMPTY_CHEMICAL ? null : chemical;
+        return chemical == null || chemical == MekanismAPI.EMPTY_CHEMICAL_HOLDER.value() ? null : chemical;
     }
 
     /**
@@ -316,7 +316,7 @@ public interface MachineOutput {
         private ChemicalStack stackWithAmount(int amount) {
             ResourceLocation id = ResourceLocation.tryParse(this.gas);
             Chemical chemical = id == null ? null : findChemical(id);
-            return chemical == null ? ChemicalStack.EMPTY : new ChemicalStack(chemical, amount);
+            return chemical == null ? ChemicalStack.EMPTY : new ChemicalStack(mekanism.api.MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(chemical), amount);
         }
 
         @Override

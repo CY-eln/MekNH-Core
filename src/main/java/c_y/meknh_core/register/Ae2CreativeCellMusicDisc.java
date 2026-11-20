@@ -21,7 +21,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /**
  * 给 AE2 创造存储元件挂上唱片组件。
  */
-@EventBusSubscriber(modid = MekNHCore.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MekNHCore.MODID)
 public final class Ae2CreativeCellMusicDisc {
 
     public static final ResourceKey<JukeboxSong> SONG = ResourceKey.create(

@@ -16,7 +16,7 @@ import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
  * <p>对应 GT 的 {@code tintindex: 2 -> GTValues.VC[tier]}；
  * 颜色注册属于 MOD 总线事件，必须显式指定 {@code bus = MOD}。</p>
  */
-@EventBusSubscriber(modid = MekNHCore.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MekNHCore.MODID, value = Dist.CLIENT)
 public final class MultiblockPartColors {
 
     /**

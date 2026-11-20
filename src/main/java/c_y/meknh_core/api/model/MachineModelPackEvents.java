@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.AddPackFindersEvent;
 /**
  * 把运行时生成的机器模型包挂到客户端资源包列表最上层。
  */
-@EventBusSubscriber(modid = MekNHCore.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MekNHCore.MODID, value = Dist.CLIENT)
 public final class MachineModelPackEvents {
 
     private static final String PACK_ID = MekNHCore.MODID + ":generated_models";

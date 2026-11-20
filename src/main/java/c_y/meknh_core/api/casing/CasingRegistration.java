@@ -47,6 +47,20 @@ public final class CasingRegistration {
                             .sound(SoundType.METAL)
                             .lightLevel(state -> state.getValue(FireboxCasingBlock.ACTIVE) ? 15 : 0)));
 
+    /** 砖砌青铜外壳（对应 GT 的 bronze_brick_casing）。 */
+    public static final DeferredBlock<Block> BRONZE_BRICK_CASING = BLOCKS.register("bronze_brick_casing",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(5.0F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
+    /** 青铜机器外壳（对应 GT 的 bronze_machine_casing）。 */
+    public static final DeferredBlock<Block> BRONZE_MACHINE_CASING = BLOCKS.register("bronze_machine_casing",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(5.0F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
     public static final DeferredItem<BlockItem> STEAM_MACHINE_CASING_ITEM =
             ITEMS.registerItem("steam_machine_casing",
                     properties -> new BlockItem(STEAM_MACHINE_CASING.get(), properties));
@@ -56,6 +70,14 @@ public final class CasingRegistration {
                     properties -> new BlockItem(BRONZE_FIREBOX_CASING.get(), properties));
 
     /** 与 GTCEu 对应的泵结构方块，仅注册方块与外观。 */
+    public static final DeferredItem<BlockItem> BRONZE_BRICK_CASING_ITEM =
+            ITEMS.registerItem("bronze_brick_casing",
+                    properties -> new BlockItem(BRONZE_BRICK_CASING.get(), properties));
+
+    public static final DeferredItem<BlockItem> BRONZE_MACHINE_CASING_ITEM =
+            ITEMS.registerItem("bronze_machine_casing",
+                    properties -> new BlockItem(BRONZE_MACHINE_CASING.get(), properties));
+
     public static final ResourceLocation PRIMITIVE_PUMP_ID = MekNHCore.rl("primitive_pump");
 
     public static final DeferredBlock<Block> PRIMITIVE_PUMP = BLOCKS.register("primitive_pump",
@@ -98,6 +120,8 @@ public final class CasingRegistration {
     private static void addCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(STEAM_MACHINE_CASING_ITEM.get());
+            event.accept(BRONZE_BRICK_CASING_ITEM.get());
+            event.accept(BRONZE_MACHINE_CASING_ITEM.get());
             event.accept(BRONZE_FIREBOX_CASING_ITEM.get());
             event.accept(PRIMITIVE_PUMP_ITEM.get());
             event.accept(PUMP_DECK_ITEM.get());

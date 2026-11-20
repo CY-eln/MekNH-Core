@@ -1,7 +1,7 @@
 {
   "type": "meknh_core:machine",
   "id": "meknh_core:electric_stove",
-  "level": "LV",
+  "level": "ULV",
   "time": "200",
   "energy": 0.25,
   "vanilla": "minecraft:smelting"

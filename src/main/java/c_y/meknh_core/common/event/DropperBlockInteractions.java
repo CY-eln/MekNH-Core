@@ -19,7 +19,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  *
  * <p>这是机器/仓室的通用行为，不在各个方块里单独写例外。</p>
  */
-@EventBusSubscriber(modid = MekNHCore.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MekNHCore.MODID)
 public final class DropperBlockInteractions {
 
     private DropperBlockInteractions() {

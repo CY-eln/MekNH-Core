@@ -202,7 +202,7 @@ public final class MachineRecipeInput implements RecipeInput {
             return false;
         }
         Chemical chemical = MekanismAPI.CHEMICAL_REGISTRY.get(id);
-        return chemical != null && chemical != MekanismAPI.EMPTY_CHEMICAL && stack.getChemical() == chemical;
+        return chemical != null && chemical != MekanismAPI.EMPTY_CHEMICAL_HOLDER.value() && stack.getChemical() == chemical;
     }
 
     /**

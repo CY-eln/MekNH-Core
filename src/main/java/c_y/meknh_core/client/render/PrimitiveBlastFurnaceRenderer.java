@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluids;
@@ -33,10 +33,10 @@ public final class PrimitiveBlastFurnaceRenderer implements BlockEntityRenderer<
         var fluid = IClientFluidTypeExtensions.of(Fluids.LAVA);
         var texture = fluid.getStillTexture();
         if (texture == null) return;
-        var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
+        var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
         int tint = fluid.getTintColor();
         float x = back.getStepX(), z = back.getStepZ();
-        VertexConsumer vertices = buffers.getBuffer(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
+        VertexConsumer vertices = buffers.getBuffer(RenderType.entitySolid(InventoryMenu.BLOCK_ATLAS));
         // Counter-clockwise from above: a single upward-facing surface, not a lava cube.
         vertex(vertices, poses.last(), x, SURFACE_HEIGHT, z, sprite.getU0(), sprite.getV0(), tint);
         vertex(vertices, poses.last(), x, SURFACE_HEIGHT, z + 1, sprite.getU0(), sprite.getV1(), tint);

@@ -250,7 +250,7 @@ public class MachineMenu extends AbstractContainerMenu {
          return ChemicalStack.EMPTY;
       }
       Chemical chemical = MekanismAPI.CHEMICAL_REGISTRY.byId(id);
-      return chemical == null ? ChemicalStack.EMPTY : new ChemicalStack(chemical, amount);
+      return chemical == null ? ChemicalStack.EMPTY : new ChemicalStack(mekanism.api.MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(chemical), amount);
    }
 
    public long mekOutputCapacity() {
