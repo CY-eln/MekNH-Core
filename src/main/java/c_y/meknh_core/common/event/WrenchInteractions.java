@@ -32,7 +32,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * 所以换覆盖面永远轮不到方块。放到 {@link PlayerInteractEvent.RightClickBlock} 里
  * 就在物品/方块分流之前，两个功能都能稳定触发。</p>
  */
-@EventBusSubscriber(modid = MekNHCore.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MekNHCore.MODID)
 public final class WrenchInteractions {
 
     private WrenchInteractions() {

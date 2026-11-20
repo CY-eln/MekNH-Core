@@ -1,6 +1,7 @@
 package c_y.meknh_core.client;
 
 import c_y.meknh_core.MekNHCore;
+import c_y.meknh_core.api.chemical.DataFluidType;
 import c_y.meknh_core.api.machine.MachineRegistration;
 import c_y.meknh_core.api.generator.boiler.BoilerRegistration;
 import c_y.meknh_core.api.multiblock.MultiblockRegistration;
@@ -12,6 +13,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RegisterSpriteSourceTypesEvent;
 
 /**
@@ -21,6 +23,16 @@ import net.neoforged.neoforge.client.event.RegisterSpriteSourceTypesEvent;
 public final class ClientEvents {
 
     private ClientEvents() {
+    }
+
+    /**
+     * 数据流体的贴图扩展（取代已删除的 {@code FluidType#initializeClient}）。
+     */
+    @SubscribeEvent
+    public static void registerFluidTypeExtensions(RegisterClientExtensionsEvent event) {
+        for (DataFluidType type : DataFluidType.instances()) {
+            event.registerFluidType(type.clientExtensions(), type);
+        }
     }
 
     @SubscribeEvent

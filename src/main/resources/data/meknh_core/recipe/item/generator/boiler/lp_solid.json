@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PCP",
+    "BBB"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/bronze"},
+    "B": {"item": "minecraft:bricks"},
+    "C": {"item": "minecraft:furnace"}
+  },
+  "result": {
+    "id": "meknh_core:solid_boiler_ulv",
+    "count": 1
+  }
+}

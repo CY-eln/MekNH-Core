@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "meknh_core:block/casings/steam/bronze_machine_casing"
+    }
+  }
+}

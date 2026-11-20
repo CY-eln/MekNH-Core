@@ -83,6 +83,7 @@ public final class MachineRecipeCategory implements IRecipeCategory<MachineRecip
     }
 
     @Override
+    @SuppressWarnings("removal")
     public IDrawable getBackground() {
         return this.background;
     }
@@ -185,7 +186,7 @@ public final class MachineRecipeCategory implements IRecipeCategory<MachineRecip
                     .get(ResourceLocation.tryParse(gas.gas()));
             if (chemical != null) {
                 slot.addIngredient(mekanism.client.recipe_viewer.jei.MekanismJEI.TYPE_CHEMICAL,
-                        new mekanism.api.chemical.ChemicalStack(chemical, gas.amount()));
+                        new mekanism.api.chemical.ChemicalStack(mekanism.api.MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(chemical), gas.amount()));
             }
         }
     }
@@ -211,7 +212,7 @@ public final class MachineRecipeCategory implements IRecipeCategory<MachineRecip
                     .get(ResourceLocation.tryParse(gas.gas()));
             if (chemical != null) {
                 slot.addIngredient(mekanism.client.recipe_viewer.jei.MekanismJEI.TYPE_CHEMICAL,
-                        new mekanism.api.chemical.ChemicalStack(chemical, gas.amount()));
+                        new mekanism.api.chemical.ChemicalStack(mekanism.api.MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(chemical), gas.amount()));
             }
         }
     }

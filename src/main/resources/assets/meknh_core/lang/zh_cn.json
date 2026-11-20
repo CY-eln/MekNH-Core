@@ -232,5 +232,7 @@
   "jade.meknh_core.waterpump.output": "产出：%s mB/s",
   "config.jade.plugin_meknh_core.multiblock_status": "结构状态",
   "block.meknh_core.treated_wood_planks": "防腐木板",
-  "item.meknh_core.treated_wood_rod": "防腐木棍"
+  "item.meknh_core.treated_wood_rod": "防腐木棍",
+  "block.meknh_core.bronze_brick_casing": "砖砌青铜外壳",
+  "block.meknh_core.bronze_machine_casing": "青铜机器外壳"
 }

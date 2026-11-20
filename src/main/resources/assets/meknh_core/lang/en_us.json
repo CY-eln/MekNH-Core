@@ -233,5 +233,7 @@
   "jade.meknh_core.waterpump.output": "Output: %s mB/s",
   "config.jade.plugin_meknh_core.multiblock_status": "Structure Status",
   "block.meknh_core.treated_wood_planks": "Treated Wood Planks",
-  "item.meknh_core.treated_wood_rod": "Treated Wood Rod"
+  "item.meknh_core.treated_wood_rod": "Treated Wood Rod",
+  "block.meknh_core.bronze_brick_casing": "Bricked Bronze Casing",
+  "block.meknh_core.bronze_machine_casing": "Bronze Machine Casing"
 }

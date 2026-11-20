@@ -23,7 +23,7 @@ import net.neoforged.neoforge.event.AddPackFindersEvent;
  * <p>攻击/破坏方块走的是服务端战利品表，所以这份包必须是 {@link PackType#SERVER_DATA}，
  * 客户端单独启动时也要注册（单人游戏内置服务端靠它）。</p>
  */
-@EventBusSubscriber(modid = MekNHCore.MODID, bus = EventBusSubscriber.Bus.MOD,
+@EventBusSubscriber(modid = MekNHCore.MODID,
         value = {Dist.CLIENT, Dist.DEDICATED_SERVER})
 public final class RuntimeDataPackEvents {
 

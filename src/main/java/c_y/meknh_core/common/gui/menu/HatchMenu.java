@@ -246,7 +246,7 @@ public class HatchMenu extends AbstractContainerMenu {
             return null;
         }
         Chemical chemical = MekanismAPI.CHEMICAL_REGISTRY.byId(this.data(DATA_ID));
-        return chemical == null ? null : new ChemicalStack(chemical, this.stored());
+        return chemical == null ? null : new ChemicalStack(mekanism.api.MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(chemical), this.stored());
     }
 
     @Override

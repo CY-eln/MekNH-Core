@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/bronze"}
+  },
+  "result": {
+    "id": "meknh_core:bronze_machine_casing",
+    "count": 1
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "SSS",
+    "GBG"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/bronze"},
+    "B": {"item": "meknh_core:bronze_brick_casing"},
+    "G": {"item": "mekanism:basic_mechanical_pipe"},
+    "S": {"tag": "c:plates/silver"}
+  },
+  "result": {
+    "id": "meknh_core:solar_boiler_ulv",
+    "count": 1
+  }
+}

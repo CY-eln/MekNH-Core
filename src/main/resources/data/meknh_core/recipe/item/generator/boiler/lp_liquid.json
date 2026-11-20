@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PGP",
+    "PBP"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/bronze"},
+    "B": {"item": "meknh_core:bronze_brick_casing"},
+    "G": {"item": "minecraft:glass"}
+  },
+  "result": {
+    "id": "meknh_core:liquid_boiler_ulv",
+    "count": 1
+  }
+}
