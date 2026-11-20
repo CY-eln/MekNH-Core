@@ -31,6 +31,16 @@ public final class MetalMachineBackground {
         int sourceWidth = material.tiled() ? width : 176;
         int sourceHeight = material.tiled() ? height : 177;
         graphics.blit(TEXTURES.get(material), x, y, width, height, 0, 0, sourceWidth, sourceHeight, 176, 177);
+        if (!material.tiled()) {
+            for (int layer = 0; layer < MetalBevel.DEPTH; layer++) {
+                int left = x + layer, top = y + layer;
+                int right = x + width - layer, bottom = y + height - layer;
+                graphics.fill(left, top, right, top + 1, MetalBevel.color(material, layer, MetalBevel.TOP));
+                graphics.fill(left, top, left + 1, bottom, MetalBevel.color(material, layer, MetalBevel.LEFT));
+                graphics.fill(left, bottom - 1, right, bottom, MetalBevel.color(material, layer, MetalBevel.BOTTOM));
+                graphics.fill(right - 1, top, right, bottom, MetalBevel.color(material, layer, MetalBevel.RIGHT));
+            }
+        }
     }
 
     public static void render(GuiGraphics graphics, int x, int y, int width, int height,
