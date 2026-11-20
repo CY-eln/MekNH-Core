@@ -235,5 +235,19 @@
   "block.meknh_core.treated_wood_planks": "Treated Wood Planks",
   "item.meknh_core.treated_wood_rod": "Treated Wood Rod",
   "block.meknh_core.bronze_brick_casing": "Bricked Bronze Casing",
-  "block.meknh_core.bronze_machine_casing": "Bronze Machine Casing"
+  "block.meknh_core.bronze_machine_casing": "Bronze Machine Casing",
+  "block.meknh_core.copper_cable": "Copper Cable",
+  "block.meknh_core.bronze_fluid_pipe": "Bronze Fluid Pipe",
+  "block.meknh_core.wood_fluid_pipe": "Wooden Fluid Pipe",
+  "gui.meknh_core.pipe.mode.pull": "Pull",
+  "gui.meknh_core.pipe.mode.push": "Push",
+  "gui.meknh_core.pipe.mode.none": "None",
+  "gui.meknh_core.pipe.mode.set": "%1$s: %2$s",
+  "gui.meknh_core.pipe.mode.line": "%1$s: %2$s",
+  "direction.north": "North",
+  "direction.south": "South",
+  "direction.east": "East",
+  "direction.west": "West",
+  "direction.up": "Up",
+  "direction.down": "Down"
 }

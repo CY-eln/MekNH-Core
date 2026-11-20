@@ -234,5 +234,19 @@
   "block.meknh_core.treated_wood_planks": "防腐木板",
   "item.meknh_core.treated_wood_rod": "防腐木棍",
   "block.meknh_core.bronze_brick_casing": "砖砌青铜外壳",
-  "block.meknh_core.bronze_machine_casing": "青铜机器外壳"
+  "block.meknh_core.bronze_machine_casing": "青铜机器外壳",
+  "block.meknh_core.copper_cable": "铜电缆",
+  "block.meknh_core.bronze_fluid_pipe": "青铜流体管道",
+  "block.meknh_core.wood_fluid_pipe": "木流体管道",
+  "gui.meknh_core.pipe.mode.pull": "抽出",
+  "gui.meknh_core.pipe.mode.push": "推出",
+  "gui.meknh_core.pipe.mode.none": "关闭",
+  "gui.meknh_core.pipe.mode.set": "%1$s 面：%2$s",
+  "gui.meknh_core.pipe.mode.line": "%1$s：%2$s",
+  "direction.north": "北",
+  "direction.south": "南",
+  "direction.east": "东",
+  "direction.west": "西",
+  "direction.up": "上",
+  "direction.down": "下"
 }

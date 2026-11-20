@@ -33,7 +33,12 @@ public final class ScreenTabs {
 
     public void renderTabs(GuiGraphics graphics, int left, int top,
                            int redstoneOrdinal, boolean privateMode, int warningCode) {
-        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode);
+        this.renderTabs(graphics, left, top, redstoneOrdinal, privateMode, warningCode, false);
+    }
+
+    public void renderTabs(GuiGraphics graphics, int left, int top,
+                           int redstoneOrdinal, boolean privateMode, int warningCode, boolean steam) {
+        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, steam);
     }
 
     public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,

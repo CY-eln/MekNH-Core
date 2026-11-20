@@ -58,6 +58,15 @@ public final class RuntimeLootTables {
             paths.add(variant.definition().id().getPath() + "_" + variant.tier().getSerializedName());
         }
 
+        for (c_y.meknh_core.common.pipe.FePipeDefinition definition
+                : c_y.meknh_core.common.pipe.FePipeRegistration.definitions()) {
+            paths.add(definition.id().getPath());
+        }
+        for (c_y.meknh_core.common.pipe.MekPipeDefinition definition
+                : c_y.meknh_core.common.pipe.MekPipeRegistration.definitions()) {
+            paths.add(definition.id().getPath());
+        }
+
         Map<ResourceLocation, byte[]> resources = new LinkedHashMap<>();
         for (String path : paths) {
             resources.put(MekNHCore.rl("loot_table/blocks/" + path + ".json"),

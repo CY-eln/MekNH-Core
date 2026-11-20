@@ -473,7 +473,7 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
         int warning = this.menu.value(BoilerMenu.DATA_WARNING);
         this.tabs.renderTabs(graphics, this.leftPos, this.topPos,
                 this.menu.value(BoilerMenu.DATA_REDSTONE),
-                this.menu.value(BoilerMenu.DATA_PRIVATE) == 1, warning);
+                this.menu.value(BoilerMenu.DATA_PRIVATE) == 1, warning, true);
         if (this.transporter.isOpen()) {
             this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext());
         } else {
