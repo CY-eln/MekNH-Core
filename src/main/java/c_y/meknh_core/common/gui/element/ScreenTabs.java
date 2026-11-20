@@ -47,9 +47,22 @@ public final class ScreenTabs {
         TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material);
     }
 
+    public void renderTabs(GuiGraphics graphics, int left, int top,
+                           int redstoneOrdinal, boolean privateMode, int warningCode, MachineBackgroundMaterial material,
+                           int mouseX, int mouseY, boolean hoverEnabled) {
+        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material,
+                mouseX, mouseY, hoverEnabled && !this.sideConfig.isOpen());
+    }
+
     public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
                               SideConfigPanel.Context context, MachineBackgroundMaterial material) {
         this.sideConfig.render(graphics, font, left, top, context, material);
+    }
+
+    public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
+                              SideConfigPanel.Context context, MachineBackgroundMaterial material,
+                              int mouseX, int mouseY) {
+        this.sideConfig.render(graphics, font, left, top, context, material, mouseX, mouseY);
     }
 
     public void renderWithConfig(GuiGraphics graphics, Font font, int left, int top,

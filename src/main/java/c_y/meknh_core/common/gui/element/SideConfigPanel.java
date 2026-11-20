@@ -127,6 +127,9 @@ public final class SideConfigPanel {
     }
 
     public void init(BlockPos pos) {
+        // Screen initialization also runs after a GUI-scale/resolution change.
+        // A drag anchor belongs to the previous screen coordinate system.
+        this.mouseReleased();
         this.pos = pos;
         this.pinned = pos != null && PINNED.getOrDefault(pos, false);
         this.open = this.pinned;
@@ -142,10 +145,12 @@ public final class SideConfigPanel {
     }
 
     public void toggle() {
+        this.mouseReleased();
         this.open = !this.open;
     }
 
     public void close() {
+        this.mouseReleased();
         this.open = false;
     }
 
@@ -166,6 +171,11 @@ public final class SideConfigPanel {
 
     public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
                        MachineBackgroundMaterial material) {
+        this.render(graphics, font, left, top, context, material, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    }
+
+    public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
+                       MachineBackgroundMaterial material, int mouseX, int mouseY) {
         if (!this.open) {
             return;
         }
@@ -197,7 +207,10 @@ public final class SideConfigPanel {
 
         for (int type = 0; type < 4; type++) {
             if (type != this.configType && context.supports(type)) {
-                drawConfigTypeTab(graphics, originX - TYPE_TAB, originY + 2 + type * 28, type, material);
+                int tabX = originX - TYPE_TAB;
+                int tabY = originY + 2 + type * 28;
+                drawConfigTypeTab(graphics, tabX, tabY, type, material);
+                drawConfigTypeTabHover(graphics, tabX, tabY, mouseX, mouseY);
             }
         }
 
@@ -296,7 +309,7 @@ public final class SideConfigPanel {
         if (mouseX < originX || mouseX >= originX + WIDTH
                 || mouseY < originY || mouseY >= originY + HEIGHT) {
             if (!this.pinned) {
-                this.open = false;
+                this.close();
             }
             return true;
         }
@@ -331,7 +344,7 @@ public final class SideConfigPanel {
         }
         if (mouseX >= originX + 6 && mouseX < originX + 14
                 && mouseY >= originY + 6 && mouseY < originY + 14) {
-            this.open = false;
+            this.close();
             return true;
         }
         if (mouseX >= originX + 16 && mouseX < originX + 32
@@ -376,7 +389,7 @@ public final class SideConfigPanel {
     public boolean keyPressed(int keyCode) {
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && this.open) {
             if (!this.pinned) {
-                this.open = false;
+                this.close();
             }
             return true;
         }
@@ -518,6 +531,17 @@ public final class SideConfigPanel {
             default -> EnumColor.GRAY;
         };
         return color.getPackedColor() & 0xFFFFFF;
+    }
+
+    private static void drawConfigTypeTabHover(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        // Match the entire half-open type-tab click rectangle, including its holder.
+        if (mouseX >= x && mouseX < x + TYPE_TAB && mouseY >= y && mouseY < y + TYPE_TAB) {
+            graphics.fill(x + 4, y + 4, x + 22, y + 22, 0x305FC5FF);
+            graphics.fill(x + 4, y + 4, x + 22, y + 5, 0xFF9BDDFF);
+            graphics.fill(x + 4, y + 4, x + 5, y + 22, 0xFF9BDDFF);
+            graphics.fill(x + 4, y + 21, x + 22, y + 22, 0xFF4B8DB8);
+            graphics.fill(x + 21, y + 4, x + 22, y + 22, 0xFF4B8DB8);
+        }
     }
 
     private static void drawConfigTypeTab(GuiGraphics graphics, int x, int y, int type,

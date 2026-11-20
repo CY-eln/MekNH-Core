@@ -104,6 +104,30 @@ public final class TabStrip {
             left + 176, top + 34, 16752992, material);
    }
 
+   /** Hover is evaluated in GUI-scaled screen coordinates, just like tabAt/click handling. */
+   public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
+                             int warningCode, MachineBackgroundMaterial material, int mouseX, int mouseY,
+                             boolean hoverEnabled) {
+      render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material);
+      Tab hovered = hoverEnabled ? tabAt(mouseX, mouseY, left, top, warningCode != 0) : null;
+      if (hovered == null) {
+         return;
+      }
+      int x = (hovered == Tab.REDSTONE || hovered == Tab.SECURITY ? left + 176 : left - TAB_SIZE) + BUTTON_INSET;
+      int y = top + BUTTON_INSET + switch (hovered) {
+         case CONFIG, REDSTONE -> 6;
+         case TRANSPORTER, SECURITY -> 34;
+         case WARNING -> 109;
+         case ENERGY -> 137;
+      };
+      // Mek's hovered button state uses a highlighted frame. Keep our metal grain and glyph visible.
+      graphics.fill(x, y, x + ICON, y + ICON, 0x305FC5FF);
+      graphics.fill(x, y, x + ICON, y + 1, 0xFF9BDDFF);
+      graphics.fill(x, y, x + 1, y + ICON, 0xFF9BDDFF);
+      graphics.fill(x, y + ICON - 1, x + ICON, y + ICON, 0xFF4B8DB8);
+      graphics.fill(x + ICON - 1, y, x + ICON, y + ICON, 0xFF4B8DB8);
+   }
+
    private static void drawMaterialBase(GuiGraphics graphics, int x, int y, MachineBackgroundMaterial material) {
       MetalMachineBackground.renderBase(graphics, x, y, TAB_SIZE, TAB_SIZE, material);
       MetalMachineBackground.renderBase(graphics, x + BUTTON_INSET, y + BUTTON_INSET, ICON, ICON, material);
