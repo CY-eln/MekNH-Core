@@ -26,5 +26,7 @@ public final class BoilerJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(MeknhTankJadeDataProvider.INSTANCE, CokeOvenControllerBlockEntity.class);
         registration.registerBlockDataProvider(MeknhTankJadeDataProvider.INSTANCE,
                 mekanism.common.tile.transmitter.TileEntityMechanicalPipe.class);
+        registration.registerBlockDataProvider(MeknhTankJadeDataProvider.INSTANCE,
+                mekanism.common.tile.transmitter.TileEntityUniversalCable.class);
     }
 }

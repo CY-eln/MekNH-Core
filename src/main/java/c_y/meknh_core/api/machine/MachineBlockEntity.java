@@ -44,7 +44,8 @@ import org.slf4j.Logger;
  *
  * <p>本类同时实现 {@link MachineOutput}，作为配方的产物入口。</p>
  */
-public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_y.meknh_core.common.machine.DropperTankHolder {
+public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_y.meknh_core.common.machine.DropperTankHolder,
+        c_y.meknh_core.common.pipe.FeEnergyEndpoint {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -555,6 +556,18 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         }
         this.level.explode(null, this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D,
                 this.worldPosition.getZ() + 0.5D, 2.0F, net.minecraft.world.level.Level.ExplosionInteraction.BLOCK);
+    }
+
+    @Override
+    public int extractFePacket(int maxFe) {
+        if (this.energyStorage == null || maxFe <= 0) {
+            return 0;
+        }
+        int extracted = this.energyStorage.extractEnergy(maxFe, false);
+        if (extracted > 0) {
+            this.setChanged();
+        }
+        return extracted;
     }
 
     public MachineEnergyStorage energyStorage() {

@@ -564,11 +564,13 @@ public final class MultiblockRegistration {
                     event.registerBlockEntity(
                             net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,
                             type,
-                            (blockEntity, side) -> blockEntity.energyStorage());
+                            (blockEntity, side) -> (side == null || side == blockEntity.ioFace())
+                                    ? blockEntity.externalEnergyStorage() : null);
                     event.registerBlockEntity(
                             Capabilities.STRICT_ENERGY.block(),
                             type,
-                            (blockEntity, side) -> blockEntity.strictEnergyHandler());
+                            (blockEntity, side) -> (side == null || side == blockEntity.ioFace())
+                                    ? blockEntity.externalStrictEnergyHandler() : null);
                 }
                 case COKE_OVEN_HATCH -> {
                     event.registerBlockEntity(
