@@ -4,6 +4,8 @@ import c_y.meknh_core.common.gui.element.ProgressElement;
 import c_y.meknh_core.common.gui.layout.MachineGuiTextures;
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import mekanism.client.gui.GuiMekanism;
 import mekanism.client.gui.GuiUtils;
 import mekanism.client.gui.GuiUtils.TilingDirection;
@@ -53,6 +55,8 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         super.renderBg(graphics, partialTick, mouseX, mouseY);
+        MetalMachineBackground.renderBase(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
+                MachineBackgroundMaterial.COKE_BRICK);
         // 槽位底图：0 = 输入（input.png），1 = 输出（output.png），其余是玩家物品栏（normal.png）。
         // 全部走九宫格绘制，漏画物品栏就会显得“背包没了”。
         for (int index = 0; index < this.menu.slots.size(); index++) {

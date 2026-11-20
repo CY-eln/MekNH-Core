@@ -2,6 +2,8 @@ package c_y.meknh_core.common.gui.element;
 
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
 import c_y.meknh_core.common.machine.config.SideMode;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -124,7 +126,16 @@ public final class SideConfigPanel {
         return top + 15 + this.dragOffsetY;
     }
 
+    /** Includes type tabs; follows the same dragged origin as rendering and input. */
+    public net.minecraft.client.renderer.Rect2i bounds(int left, int top) {
+        return new net.minecraft.client.renderer.Rect2i(this.originX(left) - TYPE_TAB, this.originY(top),
+                WIDTH + TYPE_TAB, HEIGHT);
+    }
+
     public void init(BlockPos pos) {
+        // Screen initialization also runs after a GUI-scale/resolution change.
+        // A drag anchor belongs to the previous screen coordinate system.
+        this.mouseReleased();
         this.pos = pos;
         this.pinned = pos != null && PINNED.getOrDefault(pos, false);
         this.open = this.pinned;
@@ -140,10 +151,12 @@ public final class SideConfigPanel {
     }
 
     public void toggle() {
+        this.mouseReleased();
         this.open = !this.open;
     }
 
     public void close() {
+        this.mouseReleased();
         this.open = false;
     }
 
@@ -159,6 +172,16 @@ public final class SideConfigPanel {
     }
 
     public void render(GuiGraphics graphics, Font font, int left, int top, Context context) {
+        this.render(graphics, font, left, top, context, null);
+    }
+
+    public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
+                       MachineBackgroundMaterial material) {
+        this.render(graphics, font, left, top, context, material, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    }
+
+    public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
+                       MachineBackgroundMaterial material, int mouseX, int mouseY) {
         if (!this.open) {
             return;
         }
@@ -175,17 +198,25 @@ public final class SideConfigPanel {
         GuiDraw.nineSlice(graphics, MekGuiTextures.WINDOW_SHADOW, originX - 3, originY - 3,
                 WIDTH + 6, HEIGHT + 6, 4, 256, 256);
         graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiDraw.nineSlice(graphics, MekGuiTextures.WINDOW_BASE, originX, originY, WIDTH, HEIGHT, 4, 256, 256);
+        if (material == null) {
+            GuiDraw.nineSlice(graphics, MekGuiTextures.WINDOW_BASE, originX, originY, WIDTH, HEIGHT, 4, 256, 256);
+        } else {
+            MetalMachineBackground.renderBase(graphics, originX, originY, WIDTH, HEIGHT, material);
+        }
+        int labelColor = material == null || material == MachineBackgroundMaterial.METAL ? 4210752 : 0xFFF0D3;
 
         Component title = Component.translatable("gui.meknh_core.config.title." + typeKey(this.configType));
         int titleLeft = originX + 30;
         int titleRight = originX + WIDTH - 18;
         graphics.drawString(font, title, titleLeft + (titleRight - titleLeft - font.width(title)) / 2,
-                originY + 5, 4210752, false);
+                originY + 5, labelColor, false);
 
         for (int type = 0; type < 4; type++) {
             if (type != this.configType && context.supports(type)) {
-                drawConfigTypeTab(graphics, originX - TYPE_TAB, originY + 2 + type * 28, type);
+                int tabX = originX - TYPE_TAB;
+                int tabY = originY + 2 + type * 28;
+                drawConfigTypeTab(graphics, tabX, tabY, type, material);
+                drawConfigTypeTabHover(graphics, tabX, tabY, mouseX, mouseY);
             }
         }
 
@@ -237,7 +268,7 @@ public final class SideConfigPanel {
 
         Component slots = Component.translatable("gui.meknh_core.config.slots");
         graphics.drawString(font, slots, originX + (WIDTH - font.width(slots)) / 2,
-                originY + 120, 4210752, false);
+                originY + 120, labelColor, false);
 
         // 相邻方块预览必须第二遍绘制，避免被按钮底板/边框覆盖。
         Level level = context.level();
@@ -284,7 +315,7 @@ public final class SideConfigPanel {
         if (mouseX < originX || mouseX >= originX + WIDTH
                 || mouseY < originY || mouseY >= originY + HEIGHT) {
             if (!this.pinned) {
-                this.open = false;
+                this.close();
             }
             return true;
         }
@@ -319,7 +350,7 @@ public final class SideConfigPanel {
         }
         if (mouseX >= originX + 6 && mouseX < originX + 14
                 && mouseY >= originY + 6 && mouseY < originY + 14) {
-            this.open = false;
+            this.close();
             return true;
         }
         if (mouseX >= originX + 16 && mouseX < originX + 32
@@ -364,7 +395,7 @@ public final class SideConfigPanel {
     public boolean keyPressed(int keyCode) {
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && this.open) {
             if (!this.pinned) {
-                this.open = false;
+                this.close();
             }
             return true;
         }
@@ -508,7 +539,19 @@ public final class SideConfigPanel {
         return color.getPackedColor() & 0xFFFFFF;
     }
 
-    private static void drawConfigTypeTab(GuiGraphics graphics, int x, int y, int type) {
+    private static void drawConfigTypeTabHover(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        // Match the entire half-open type-tab click rectangle, including its holder.
+        if (mouseX >= x && mouseX < x + TYPE_TAB && mouseY >= y && mouseY < y + TYPE_TAB) {
+            graphics.fill(x + 4, y + 4, x + 22, y + 22, 0x305FC5FF);
+            graphics.fill(x + 4, y + 4, x + 22, y + 5, 0xFF9BDDFF);
+            graphics.fill(x + 4, y + 4, x + 5, y + 22, 0xFF9BDDFF);
+            graphics.fill(x + 4, y + 21, x + 22, y + 22, 0xFF4B8DB8);
+            graphics.fill(x + 21, y + 4, x + 22, y + 22, 0xFF4B8DB8);
+        }
+    }
+
+    private static void drawConfigTypeTab(GuiGraphics graphics, int x, int y, int type,
+                                          MachineBackgroundMaterial material) {
         net.minecraft.resources.ResourceLocation icon = switch (type) {
             case 1 -> MekGuiTextures.CONFIG_FLUID;
             case 2 -> MekGuiTextures.CONFIG_CHEMICAL;
@@ -521,13 +564,19 @@ public final class SideConfigPanel {
             case 3 -> 0x59C15F;
             default -> 0xCFCFCF;
         };
-        graphics.setColor((tint >> 16 & 0xFF) / 255.0F, (tint >> 8 & 0xFF) / 255.0F,
-                (tint & 0xFF) / 255.0F, 1.0F);
-        GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_HOLDER_LEFT, x, y, TYPE_TAB, TYPE_TAB,
-                4, 4, 26, 9, 0, 0, 26, 9);
-        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_BUTTON, x + BUTTON_INSET, y + BUTTON_INSET,
-                18, 18, 20, 4, 200, 60, 0, 20, 200, 20);
+        if (material == null) {
+            graphics.setColor((tint >> 16 & 0xFF) / 255.0F, (tint >> 8 & 0xFF) / 255.0F,
+                    (tint & 0xFF) / 255.0F, 1.0F);
+            GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_HOLDER_LEFT, x, y, TYPE_TAB, TYPE_TAB,
+                    4, 4, 26, 9, 0, 0, 26, 9);
+            graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_BUTTON, x + BUTTON_INSET, y + BUTTON_INSET,
+                    18, 18, 20, 4, 200, 60, 0, 20, 200, 20);
+        } else {
+            MetalMachineBackground.renderBase(graphics, x, y, TYPE_TAB, TYPE_TAB, material);
+            MetalMachineBackground.renderBase(graphics, x + BUTTON_INSET, y + BUTTON_INSET, 18, 18, material);
+            graphics.fill(x + 4, y + TYPE_TAB - 4, x + TYPE_TAB - 4, y + TYPE_TAB - 3, 0xFF000000 | tint);
+        }
         graphics.blit(icon, x + BUTTON_INSET, y + BUTTON_INSET, 18, 18, 0, 0, 18, 18, 18, 18);
     }
 

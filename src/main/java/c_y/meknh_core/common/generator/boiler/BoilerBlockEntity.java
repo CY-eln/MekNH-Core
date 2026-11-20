@@ -536,13 +536,21 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
     }
 
     public void cycleOutputColor() {
-        this.outputColor = (this.outputColor + 1) % 16;
+        this.cycleOutputColor(false);
+    }
+
+    public void cycleOutputColor(boolean reverse) {
+        this.outputColor = (this.outputColor + (reverse ? 15 : 1)) % 16;
         this.setChanged();
     }
 
     public void cycleInputColor(net.minecraft.core.Direction side) {
+        this.cycleInputColor(side, false);
+    }
+
+    public void cycleInputColor(net.minecraft.core.Direction side, boolean reverse) {
         int index = side.ordinal();
-        this.inputColors[index] = (this.inputColors[index] + 1) % 16;
+        this.inputColors[index] = (this.inputColors[index] + (reverse ? 15 : 1)) % 16;
         this.setChanged();
     }
 

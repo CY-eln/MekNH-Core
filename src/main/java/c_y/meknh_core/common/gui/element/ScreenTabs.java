@@ -1,5 +1,6 @@
 package c_y.meknh_core.common.gui.element;
 
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import java.util.function.IntConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +19,23 @@ public final class ScreenTabs {
     private IntConsumer energyClick;
     @Nullable
     private Runnable transporterClick;
+
+    /** Extra occupied GUI-space areas for recipe-viewer overlay exclusion. */
+    public java.util.List<net.minecraft.client.renderer.Rect2i> extraAreas(int left, int top, boolean warning) {
+        java.util.List<net.minecraft.client.renderer.Rect2i> areas = new java.util.ArrayList<>();
+        areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 6, 26, 26));
+        areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 34, 26, 26));
+        if (warning) {
+            areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 109, 26, 26));
+        }
+        areas.add(new net.minecraft.client.renderer.Rect2i(left - 26, top + 137, 26, 26));
+        areas.add(new net.minecraft.client.renderer.Rect2i(left + 176, top + 6, 26, 26));
+        areas.add(new net.minecraft.client.renderer.Rect2i(left + 176, top + 34, 26, 26));
+        if (this.sideConfig.isOpen()) {
+            areas.add(this.sideConfig.bounds(left, top));
+        }
+        return areas;
+    }
 
     public void init(BlockPos pos) {
         this.sideConfig.init(pos);
@@ -44,6 +62,29 @@ public final class ScreenTabs {
     public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
                               SideConfigPanel.Context context) {
         this.sideConfig.render(graphics, font, left, top, context);
+    }
+
+    public void renderTabs(GuiGraphics graphics, int left, int top,
+                           int redstoneOrdinal, boolean privateMode, int warningCode, MachineBackgroundMaterial material) {
+        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material);
+    }
+
+    public void renderTabs(GuiGraphics graphics, int left, int top,
+                           int redstoneOrdinal, boolean privateMode, int warningCode, MachineBackgroundMaterial material,
+                           int mouseX, int mouseY, boolean hoverEnabled) {
+        TabStrip.render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material,
+                mouseX, mouseY, hoverEnabled && !this.sideConfig.isOpen());
+    }
+
+    public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
+                              SideConfigPanel.Context context, MachineBackgroundMaterial material) {
+        this.sideConfig.render(graphics, font, left, top, context, material);
+    }
+
+    public void renderOverlay(GuiGraphics graphics, Font font, int left, int top,
+                              SideConfigPanel.Context context, MachineBackgroundMaterial material,
+                              int mouseX, int mouseY) {
+        this.sideConfig.render(graphics, font, left, top, context, material, mouseX, mouseY);
     }
 
     public void renderWithConfig(GuiGraphics graphics, Font font, int left, int top,

@@ -2,6 +2,8 @@ package c_y.meknh_core.common.blast;
 
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import mekanism.client.gui.GuiMekanism;
 import mekanism.client.gui.element.progress.GuiProgress;
 import mekanism.client.gui.element.progress.IProgressInfoHandler;
@@ -48,6 +50,8 @@ public class PrimitiveBlastFurnaceScreen extends GuiMekanism<PrimitiveBlastFurna
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         super.renderBg(graphics, partialTick, mouseX, mouseY);
+        MetalMachineBackground.renderBase(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
+                MachineBackgroundMaterial.PRIMITIVE_BRICK);
         for (int index = 0; index < this.menu.slots.size(); index++) {
             Slot slot = this.menu.slots.get(index);
             ResourceLocation texture = index < 3 ? MekGuiTextures.SLOT_INPUT

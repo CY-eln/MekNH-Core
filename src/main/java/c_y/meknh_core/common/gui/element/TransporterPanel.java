@@ -2,6 +2,8 @@ package c_y.meknh_core.common.gui.element;
 
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
@@ -67,6 +69,13 @@ public final class TransporterPanel {
         return this.open;
     }
 
+    /** Screen-space bounds shared with overlay exclusion providers. */
+    public net.minecraft.client.renderer.Rect2i bounds(int left, int top) {
+        int originX = left + (176 - WIDTH) / 2;
+        int originY = top + 15;
+        return new net.minecraft.client.renderer.Rect2i(originX, originY, WIDTH, HEIGHT);
+    }
+
     public void toggle() {
         this.open = !this.open;
     }
@@ -84,6 +93,11 @@ public final class TransporterPanel {
     }
 
     public void render(GuiGraphics graphics, Font font, int left, int top, Context context) {
+        this.render(graphics, font, left, top, context, null);
+    }
+
+    public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
+                       MachineBackgroundMaterial material) {
         if (!this.open) {
             return;
         }
@@ -96,11 +110,16 @@ public final class TransporterPanel {
         GuiDraw.nineSlice(graphics, MekGuiTextures.WINDOW_SHADOW, originX - 3, originY - 3,
                 WIDTH + 6, HEIGHT + 6, 4, 256, 256);
         graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiDraw.nineSlice(graphics, MekGuiTextures.WINDOW_BASE, originX, originY, WIDTH, HEIGHT, 4, 256, 256);
+        if (material == null) {
+            GuiDraw.nineSlice(graphics, MekGuiTextures.WINDOW_BASE, originX, originY, WIDTH, HEIGHT, 4, 256, 256);
+        } else {
+            MetalMachineBackground.renderBase(graphics, originX, originY, WIDTH, HEIGHT, material);
+        }
+        int labelColor = material == null || material == MachineBackgroundMaterial.METAL ? 4210752 : 0xFFF0D3;
 
         Component title = Component.translatable("gui.meknh_core.transporter.title");
         graphics.drawString(font, title, originX + 12 + (126 - font.width(title)) / 2,
-                originY + 5, 4210752, false);
+                originY + 5, labelColor, false);
         drawButtonBase(graphics, originX + 6, originY + 6, 8, 8);
         graphics.blit(MekGuiTextures.BUTTON_CLOSE, originX + 6, originY + 6, 8, 8,
                 0, 0, 12, 12, 12, 12);
@@ -136,9 +155,9 @@ public final class TransporterPanel {
         }
 
         graphics.drawString(font, Component.translatable("gui.meknh_core.transporter.input"),
-                originX + 18, originY + 105, 4210752, false);
+                originX + 18, originY + 105, labelColor, false);
         graphics.drawString(font, Component.translatable("gui.meknh_core.transporter.output"),
-                originX + 86, originY + 68, 4210752, false);
+                originX + 86, originY + 68, labelColor, false);
         graphics.flush();
     }
 
@@ -159,8 +178,8 @@ public final class TransporterPanel {
             return true;
         }
         if (mouseX >= originX + 112 && mouseX < originX + 128 && mouseY >= originY + 49 && mouseY < originY + 65) {
-            if (button == 0) {
-                context.sendButton(211);
+            if (button == 0 || button == 1) {
+                context.sendButton(button == 1 ? 221 : 211);
             }
             return true;
         }
@@ -168,8 +187,8 @@ public final class TransporterPanel {
             int x = originX + face.x;
             int y = originY + face.y;
             if (mouseX >= x && mouseX < x + 22 && mouseY >= y && mouseY < y + 22) {
-                if (button == 0) {
-                    context.sendButton(212 + face.direction(context.facing()).ordinal());
+                if (button == 0 || button == 1) {
+                    context.sendButton((button == 1 ? 222 : 212) + face.direction(context.facing()).ordinal());
                 }
                 return true;
             }

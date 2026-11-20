@@ -24,6 +24,10 @@ import c_y.meknh_core.common.gui.machine.AlloySmelterScreen;
 import c_y.meknh_core.common.gui.machine.MaceratorScreen;
 import c_y.meknh_core.common.gui.menu.MachineMenu;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MachineBackgroundState;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
+import c_y.meknh_core.common.machine.steam.SteamVariant;
 import c_y.meknh_core.common.machine.config.RedstoneMode;
 import java.util.List;
 import java.util.Locale;
@@ -107,8 +111,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       }
    }
 
+   private MachineBackgroundMaterial backgroundMaterial() {
+      return MachineBackgroundMaterial.forSteam(this.menu.isSteam(),
+            this.menu.level() != null && this.menu.level().steam() == SteamVariant.HIGH);
+   }
+
    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-      GuiDraw.nineSlice(graphics, MachineGuiTextures.BASE, this.leftPos, this.topPos, this.imageWidth, this.imageHeight, 4, 256, 256);
+      MetalMachineBackground.render(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
+            MachineBackgroundState.fromSynced(this.menu.data(MachineMenu.DATA_RUNNING) != 0,
+                  this.menu.data(this.menu.isSteam() ? MachineMenu.DATA_STEAM : MachineMenu.DATA_ENERGY)),
+            this.font.width(this.title), this.backgroundMaterial());
       if (((MachineMenu)this.menu).usesSteamLayout()) {
          // 蒸汽布局：输入槽 - 进度条 - 输出槽；底部横向槽按机器类型绘制。
          int inputSlots = ((MachineMenu)this.menu).definition() == null ? 0 : ((MachineMenu)this.menu).definition().itemInputSlots();
@@ -127,7 +139,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             graphics.blit(texture, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 0.0F, 0.0F, 18, 18, 18, 18);
          }
          // 横向结构：输入槽 - 进度条 - 输出槽。
-         ProgressElement.renderMekBar(graphics, ((MachineMenu)this.menu).data(MachineMenu.DATA_RUNNING) != 0,
+         ProgressElement.renderChargingArrow(graphics, ((MachineMenu)this.menu).data(MachineMenu.DATA_RUNNING) != 0,
                this.progressRatio(),
                this.leftPos + SteamGuiLayout.progressX(inputSlots, outputSlots), this.topPos + SteamGuiLayout.PROGRESS_Y);
          if (((MachineMenu)this.menu).isSteam()) {
@@ -250,12 +262,15 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       int warningCode = ((MachineMenu)this.menu).data(MachineMenu.DATA_WARNING);
       this.tabs.renderTabs(graphics, this.leftPos, this.topPos,
             ((MachineMenu)this.menu).data(MachineMenu.DATA_REDSTONE),
+            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode, this.backgroundMaterial(),
+            mouseX, mouseY, !this.transporter.isOpen());
             ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode,
             ((MachineMenu)this.menu).isSteam());
       if (this.transporter.isOpen()) {
-         this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext());
+         this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(), this.backgroundMaterial());
       } else {
-         this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext());
+         this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext(),
+               this.backgroundMaterial(), mouseX, mouseY);
       }
 
       if (this.editor != null) {
@@ -779,6 +794,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             : super.mouseClicked(mouseX, mouseY, button);
    }
 
+
+   /** Prevent recipe-viewer grids from drawing over and consuming clicks on side controls. */
+   public java.util.List<net.minecraft.client.renderer.Rect2i> jeiExtraAreas() {
+      java.util.List<net.minecraft.client.renderer.Rect2i> areas = this.tabs.extraAreas(
+            this.leftPos, this.topPos, ((MachineMenu)this.menu).data(MachineMenu.DATA_WARNING) != 0);
+      if (this.transporter.isOpen()) {
+         areas.add(this.transporter.bounds(this.leftPos, this.topPos));
+      }
+      return areas;
+   }
 
    public java.util.Optional<? extends mezz.jei.api.runtime.IClickableIngredient<?>> jeiTankIngredient(
          mezz.jei.api.gui.builder.IClickableIngredientFactory factory, double mouseX, double mouseY) {
