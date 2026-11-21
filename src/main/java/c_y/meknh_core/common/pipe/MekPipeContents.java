@@ -1,6 +1,8 @@
 package c_y.meknh_core.common.pipe;
 
 import mekanism.common.content.network.transmitter.MechanicalPipe;
+import mekanism.api.chemical.ChemicalStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,6 +49,60 @@ public final class MekPipeContents {
             }
             for (Direction side : Direction.values()) {
 
+                BlockPos next = pos.relative(side);
+                if (visited.add(next)) {
+                    queue.add(next);
+                }
+            }
+        }
+        return result;
+    }
+
+    /** 整网第一份流体（没有则 EMPTY）。 */
+    public static FluidStack fluidOfNetwork(MechanicalPipe pipe) {
+        FluidStack result = FluidStack.EMPTY;
+        for (var current : networkPipes(pipe)) {
+            FluidStack stack = current.getTransmitter().getBufferWithFallback();
+            if (!stack.isEmpty()) {
+                result = stack;
+            }
+        }
+        return result;
+    }
+
+    /** 整网第一份化学品（没有则 EMPTY）。 */
+    public static ChemicalStack chemicalOfNetwork(MechanicalPipe pipe) {
+        ChemicalStack result = ChemicalStack.EMPTY;
+        for (var current : networkPipes(pipe)) {
+            if (current instanceof MekPipeChemicalAccess access) {
+                var tank = access.meknh_core$chemicalTank();
+                if (tank != null && !tank.isEmpty()) {
+                    result = tank.getStack();
+                }
+            }
+        }
+        return result;
+    }
+
+    private static java.util.List<mekanism.common.tile.transmitter.TileEntityMechanicalPipe> networkPipes(MechanicalPipe pipe) {
+        java.util.List<mekanism.common.tile.transmitter.TileEntityMechanicalPipe> result = new java.util.ArrayList<>();
+        Set<BlockPos> visited = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        BlockPos start = pipe.getTransmitterTile().getBlockPos();
+        queue.add(start);
+        visited.add(start);
+        while (!queue.isEmpty()) {
+            BlockPos pos = queue.poll();
+            var level = pipe.getTransmitterTile().getLevel();
+            if (level == null) {
+                break;
+            }
+            if (!(level.getBlockEntity(pos) instanceof mekanism.common.tile.transmitter.TileEntityMechanicalPipe current)
+                    || !(current.getBlockState().getBlock() instanceof MekPipeBlock)) {
+                continue;
+            }
+            result.add(current);
+            for (Direction side : Direction.values()) {
                 BlockPos next = pos.relative(side);
                 if (visited.add(next)) {
                     queue.add(next);

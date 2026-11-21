@@ -124,33 +124,17 @@ public abstract class TileEntityMechanicalPipeMixin implements MekPipeChemicalAc
         // 内容变化后重新校验连接：流体/化学品不一致的面会被 Mek 断开
         for (TileEntityMechanicalPipe pipe : pipes) {
             int content = c_y.meknh_core.common.pipe.MekPipeContents.ofNetwork(pipe.getTransmitter());
-            MEKNH$CONTENT.put(pipe, content);
-            // 从根源上关掉另一种 capability：有化学品时不提供流体，有流体时不提供化学品
-            if (content == c_y.meknh_core.common.pipe.MekPipeContents.CHEMICAL) {
+            Integer previous = MEKNH$CONTENT.put(pipe, content);
+            boolean contentChanged = previous == null || previous != content;
+            if (contentChanged) {
+                // 内容类型变化后失效 capability，让另一类能力从根源上关闭
                 pipe.invalidateCapabilityAll(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK);
-                // 模型同步：内容为化学品时，把连着流体容器的面改回 NONE，避免客户端还画连接段
-                for (Direction side : Direction.values()) {
-                    if (serverLevel.getCapability(
-                            net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
-                            pipe.getBlockPos().relative(side), side.getOpposite()) != null) {
-                        pipe.getTransmitter().setConnectionTypeRaw(side,
-                                mekanism.common.lib.transmitter.ConnectionType.NONE);
-                    }
-                }
-            } else if (content == c_y.meknh_core.common.pipe.MekPipeContents.FLUID) {
                 pipe.invalidateCapabilityAll(mekanism.common.capabilities.Capabilities.CHEMICAL.block());
-                for (Direction side : Direction.values()) {
-                    if (serverLevel.getCapability(
-                            mekanism.common.capabilities.Capabilities.CHEMICAL.block(),
-                            pipe.getBlockPos().relative(side), side.getOpposite()) != null) {
-                        pipe.getTransmitter().setConnectionTypeRaw(side,
-                                mekanism.common.lib.transmitter.ConnectionType.NONE);
-                    }
-                }
             }
             pipe.getTransmitter().refreshConnections();
-            // 化学品连接不在 Mek 的 acceptor 缓存里，主动同步一次连接模型数据
-            pipe.sendUpdatePacket();
+            if (contentChanged) {
+                pipe.sendUpdatePacket();
+            }
         }
         long transfer = Long.MAX_VALUE;
         for (TileEntityMechanicalPipe pipe : pipes) {
