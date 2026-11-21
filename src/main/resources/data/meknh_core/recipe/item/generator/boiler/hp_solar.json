@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "SSS",
+    "GBG"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/wrought_iron"},
+    "B": {"item": "meknh_core:wrought_iron_brick_casing"},
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
+    "S": {"tag": "c:plates/silver"}
+  },
+  "result": {
+    "id": "meknh_core:solar_boiler_ulv_high",
+    "count": 1
+  }
+}

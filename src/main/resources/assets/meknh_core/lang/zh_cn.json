@@ -248,5 +248,6 @@
   "direction.east": "东",
   "direction.west": "西",
   "direction.up": "上",
-  "direction.down": "下"
+  "direction.down": "下",
+  "block.meknh_core.wrought_iron_brick_casing": "砖砌锻铁外壳"
 }

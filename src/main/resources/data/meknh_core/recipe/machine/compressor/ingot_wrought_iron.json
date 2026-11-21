@@ -1,0 +1,13 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:compressor",
+  "level": "LV",
+  "time": "10s",
+  "energy": 0.25,
+  "input": [
+    { "type": "item", "ingredient": "meknh_ores:nugget_wrought_iron", "count": 9 }
+  ],
+  "output": [
+    { "type": "item", "id": "meknh_ores:ingot_wrought_iron", "count": 1 }
+  ]
+}

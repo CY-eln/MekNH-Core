@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PBP",
+    "PGP"
+  ],
+  "key": {
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
+    "P": {"tag": "c:plates/wrought_iron"},
+    "B": {"item": "meknh_core:lp_steam_alloy_smelter"}
+  },
+  "result": {
+    "id": "meknh_core:hp_steam_alloy_smelter",
+    "count": 1
+  }
+}

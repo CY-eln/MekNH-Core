@@ -249,5 +249,6 @@
   "direction.east": "East",
   "direction.west": "West",
   "direction.up": "Up",
-  "direction.down": "Down"
+  "direction.down": "Down",
+  "block.meknh_core.wrought_iron_brick_casing": "Wrought Iron Brick Casing"
 }

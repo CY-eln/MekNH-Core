@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GPG",
+    "PBP",
+    "GGG"
+  ],
+  "key": {
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
+    "B": {"item": "meknh_core:lp_steam_extractor"},
+    "P": {"tag": "c:plates/wrought_iron"}
+  },
+  "result": {
+    "id": "meknh_core:hp_steam_extractor",
+    "count": 1
+  }
+}
