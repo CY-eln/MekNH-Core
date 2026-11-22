@@ -5,17 +5,9 @@
   "time": "1.6s",
   "energy": 0.5,
   "input": [
-    {
-      "type": "item",
-      "ingredient": "minecraft:snowball",
-      "count": 1
-    }
+    {"type": "item", "ingredient": "minecraft:snowball", "count": 1}
   ],
   "output": [
-    {
-      "type": "fluid",
-      "fluid": "minecraft:water",
-      "amount": 250
-    }
+    {"type": "fluid", "fluid": "minecraft:water", "amount": 250}
   ]
 }

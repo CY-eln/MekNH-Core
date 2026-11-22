@@ -1,0 +1,13 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:macerator",
+  "level": "ULV",
+  "time": "1s",
+  "energy": 0.25,
+  "input": [
+    { "type": "item", "ingredient": "minecraft:brick", "count": 1 }
+  ],
+  "output": [
+    { "type": "item", "id": "meknh_core:dust_brick", "count": 1 }
+  ]
+}

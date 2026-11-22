@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {"item": "meknh_core:dust_clay"},
+    {"item": "meknh_core:dust_brick"}
+  ],
+  "result": {
+    "id": "meknh_core:dust_fireclay",
+    "count": 1
+  }
+}

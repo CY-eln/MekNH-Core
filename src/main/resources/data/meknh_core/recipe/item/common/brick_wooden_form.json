@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "tag": "minecraft:axes"
-    },
-    {
-      "tag": "minecraft:planks"
-    }
+    {"tag": "minecraft:axes"},
+    {"tag": "minecraft:planks"}
   ],
   "result": {
     "id": "meknh_core:brick_wooden_form",

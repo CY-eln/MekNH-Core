@@ -6,12 +6,10 @@
     "XX"
   ],
   "key": {
-    "X": {
-      "item": "meknh_core:coke_oven_brick"
-    }
+    "X": {"item": "meknh_core:firebrick"}
   },
   "result": {
-    "id": "meknh_core:coke_oven_bricks",
+    "id": "meknh_core:primitive_blast_furnace_bricks",
     "count": 1
   }
 }

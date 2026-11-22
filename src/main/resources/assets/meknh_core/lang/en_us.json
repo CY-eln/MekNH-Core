@@ -250,5 +250,10 @@
   "direction.west": "West",
   "direction.up": "Up",
   "direction.down": "Down",
-  "block.meknh_core.wrought_iron_brick_casing": "Wrought Iron Brick Casing"
+  "block.meknh_core.wrought_iron_brick_casing": "Wrought Iron Brick Casing",
+  "item.meknh_core.dust_brick": "Brick Dust",
+  "item.meknh_core.dust_clay": "Clay Dust",
+  "item.meknh_core.dust_fireclay": "Fireclay Dust",
+  "item.meknh_core.firebrick": "Firebrick",
+  "item.meknh_core.compressed_fireclay": "Compressed Fireclay"
 }

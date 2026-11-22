@@ -6,12 +6,8 @@
     "S"
   ],
   "key": {
-    "W": {
-      "item": "meknh_core:treated_wood_planks"
-    },
-    "S": {
-      "item": "minecraft:cobblestone_slab"
-    }
+    "W": {"item": "meknh_core:treated_wood_planks"},
+    "S": {"item": "minecraft:cobblestone_slab"}
   },
   "result": {
     "id": "meknh_core:pump_deck",
