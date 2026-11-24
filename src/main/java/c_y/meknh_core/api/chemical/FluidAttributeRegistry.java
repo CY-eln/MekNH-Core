@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 public final class FluidAttributeRegistry {
 
     private static final Map<ResourceLocation, ChemicalDefinition> DEFINITIONS = new LinkedHashMap<>();
+    private static final Map<ResourceLocation, ChemicalDefinition.FuelData> FUEL_OVERRIDES = new LinkedHashMap<>();
 
     private FluidAttributeRegistry() {
     }
@@ -54,9 +55,22 @@ public final class FluidAttributeRegistry {
     /**
      * 查询流体的燃料属性；没有配置时返回 {@code null}。
      */
+    /** 为代码里直接注册、没有 JSON 属性文件的流体补燃料属性。 */
+    public static synchronized void registerFuel(ResourceLocation id, int burnTime) {
+        FUEL_OVERRIDES.put(id, new ChemicalDefinition.FuelData(Math.max(1, burnTime), 0L));
+    }
+
     @Nullable
     public static ChemicalDefinition.FuelData fuel(FluidStack stack) {
-        ChemicalDefinition definition = get(stack);
+        if (stack.isEmpty()) {
+            return null;
+        }
+        ResourceLocation id = BuiltInRegistries.FLUID.getKey(stack.getFluid());
+        ChemicalDefinition.FuelData override = FUEL_OVERRIDES.get(id);
+        if (override != null) {
+            return override;
+        }
+        ChemicalDefinition definition = get(id);
         return definition == null ? null : definition.fuel();
     }
 

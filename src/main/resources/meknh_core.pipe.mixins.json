@@ -10,7 +10,8 @@
     "TileEntityMekanismChemSaveMixin",
     "TransmitterAcceptorMixin",
     "UniversalCableMixin",
-    "TileEntityMekanismCableSaveMixin"
+    "TileEntityMekanismCableSaveMixin",
+    "ItemStackBurnTimeMixin"
   ],
   "client": [],
   "server": [],

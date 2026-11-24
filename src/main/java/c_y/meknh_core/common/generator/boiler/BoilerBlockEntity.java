@@ -51,6 +51,8 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
     private final BasicHeatCapacitor heatCapacitor = BasicHeatCapacitor.create(
             100, 5, 10, () -> HeatAPI.AMBIENT_TEMP, this::setChanged);    private int burnTime;
     private int burnDuration;
+    /** 液体燃料已累积的 tick 数（用于按 1000 mB 燃烧时间换算）。 */
+    private double liquidBurnAccumulator;
     private int heatTime;
     private int temperature = 20;
     private int heatingTicks;
@@ -136,14 +138,7 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
                     active = true;
                 }
             }
-            case LIQUID -> {
-                if (this.burnTime > 0) {
-                    this.burnTime--;
-                    active = true;
-                } else if (this.consumeLiquid()) {
-                    active = true;
-                }
-            }
+            case LIQUID -> active = this.tickLiquidFuel();
             case SOLAR -> active = level.isDay() && level.canSeeSky(this.worldPosition.above());
         }
 
@@ -238,36 +233,55 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
         return true;
     }
 
-    private boolean consumeLiquid() {
+    /**
+     * 液体燃料：JSON 的 time 是 1000 mB 的燃烧时间。
+     * 每 tick 累积 1，达到 time/1000 时扣 1 mB，所以 6400 表示 6.4 tick/mB、6400 tick 烧完一桶。
+     */
+    private boolean tickLiquidFuel() {
         if (this.sharedInput == null) {
             return false;
         }
-        int burn;
         if (!this.sharedInput.fluid().isEmpty()) {
             FluidStack fluid = this.sharedInput.fluid();
-            ChemicalDefinition definition = FluidAttributeRegistry.get(fluid);
-            if (definition == null || definition.fuel() == null) {
-                return false;
-            }
-            burn = definition.fuel().burnTime();
-            if (this.sharedInput.drain(1, FluidAction.EXECUTE).isEmpty()) {
-                return false;
-            }
-        } else {
-            ChemicalStack chemical = this.sharedInput.chemical();
-            if (chemical.isEmpty()) {
-                return false;
-            }
-            ChemicalFuel fuel = chemical.getData(IMekanismDataMapTypes.INSTANCE.chemicalFuel());
+            ChemicalDefinition.FuelData fuel = FluidAttributeRegistry.fuel(fluid);
             if (fuel == null) {
                 return false;
             }
-            burn = fuel.burnTicks();
-            if (this.sharedInput.extractChemical(1L, Action.EXECUTE).isEmpty()) {
+            double ticksPerMb = fuel.burnTime() / 1000.0D;
+            if (ticksPerMb <= 0.0D) {
                 return false;
             }
+            this.liquidBurnAccumulator += 1.0D;
+            int toDrain = (int) Math.floor(this.liquidBurnAccumulator / ticksPerMb);
+            if (toDrain > 0) {
+                FluidStack drained = this.sharedInput.drain(toDrain, FluidAction.EXECUTE);
+                if (drained.getAmount() < toDrain) {
+                    // 剩余不足：回退累积，下一 tick 再试
+                    this.liquidBurnAccumulator -= drained.getAmount() * ticksPerMb;
+                    return drained.getAmount() > 0;
+                }
+                this.liquidBurnAccumulator -= toDrain * ticksPerMb;
+            }
+            this.setChanged();
+            return true;
         }
-        this.burnTime = Math.max(1, burn);
+        // 化学品燃料仍按原来的“1 单位 = burnTicks”处理
+        if (this.burnTime > 0) {
+            this.burnTime--;
+            return true;
+        }
+        ChemicalStack chemical = this.sharedInput.chemical();
+        if (chemical.isEmpty()) {
+            return false;
+        }
+        ChemicalFuel fuel = chemical.getData(IMekanismDataMapTypes.INSTANCE.chemicalFuel());
+        if (fuel == null) {
+            return false;
+        }
+        if (this.sharedInput.extractChemical(1L, Action.EXECUTE).isEmpty()) {
+            return false;
+        }
+        this.burnTime = Math.max(1, fuel.burnTicks());
         this.burnDuration = this.burnTime;
         this.setChanged();
         return true;
@@ -760,6 +774,7 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
         super.saveAdditional(tag, registries);
         tag.put("inventory", this.inventory.serializeNBT(registries));
         tag.putInt("burn", this.burnTime);
+        tag.putDouble("liquid_burn_accumulator", this.liquidBurnAccumulator);
         tag.putInt("burnDuration", this.burnDuration);
         tag.putInt("heat", this.heatTime);
         tag.putInt("temperature", this.temperature);
@@ -796,6 +811,7 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
             this.inventory.deserializeNBT(registries, tag.getCompound("inventory"));
         }
         this.burnTime = tag.getInt("burn");
+        this.liquidBurnAccumulator = tag.getDouble("liquid_burn_accumulator");
         this.burnDuration = tag.getInt("burnDuration");
         this.heatTime = tag.getInt("heat");
         this.temperature = tag.contains("temperature") ? tag.getInt("temperature") : 300;
