@@ -1,7 +1,7 @@
 {
   "type": "meknh_core:machine",
   "id": "meknh_core:compressor",
-  "level": "LV",
+  "level": "ULV",
   "time": "5s",
   "energy": 0.25,
   "input": [

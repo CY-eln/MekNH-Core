@@ -1,7 +1,7 @@
 {
   "type": "meknh_core:machine",
   "id": "meknh_core:alloy_smelter",
-  "level": "LV",
+  "level": "ULV",
   "time": "200",
   "energy": 0.5,
   "input": [

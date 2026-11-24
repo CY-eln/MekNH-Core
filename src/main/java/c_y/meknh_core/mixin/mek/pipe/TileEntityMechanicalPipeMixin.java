@@ -169,21 +169,31 @@ public abstract class TileEntityMechanicalPipeMixin implements MekPipeChemicalAc
                     continue;
                 }
                 if (type == ConnectionType.PULL) {
-                    long amount = Math.min(transfer, handler.getChemicalInTank(0).getAmount());
-                    if (amount <= 0L) {
-                        continue;
-                    }
-                    ChemicalStack drained = handler.extractChemical(0, amount, Action.SIMULATE);
-                    if (drained.isEmpty()) {
-                        continue;
-                    }
-                    for (var target : tanks) {
-                        ChemicalStack remainder = target.insert(drained, Action.SIMULATE,
-                                mekanism.api.AutomationType.INTERNAL);
-                        long accepted = drained.getAmount() - remainder.getAmount();
-                        if (accepted > 0L) {
-                            target.insert(handler.extractChemical(0, accepted, Action.EXECUTE), Action.EXECUTE,
+                    // 遍历目标方块的全部化学罐：液体锅炉把蒸汽放在 tank1（tank0 是燃料共享罐），
+                    // 只读 tank0 会导致液体锅炉的蒸汽永远抽不出来。
+                    for (int tankIndex = 0, tankCount = handler.getChemicalTanks(); tankIndex < tankCount; tankIndex++) {
+                        long amount = Math.min(transfer, handler.getChemicalInTank(tankIndex).getAmount());
+                        if (amount <= 0L) {
+                            continue;
+                        }
+                        ChemicalStack drained = handler.extractChemical(tankIndex, amount, Action.SIMULATE);
+                        if (drained.isEmpty()) {
+                            continue;
+                        }
+                        boolean moved = false;
+                        for (var target : tanks) {
+                            ChemicalStack remainder = target.insert(drained, Action.SIMULATE,
                                     mekanism.api.AutomationType.INTERNAL);
+                            long accepted = drained.getAmount() - remainder.getAmount();
+                            if (accepted > 0L) {
+                                target.insert(handler.extractChemical(tankIndex, accepted, Action.EXECUTE), Action.EXECUTE,
+                                        mekanism.api.AutomationType.INTERNAL);
+                                moved = true;
+                                break;
+                            }
+                        }
+                        if (moved) {
+                            // 一个连接每 tick 只搬一罐，避免同一根管道把多罐同时抽干
                             break;
                         }
                     }

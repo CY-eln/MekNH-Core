@@ -134,14 +134,27 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
                         = c_y.meknh_core.common.machine.config.SideMode.INPUT;
             }
         }
+        // 物品通道默认：正面 OUTPUT，其余面 INPUT。
+        // MachineItemHandler 的自动化视图已经把输入槽限制为「只插」、输出槽限制为「只抽」
+        // （见 MachineItemHandler 的 automation 视图），所以这里只是「开门」，不会串味。
+        // 少了这段，漏斗/管道默认一个面都插不进去，必须开 GUI 逐面配置。
+        Direction front = state.getValue(MachineBlock.FACING);
+        for (Direction side : Direction.values()) {
+            this.sideModes[c_y.meknh_core.common.machine.config.MachineConfigType.ITEM.ordinal()][side.ordinal()]
+                    = side == front
+                            ? c_y.meknh_core.common.machine.config.SideMode.OUTPUT
+                            : c_y.meknh_core.common.machine.config.SideMode.INPUT;
+        }
 
         long fluidInput = definition.fluidInputCapacity();
         long fluidOutput = definition.fluidOutputCapacity();
         long chemicalInput = definition.chemicalInputCapacity();
         long chemicalOutput = definition.chemicalOutputCapacity();
 
-        // 提取机的 MEK 输出罐：电力版本按等级给 8/12/16/32/64 B；
-        // 蒸汽版本的容量为 0，因此无法执行带流体/化学品产物的配方。
+        // 提取机的 MEK 输出罐：电力版本按等级给 8/12/16/32/64 B。
+        // 蒸汽版本刻意不给流体/化学品罐：蒸汽时代的提取机只能做「物品 → 物品」（染料之类），
+        // 带流体/化学品产物的配方要等到 LV 才有。没有输出罐时这类配方会停在 NO_OUTPUT_SPACE，
+        // 不会卡进度条。
         if (definition.id().equals(c_y.meknh_core.MekNHCore.rl("extractor"))) {
             if (level.isSteam()) {
                 fluidOutput = 0L;
