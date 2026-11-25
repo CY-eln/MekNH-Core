@@ -7,6 +7,10 @@ import c_y.meknh_core.common.gui.element.TransporterPanel;
 import c_y.meknh_core.common.gui.layout.MachineGuiTextures;
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
+import c_y.meknh_core.common.gui.render.MachineBackgroundState;
+import c_y.meknh_core.common.gui.render.MetalMachineBackground;
+import c_y.meknh_core.api.generator.boiler.BoilerTier;
 import mekanism.client.gui.GuiUtils;
 import mekanism.client.gui.GuiUtils.TilingDirection;
 import mekanism.client.render.MekanismRenderer;
@@ -113,11 +117,18 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
         };
     }
 
+    private MachineBackgroundMaterial backgroundMaterial() {
+        boolean highPressure = this.menu.blockEntity().getBlockState().getBlock() instanceof BoilerBlock boiler
+                && boiler.tier() == BoilerTier.HIGH;
+        return MachineBackgroundMaterial.forSteam(true, highPressure);
+    }
+
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        GuiDraw.nineSlice(graphics, MachineGuiTextures.BASE, this.leftPos, this.topPos,
-                this.imageWidth, this.imageHeight, 4, 256, 256);
         boolean active = this.menu.value(BoilerMenu.DATA_ACTIVE) != 0;
+        MetalMachineBackground.render(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
+                MachineBackgroundState.fromSynced(active, this.menu.value(BoilerMenu.DATA_HEAT)),
+                this.font.width(this.title), this.backgroundMaterial());
         boolean blocked = this.menu.value(BoilerMenu.DATA_BLOCKED) != 0;
 
         // 玩家背包槽位底图。
@@ -471,8 +482,9 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {        int titleX = (this.imageWidth - this.font.width(this.title)) / 2;
-        graphics.drawString(this.font, this.title, titleX, 6, 4210752, false);
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        int titleX = (this.imageWidth - this.font.width(this.title)) / 2;
+        graphics.drawString(this.font, this.title, titleX, 6, this.backgroundMaterial().titleColor(), false);
         graphics.drawString(this.font, this.playerInventoryTitle,
                 this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
     }
@@ -483,11 +495,14 @@ public class BoilerScreen extends AbstractContainerScreen<BoilerMenu> {
         int warning = this.menu.value(BoilerMenu.DATA_WARNING);
         this.tabs.renderTabs(graphics, this.leftPos, this.topPos,
                 this.menu.value(BoilerMenu.DATA_REDSTONE),
-                this.menu.value(BoilerMenu.DATA_PRIVATE) == 1, warning, true);
+                this.menu.value(BoilerMenu.DATA_PRIVATE) == 1, warning, true, this.backgroundMaterial(),
+                mouseX, mouseY, !this.transporter.isOpen());
         if (this.transporter.isOpen()) {
-            this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext());
+            this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(),
+                    this.backgroundMaterial(), mouseX, mouseY);
         } else {
-            this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext());
+            this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext(),
+                    this.backgroundMaterial(), mouseX, mouseY);
         }
         // 1.21 的 AbstractContainerScreen 只在有物品槽时自动走 tooltip，
         // 自定义热量条需要显式触发。

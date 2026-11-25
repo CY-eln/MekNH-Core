@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MekButtonHover;
 import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import c_y.meknh_core.common.gui.render.MetalMachineBackground;
 import net.minecraft.client.gui.GuiGraphics;
@@ -84,58 +85,38 @@ public final class TabStrip {
       );
    }
 
-   /** Material-aware machine tabs; legacy callers retain the original Mekanism artwork. */
+   /** Material-aware tabs retain their face; inset buttons use Mek's hover texture, never a glyph overlay. */
    public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
                              int warningCode, boolean steam, MachineBackgroundMaterial material) {
-      drawMaterialInset(graphics, MekGuiTextures.TAB_CONFIG, left - TAB_SIZE, top + 6, 0xFFFFFF, material);
-      drawMaterialInset(graphics, MekGuiTextures.TAB_TRANSPORTER, left - TAB_SIZE, top + 34, 0xFFFFFF, material);
-      if (warningCode != 0) {
-         drawMaterialDisplay(graphics, MekGuiTextures.TAB_WARNING_LEFT, left - TAB_SIZE, top + 109, material);
-      }
-      drawMaterialDisplay(graphics, steam ? MekGuiTextures.TAB_ENERGY_STEAM : MekGuiTextures.TAB_ENERGY,
-            left - TAB_SIZE, top + 137, material);
-      drawMaterialInset(graphics, redstoneIcon(redstoneOrdinal), left + 176, top + 6, 13174559, material);
-      if ((warningCode & 8) != 0) {
-         RenderSystem.enableBlend();
-         RenderSystem.blendFunc(SourceFactor.DST_COLOR, DestFactor.ZERO);
-         graphics.blit(MekGuiTextures.WARNING, left + 176, top + 6, 0, 0, TAB_SIZE, TAB_SIZE, 256, 256);
-         RenderSystem.disableBlend();
-      }
-      drawMaterialInset(graphics, privateMode ? MekGuiTextures.TAB_SECURITY_PRIVATE : MekGuiTextures.TAB_SECURITY_PUBLIC,
-            left + 176, top + 34, 16752992, material);
+      render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, steam, material, 0, 0, false);
    }
 
    public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
                              int warningCode, boolean steam, MachineBackgroundMaterial material,
                              int mouseX, int mouseY, boolean hoverEnabled) {
-      render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, steam, material);
       Tab hovered = hoverEnabled ? tabAt(mouseX, mouseY, left, top, warningCode != 0) : null;
-      if (hovered == null) {
-         return;
+      // Like GuiInsetElement, only the inner button changes state. Keep existing whole-tab click routing.
+      if (hovered != null) {
+         int x = (hovered == Tab.REDSTONE || hovered == Tab.SECURITY ? left + 176 : left - TAB_SIZE) + BUTTON_INSET;
+         int y = top + BUTTON_INSET + switch (hovered) {
+            case CONFIG, REDSTONE -> 6;
+            case TRANSPORTER, SECURITY -> 34;
+            case WARNING -> 109;
+            case ENERGY -> 137;
+         };
+         if (!MekButtonHover.contains(x, y, ICON, ICON, mouseX, mouseY)) {
+            hovered = null;
+         }
       }
-      int x = (hovered == Tab.REDSTONE || hovered == Tab.SECURITY ? left + 176 : left - TAB_SIZE) + BUTTON_INSET;
-      int y = top + BUTTON_INSET + switch (hovered) {
-         case CONFIG, REDSTONE -> 6;
-         case TRANSPORTER, SECURITY -> 34;
-         case WARNING -> 109;
-         case ENERGY -> 137;
-      };
-      graphics.fill(x, y, x + ICON, y + ICON, 0x305FC5FF);
-      graphics.fill(x, y, x + ICON, y + 1, 0xFF9BDDFF);
-      graphics.fill(x, y, x + 1, y + ICON, 0xFF9BDDFF);
-      graphics.fill(x, y + ICON - 1, x + ICON, y + ICON, 0xFF4B8DB8);
-      graphics.fill(x + ICON - 1, y, x + ICON, y + ICON, 0xFF4B8DB8);
-   }
-
-   public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
-                             int warningCode, MachineBackgroundMaterial material) {
-      drawMaterialInset(graphics, MekGuiTextures.TAB_CONFIG, left - TAB_SIZE, top + 6, 0xFFFFFF, material);
-      drawMaterialInset(graphics, MekGuiTextures.TAB_TRANSPORTER, left - TAB_SIZE, top + 34, 0xFFFFFF, material);
+      drawMaterialInset(graphics, MekGuiTextures.TAB_CONFIG, left - TAB_SIZE, top + 6, 0xFFFFFF, material, hovered == Tab.CONFIG);
+      drawMaterialInset(graphics, MekGuiTextures.TAB_TRANSPORTER, left - TAB_SIZE, top + 34, 0xFFFFFF, material, hovered == Tab.TRANSPORTER);
       if (warningCode != 0) {
          drawMaterialDisplay(graphics, MekGuiTextures.TAB_WARNING_LEFT, left - TAB_SIZE, top + 109, material);
       }
-      drawMaterialDisplay(graphics, MekGuiTextures.TAB_ENERGY, left - TAB_SIZE, top + 137, material);
-      drawMaterialInset(graphics, redstoneIcon(redstoneOrdinal), left + 176, top + 6, 13174559, material);
+      // Mek's information tabs have no button state: retain the native display and glyph colors.
+      drawMaterialDisplay(graphics, steam ? MekGuiTextures.TAB_ENERGY_STEAM : MekGuiTextures.TAB_ENERGY,
+            left - TAB_SIZE, top + 137, material);
+      drawMaterialInset(graphics, redstoneIcon(redstoneOrdinal), left + 176, top + 6, 13174559, material, hovered == Tab.REDSTONE);
       if ((warningCode & 8) != 0) {
          RenderSystem.enableBlend();
          RenderSystem.blendFunc(SourceFactor.DST_COLOR, DestFactor.ZERO);
@@ -143,31 +124,18 @@ public final class TabStrip {
          RenderSystem.disableBlend();
       }
       drawMaterialInset(graphics, privateMode ? MekGuiTextures.TAB_SECURITY_PRIVATE : MekGuiTextures.TAB_SECURITY_PUBLIC,
-            left + 176, top + 34, 16752992, material);
+            left + 176, top + 34, 16752992, material, hovered == Tab.SECURITY);
    }
 
-   /** Hover is evaluated in GUI-scaled screen coordinates, just like tabAt/click handling. */
    public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
-                             int warningCode, MachineBackgroundMaterial material, int mouseX, int mouseY,
-                             boolean hoverEnabled) {
-      render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, material);
-      Tab hovered = hoverEnabled ? tabAt(mouseX, mouseY, left, top, warningCode != 0) : null;
-      if (hovered == null) {
-         return;
-      }
-      int x = (hovered == Tab.REDSTONE || hovered == Tab.SECURITY ? left + 176 : left - TAB_SIZE) + BUTTON_INSET;
-      int y = top + BUTTON_INSET + switch (hovered) {
-         case CONFIG, REDSTONE -> 6;
-         case TRANSPORTER, SECURITY -> 34;
-         case WARNING -> 109;
-         case ENERGY -> 137;
-      };
-      // Mek's hovered button state uses a highlighted frame. Keep our metal grain and glyph visible.
-      graphics.fill(x, y, x + ICON, y + ICON, 0x305FC5FF);
-      graphics.fill(x, y, x + ICON, y + 1, 0xFF9BDDFF);
-      graphics.fill(x, y, x + 1, y + ICON, 0xFF9BDDFF);
-      graphics.fill(x, y + ICON - 1, x + ICON, y + ICON, 0xFF4B8DB8);
-      graphics.fill(x + ICON - 1, y, x + ICON, y + ICON, 0xFF4B8DB8);
+                             int warningCode, MachineBackgroundMaterial material) {
+      render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, false, material);
+   }
+
+   public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode,
+                             int warningCode, MachineBackgroundMaterial material,
+                             int mouseX, int mouseY, boolean hoverEnabled) {
+      render(graphics, left, top, redstoneOrdinal, privateMode, warningCode, false, material, mouseX, mouseY, hoverEnabled);
    }
 
    private static void drawMaterialBase(GuiGraphics graphics, int x, int y, MachineBackgroundMaterial material) {
@@ -176,11 +144,16 @@ public final class TabStrip {
    }
 
    private static void drawMaterialInset(GuiGraphics graphics, ResourceLocation icon, int x, int y, int tint,
-                                         MachineBackgroundMaterial material) {
+                                         MachineBackgroundMaterial material, boolean hovered) {
       drawMaterialBase(graphics, x, y, material);
       // Keep the full metallic face untinted; a narrow holder accent retains the status color.
       if (tint != 0xFFFFFF) {
          graphics.fill(x + 6, y + 22, x + 20, y + 24, 0xFF000000 | tint);
+      }
+      if (hovered) {
+         // v=40 from Mek button.png, below the icon; no custom blue fill or icon recoloring.
+         MekButtonHover.drawBase(graphics, x + BUTTON_INSET, y + BUTTON_INSET, ICON, ICON,
+               x + BUTTON_INSET, y + BUTTON_INSET, true);
       }
       graphics.blit(icon, x + BUTTON_INSET, y + BUTTON_INSET, ICON, ICON, 0.0F, 0.0F, ICON, ICON, ICON, ICON);
    }

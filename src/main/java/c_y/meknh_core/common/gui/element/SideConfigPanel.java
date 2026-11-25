@@ -2,6 +2,7 @@ package c_y.meknh_core.common.gui.element;
 
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
+import c_y.meknh_core.common.gui.render.MekButtonHover;
 import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import c_y.meknh_core.common.gui.render.MetalMachineBackground;
 import c_y.meknh_core.common.machine.config.SideMode;
@@ -215,28 +216,27 @@ public final class SideConfigPanel {
             if (type != this.configType && context.supports(type)) {
                 int tabX = originX - TYPE_TAB;
                 int tabY = originY + 2 + type * 28;
-                drawConfigTypeTab(graphics, tabX, tabY, type, material);
-                drawConfigTypeTabHover(graphics, tabX, tabY, mouseX, mouseY);
+                drawConfigTypeTab(graphics, tabX, tabY, type, material, mouseX, mouseY);
             }
         }
 
-        drawButtonBase(graphics, originX + 6, originY + 6, 8, 8);
+        drawButtonBase(graphics, originX + 6, originY + 6, 8, 8, mouseX, mouseY, true);
         graphics.blit(MekGuiTextures.BUTTON_CLOSE, originX + 6, originY + 6, 8, 8,
                 0, 0, 12, 12, 12, 12);
-        drawButtonBase(graphics, originX + 16, originY + 6, 16, 8);
+        drawButtonBase(graphics, originX + 16, originY + 6, 16, 8, mouseX, mouseY, true);
         graphics.blit(this.pinned ? MekGuiTextures.PINNED : MekGuiTextures.UNPINNED,
                 originX + 16, originY + 6, 16, 8, 0, 0, 12, 24, 12, 24);
         boolean canEject = context.canEject(this.configType);
         if (!canEject) {
             graphics.setColor(1.0F, 1.0F, 1.0F, 0.35F);
         }
-        drawButtonBase(graphics, originX + 136, originY + 6, 14, 14);
+        drawButtonBase(graphics, originX + 136, originY + 6, 14, 14, mouseX, mouseY, canEject);
         graphics.blit(MekGuiTextures.BUTTON_AUTO_EJECT, originX + 136, originY + 6,
                 14, 14, 0, 0, 14, 14, 14, 14);
         if (!canEject) {
             graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
-        drawButtonBase(graphics, originX + 136, originY + 95, 14, 14);
+        drawButtonBase(graphics, originX + 136, originY + 95, 14, 14, mouseX, mouseY, true);
         graphics.blit(MekGuiTextures.BUTTON_CLEAR_SIDES, originX + 136, originY + 95,
                 14, 14, 0, 0, 14, 14, 14, 14);
 
@@ -261,8 +261,7 @@ public final class SideConfigPanel {
             int y = originY + side.y();
             graphics.setColor((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F,
                     (color & 0xFF) / 255.0F, 1.0F);
-            GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_BUTTON, x, y, 22, 22,
-                    20, 4, 200, 60, 0, 20, 200, 20);
+            MekButtonHover.drawBase(graphics, x, y, 22, 22, mouseX, mouseY, true);
             graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
@@ -542,16 +541,12 @@ public final class SideConfigPanel {
     private static void drawConfigTypeTabHover(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
         // Match the entire half-open type-tab click rectangle, including its holder.
         if (mouseX >= x && mouseX < x + TYPE_TAB && mouseY >= y && mouseY < y + TYPE_TAB) {
-            graphics.fill(x + 4, y + 4, x + 22, y + 22, 0x305FC5FF);
-            graphics.fill(x + 4, y + 4, x + 22, y + 5, 0xFF9BDDFF);
-            graphics.fill(x + 4, y + 4, x + 5, y + 22, 0xFF9BDDFF);
-            graphics.fill(x + 4, y + 21, x + 22, y + 22, 0xFF4B8DB8);
-            graphics.fill(x + 21, y + 4, x + 22, y + 22, 0xFF4B8DB8);
+            MekButtonHover.drawBase(graphics, x + 4, y + 4, 18, 18, x + 4, y + 4, true);
         }
     }
 
     private static void drawConfigTypeTab(GuiGraphics graphics, int x, int y, int type,
-                                          MachineBackgroundMaterial material) {
+                                          MachineBackgroundMaterial material, int mouseX, int mouseY) {
         net.minecraft.resources.ResourceLocation icon = switch (type) {
             case 1 -> MekGuiTextures.CONFIG_FLUID;
             case 2 -> MekGuiTextures.CONFIG_CHEMICAL;
@@ -577,11 +572,12 @@ public final class SideConfigPanel {
             MetalMachineBackground.renderBase(graphics, x + BUTTON_INSET, y + BUTTON_INSET, 18, 18, material);
             graphics.fill(x + 4, y + TYPE_TAB - 4, x + TYPE_TAB - 4, y + TYPE_TAB - 3, 0xFF000000 | tint);
         }
+        drawConfigTypeTabHover(graphics, x, y, mouseX, mouseY);
         graphics.blit(icon, x + BUTTON_INSET, y + BUTTON_INSET, 18, 18, 0, 0, 18, 18, 18, 18);
     }
 
-    private static void drawButtonBase(GuiGraphics graphics, int x, int y, int width, int height) {
-        GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_BUTTON, x, y, width, height,
-                20, 4, 200, 60, 0, 20, 200, 20);
+    private static void drawButtonBase(GuiGraphics graphics, int x, int y, int width, int height,
+                                       int mouseX, int mouseY, boolean enabled) {
+        MekButtonHover.drawBase(graphics, x, y, width, height, mouseX, mouseY, enabled);
     }
 }

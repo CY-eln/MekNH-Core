@@ -19,6 +19,15 @@ public enum MachineBackgroundMaterial {
     public String texture() { return texture; }
     public boolean tiled() { return tiled; }
 
+    /** Light lettering on steam nameplates; retain legacy lettering on other materials. */
+    public int titleColor() {
+        return switch (this) {
+            case STEAM_BRONZE -> 0xFFFFF8E7;
+            case STEAM_HIGH -> 0xFFF4F4F0;
+            default -> 0xFF404040;
+        };
+    }
+
     public static MachineBackgroundMaterial forSteam(boolean steam, boolean highPressure) {
         return !steam ? METAL : highPressure ? STEAM_HIGH : STEAM_BRONZE;
     }
