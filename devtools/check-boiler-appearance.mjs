@@ -119,6 +119,6 @@ public class BoilerAppearanceProbe {
   System.out.println("PASS: "+cases+" extracted production appearance cases; definitions="+args[0]+"; tiers/types, material, title, coordinates, synced state, modal gates, non-null forwarding");
  }
 }`;
-const executable=name=>join(process.env.JAVA_HOME??'C:/Users/su/.gradle/jdks/eclipse_adoptium-21-amd64-windows.2','bin',name+(process.platform==='win32'?'.exe':''));
+const executable=name=>process.env.JAVA_HOME?join(process.env.JAVA_HOME,'bin',name+(process.platform==='win32'?'.exe':'')):name;
 const temp=mkdtempSync(join(tmpdir(),'boiler-appearance-'));
 try{const path=join(temp,'BoilerAppearanceProbe.java');writeFileSync(path,java);execFileSync(executable('javac'),['--release','21','-encoding','UTF-8','-d',temp,path],{stdio:'inherit'});execFileSync(executable('java'),['-cp',temp,'BoilerAppearanceProbe',definitions.map(d=>d.id).join(',')],{stdio:'inherit'});}finally{rmSync(temp,{recursive:true,force:true});}
