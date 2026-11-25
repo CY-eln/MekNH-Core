@@ -71,7 +71,9 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        this.renderAutoIoTab(graphics, mouseX, mouseY);
+        if (!this.isEnergyHatch()) {
+            this.renderAutoIoTab(graphics, mouseX, mouseY);
+        }
     }
 
     /**
@@ -82,6 +84,11 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
         if (TabStrip.isOverAutoIo(mouseX, mouseY, this.leftPos, this.topPos)) {
             graphics.renderTooltip(this.font, Component.translatable(this.autoIoTooltipKey()), mouseX, mouseY);
         }
+    }
+
+    private boolean isEnergyHatch() {
+        return this.menu.partType() == c_y.meknh_core.api.multiblock.MultiblockPartType.ENERGY_INPUT
+                || this.menu.partType() == c_y.meknh_core.api.multiblock.MultiblockPartType.ENERGY_OUTPUT;
     }
 
     private String autoIoTooltipKey() {
@@ -114,7 +121,7 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
                 return true;
             }
         }
-        if (button == 0 && TabStrip.isOverAutoIo(mouseX, mouseY, this.leftPos, this.topPos)) {
+        if (!this.isEnergyHatch() && button == 0 && TabStrip.isOverAutoIo(mouseX, mouseY, this.leftPos, this.topPos)) {
             // 只发目标状态，服务端写回后由 ContainerData 同步，客户端不本地翻转。
             net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                     new c_y.meknh_core.common.network.HatchAutoIoPayload(

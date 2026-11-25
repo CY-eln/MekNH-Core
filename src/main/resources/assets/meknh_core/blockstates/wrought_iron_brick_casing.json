@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "meknh_core:block/casings/steam/wrought_iron_brick_casing"
+    }
+  }
+}

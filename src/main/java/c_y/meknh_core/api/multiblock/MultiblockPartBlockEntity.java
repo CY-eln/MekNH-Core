@@ -46,7 +46,8 @@ import org.jetbrains.annotations.Nullable;
  * <p>控制器直接读取本对象的原始容器；对外暴露的能力则按输入/输出方向收窄。
  * 因此管道只能按仓室的方向工作，而控制器总能拿到完整的读写权限。</p>
  */
-public class MultiblockPartBlockEntity extends BlockEntity implements MultiblockPart, DropperTankHolder {
+public class MultiblockPartBlockEntity extends BlockEntity implements MultiblockPart, DropperTankHolder,
+        c_y.meknh_core.common.pipe.FeEnergyEndpoint {
 
     /**
      * 物品仓的槽位数。
@@ -379,6 +380,144 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         return this.chemicalTank;
     }
 
+    @Override
+    public long feVoltage() {
+        return this.machineLevel == null ? 0L : this.machineLevel.voltage().voltage();
+    }
+
+    @Override
+    public boolean acceptsFePacket(long packetVoltage) {
+        return this.partType == MultiblockPartType.ENERGY_INPUT
+                && this.energyStorage != null
+                && packetVoltage <= this.feVoltage()
+                && this.energyStorage.getEnergyStored() < this.energyStorage.getMaxEnergyStored();
+    }
+
+    @Override
+    public int acceptFePacket(long packetVoltage, int fe) {
+        if (this.partType != MultiblockPartType.ENERGY_INPUT || this.energyStorage == null) {
+            return 0;
+        }
+        if (packetVoltage > this.feVoltage()) {
+            this.overvoltageExplode();
+            return 0;
+        }
+        this.energyStorage.packetAllowed = true;
+        int accepted;
+        try {
+            accepted = this.energyStorage.receiveEnergy(fe, false);
+        } finally {
+            this.energyStorage.packetAllowed = false;
+        }
+        if (accepted > 0) {
+            this.setChanged();
+        }
+        return accepted;
+    }
+
+    @Override
+    public int extractFePacket(int maxFe) {
+        if (this.partType != MultiblockPartType.ENERGY_OUTPUT || this.energyStorage == null || maxFe <= 0) {
+            return 0;
+        }
+        int extracted = this.energyStorage.extractEnergy(maxFe, false);
+        if (extracted > 0) {
+            this.setChanged();
+        }
+        return extracted;
+    }
+
+    @Override
+    public void overvoltageExplode() {
+        if (this.level == null || this.level.isClientSide) {
+            return;
+        }
+        this.level.explode(null, this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D,
+                this.worldPosition.getZ() + 0.5D, 2.0F, net.minecraft.world.level.Level.ExplosionInteraction.BLOCK);
+    }
+
+    /** 对外只读能量视图：外部 FE/严格能量不能插入，也不能抽取（电缆走 acceptFePacket/extractFePacket）。 */
+    public net.neoforged.neoforge.energy.IEnergyStorage externalEnergyStorage() {
+        HatchEnergyStorage storage = this.energyStorage;
+        if (storage == null) {
+            return null;
+        }
+        return new net.neoforged.neoforge.energy.IEnergyStorage() {
+            @Override
+            public int receiveEnergy(int maxReceive, boolean simulate) {
+                return 0;
+            }
+
+            @Override
+            public int extractEnergy(int maxExtract, boolean simulate) {
+                return 0;
+            }
+
+            @Override
+            public int getEnergyStored() {
+                return storage.getEnergyStored();
+            }
+
+            @Override
+            public int getMaxEnergyStored() {
+                return storage.getMaxEnergyStored();
+            }
+
+            @Override
+            public boolean canExtract() {
+                return false;
+            }
+
+            @Override
+            public boolean canReceive() {
+                return false;
+            }
+        };
+    }
+
+    @Nullable
+    public mekanism.api.energy.IStrictEnergyHandler externalStrictEnergyHandler() {
+        HatchEnergyStorage storage = this.energyStorage;
+        if (storage == null) {
+            return null;
+        }
+        return new mekanism.api.energy.IStrictEnergyHandler() {
+            @Override
+            public int getEnergyContainerCount() {
+                return 1;
+            }
+
+            @Override
+            public long getEnergy(int container) {
+                return Math.round(storage.getEnergyStored() * 2.5D);
+            }
+
+            @Override
+            public void setEnergy(int container, long energy) {
+            }
+
+            @Override
+            public long getMaxEnergy(int container) {
+                return Math.round(storage.getMaxEnergyStored() * 2.5D);
+            }
+
+            @Override
+            public long getNeededEnergy(int container) {
+                return Math.max(0L, this.getMaxEnergy(container) - this.getEnergy(container));
+            }
+
+            @Override
+            public long insertEnergy(int container, long amount, mekanism.api.Action action) {
+                return amount;
+            }
+
+            @Override
+            public long extractEnergy(int container, long amount, mekanism.api.Action action) {
+                return 0L;
+            }
+        };
+    }
+
     @Nullable
     public HatchEnergyStorage energyStorage() {
         return this.energyStorage;
@@ -492,8 +631,9 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                 this.ejectChemical(face, target);
             }
             case STEAM_INPUT -> this.pullChemical(face, target);
-            case ENERGY_INPUT -> this.pullEnergy(face, target);
-            case ENERGY_OUTPUT -> this.ejectEnergy(face, target);
+            case ENERGY_INPUT, ENERGY_OUTPUT -> {
+                // 能量只允许通过本模组电缆按能量包规则进出，不做仓室自动抽取/弹出
+            }
             case PUMP_HATCH -> this.ejectFluid(face, target);
             // 焦炉仓没有自动搬运（GT 里也是靠相邻管道/漏斗）。
             case COKE_OVEN_HATCH -> {
@@ -613,8 +753,13 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
             }
             long taken = strict.extractEnergy(Math.round(wouldAccept * 2.5D), Action.EXECUTE);
             if (taken > 0L) {
-                this.energyStorage.receiveEnergy(
-                        (int) Math.min(Integer.MAX_VALUE, Math.round(taken / 2.5D)), false);
+                this.energyStorage.packetAllowed = true;
+                try {
+                    this.energyStorage.receiveEnergy(
+                            (int) Math.min(Integer.MAX_VALUE, Math.round(taken / 2.5D)), false);
+                } finally {
+                    this.energyStorage.packetAllowed = false;
+                }
                 this.setChanged();
             }
             return;
@@ -631,7 +776,12 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         }
         int taken = source.extractEnergy(available, false);
         if (taken > 0) {
-            this.energyStorage.receiveEnergy(taken, false);
+            this.energyStorage.packetAllowed = true;
+            try {
+                this.energyStorage.receiveEnergy(taken, false);
+            } finally {
+                this.energyStorage.packetAllowed = false;
+            }
             this.setChanged();
         }
     }
@@ -1102,6 +1252,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
 
         private final boolean receive;
         private final boolean extract;
+        private boolean packetAllowed;
         private final Runnable onChanged;
 
         public HatchEnergyStorage(long capacity, boolean receive, boolean extract, Runnable onChanged) {
@@ -1114,7 +1265,8 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
 
         @Override
         public int receiveEnergy(int toReceive, boolean simulate) {
-            if (!this.receive) {
+            // 只有本模组电缆按能量包规则注入时才允许写入
+            if (!this.receive || !this.packetAllowed) {
                 return 0;
             }
             int received = super.receiveEnergy(toReceive, simulate);

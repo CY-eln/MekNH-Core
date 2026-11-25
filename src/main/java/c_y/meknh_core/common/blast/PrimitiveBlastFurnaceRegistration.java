@@ -26,6 +26,11 @@ public final class PrimitiveBlastFurnaceRegistration {
             properties -> new BlockItem(PRIMITIVE_BLAST_FURNACE_BRICKS.get(), properties));
     public static final DeferredItem<Item> DUST_TINY_DARK_ASH = ITEMS.registerSimpleItem("dust_tiny_dark_ash");
     public static final DeferredItem<Item> DUST_ASH = ITEMS.registerSimpleItem("dust_ash");
+    public static final DeferredItem<Item> DUST_BRICK = ITEMS.registerSimpleItem("dust_brick");
+    public static final DeferredItem<Item> DUST_CLAY = ITEMS.registerSimpleItem("dust_clay");
+    public static final DeferredItem<Item> DUST_FIRECLAY = ITEMS.registerSimpleItem("dust_fireclay");
+    public static final DeferredItem<Item> FIRECLAY_BRICK = ITEMS.registerSimpleItem("firebrick");
+    public static final DeferredItem<Item> COMPRESSED_FIRECLAY = ITEMS.registerSimpleItem("compressed_fireclay");
     public static final DeferredHolder<MenuType<?>, MenuType<PrimitiveBlastFurnaceMenu>> PRIMITIVE_BLAST_FURNACE_MENU =
             MENUS.register("primitive_blast_furnace", () -> new MenuType<>(
                     (net.neoforged.neoforge.network.IContainerFactory<PrimitiveBlastFurnaceMenu>) PrimitiveBlastFurnaceMenu::new,
@@ -47,6 +52,11 @@ public final class PrimitiveBlastFurnaceRegistration {
             if (event.getTabKey() == net.minecraft.world.item.CreativeModeTabs.INGREDIENTS) {
                 event.accept(DUST_TINY_DARK_ASH.get());
                 event.accept(DUST_ASH.get());
+                event.accept(DUST_BRICK.get());
+                event.accept(DUST_CLAY.get());
+                event.accept(DUST_FIRECLAY.get());
+                event.accept(FIRECLAY_BRICK.get());
+                event.accept(COMPRESSED_FIRECLAY.get());
             }
         });
     }

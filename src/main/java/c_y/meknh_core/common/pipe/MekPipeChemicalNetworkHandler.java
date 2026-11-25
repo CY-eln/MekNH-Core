@@ -117,6 +117,11 @@ public final class MekPipeChemicalNetworkHandler implements IChemicalHandler {
 
     @Override
     public ChemicalStack insertChemical(int tank, ChemicalStack stack, Action action) {
+        // 网络里已有不同种化学品时拒绝插入
+        ChemicalStack existing = this.getChemicalInTank(0);
+        if (!existing.isEmpty() && !existing.is(stack.getChemical())) {
+            return stack;
+        }
         long remaining = stack.getAmount();
         for (IChemicalTank candidate : this.tanks) {
             if (remaining <= 0L) {

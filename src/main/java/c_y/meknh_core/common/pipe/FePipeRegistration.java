@@ -5,26 +5,18 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import c_y.meknh_core.mixin.mek.pipe.BlockEntityTypeAccessor;
 
-/**
- * 数据驱动 FE 电缆注册：{@code data/addon/pipe/fe/*.json} → 方块 + 物品 + 方块实体。
- */
+/** 数据驱动 FE 电缆注册（data/addon/pipe/fe/*.json）。 */
 public final class FePipeRegistration {
 
     public static final String ADDON_DATA_DIRECTORY = "addon";
@@ -36,10 +28,7 @@ public final class FePipeRegistration {
 
     private static final DeferredRegister.Blocks BLOCK_REGISTER = DeferredRegister.createBlocks(MekNHCore.MODID);
     private static final DeferredRegister.Items ITEM_REGISTER = DeferredRegister.createItems(MekNHCore.MODID);
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_REGISTER =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MekNHCore.MODID);
 
-    private static DeferredHolder<BlockEntityType<?>, BlockEntityType<?>> cableType;
     private static boolean initialized;
 
     private FePipeRegistration() {
@@ -52,16 +41,11 @@ public final class FePipeRegistration {
         initialized = true;
         BLOCK_REGISTER.register(bus);
         ITEM_REGISTER.register(bus);
-        BLOCK_ENTITY_REGISTER.register(bus);
-        cableType = BLOCK_ENTITY_REGISTER.register("fe_cable",
-                () -> BlockEntityType.Builder.of(FeCableBlockEntity::new, cableBlocks()).build(null));
         bus.addListener(FePipeRegistration::addCreativeTab);
+        bus.addListener(FePipeRegistration::commonSetup);
         bus.addListener(FePipeRegistration::registerCapabilities);
     }
 
-    /**
-     * 由数据加载器调用；重复 ID 返回 {@code false}。
-     */
     public static synchronized boolean register(FePipeDefinition definition) {
         if (!initialized) {
             throw new IllegalStateException("FePipeRegistration has not been initialized");
@@ -71,11 +55,7 @@ public final class FePipeRegistration {
         }
         DEFINITIONS.put(definition.id(), definition);
         String path = definition.id().getPath();
-        DeferredBlock<FeCableBlock> block = BLOCK_REGISTER.register(path,
-                () -> new FeCableBlock(BlockBehaviour.Properties.of()
-                        .strength(0.5F)
-                        .sound(SoundType.METAL)
-                        .noOcclusion(), definition));
+        DeferredBlock<FeCableBlock> block = BLOCK_REGISTER.register(path, () -> new FeCableBlock(definition));
         BLOCKS.put(definition.id(), block);
         DeferredItem<BlockItem> item = ITEM_REGISTER.registerItem(path,
                 properties -> new BlockItem(block.get(), properties));
@@ -83,30 +63,75 @@ public final class FePipeRegistration {
         return true;
     }
 
-    private static Block[] cableBlocks() {
-        return BLOCKS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
-    }
-
     public static List<FePipeDefinition> definitions() {
         return List.copyOf(DEFINITIONS.values());
     }
 
-    public static BlockEntityType<?> cableType() {
-        return cableType == null ? null : cableType.get();
+    private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,
+                mekanism.common.registries.MekanismTileEntityTypes.BASIC_UNIVERSAL_CABLE.get(),
+                (blockEntity, side) -> blockEntity instanceof FeCableAccess access
+                        ? access.meknh_core$feStorage() : null);
+        event.registerBlockEntity(mekanism.common.capabilities.Capabilities.STRICT_ENERGY.block(),
+                mekanism.common.registries.MekanismTileEntityTypes.BASIC_UNIVERSAL_CABLE.get(),
+                (blockEntity, side) -> blockEntity instanceof FeCableAccess access
+                        ? new mekanism.api.energy.IStrictEnergyHandler() {
+                            @Override
+                            public int getEnergyContainerCount() {
+                                return 1;
+                            }
+
+                            @Override
+                            public long getEnergy(int container) {
+                                return Math.round(access.meknh_core$feStorage().getEnergyStored() * 2.5D);
+                            }
+
+                            @Override
+                            public void setEnergy(int container, long energy) {
+                                if (access.meknh_core$feStorage() instanceof FeCableStorage storage) {
+                                    storage.forceSet((int) Math.round(energy / 2.5D));
+                                }
+                            }
+
+                            @Override
+                            public long getMaxEnergy(int container) {
+                                return Math.round(access.meknh_core$feStorage().getMaxEnergyStored() * 2.5D);
+                            }
+
+                            @Override
+                            public long getNeededEnergy(int container) {
+                                return Math.max(0L, this.getMaxEnergy(container) - this.getEnergy(container));
+                            }
+
+                            @Override
+                            public long insertEnergy(int container, long amount, mekanism.api.Action action) {
+                                int accepted = access.meknh_core$feStorage().receiveEnergy(
+                                        (int) Math.min(Integer.MAX_VALUE, Math.floor(amount / 2.5D)),
+                                        action.simulate());
+                                return amount - Math.round(accepted * 2.5D);
+                            }
+
+                            @Override
+                            public long extractEnergy(int container, long amount, mekanism.api.Action action) {
+                                int extracted = access.meknh_core$feStorage().extractEnergy(
+                                        (int) Math.min(Integer.MAX_VALUE, Math.ceil(amount / 2.5D)),
+                                        action.simulate());
+                                return Math.round(extracted * 2.5D);
+                            }
+                        } : null);
     }
 
-    public static FeCableBlock cableBlock(ResourceLocation id) {
-        DeferredBlock<FeCableBlock> block = BLOCKS.get(id);
-        return block == null ? null : block.get();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        BlockEntityType<FeCableBlockEntity> type = (BlockEntityType<FeCableBlockEntity>) cableType.get();
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type,
-                (blockEntity, side) -> blockEntity.energyStorage());
-        event.registerBlockEntity(mekanism.common.capabilities.Capabilities.STRICT_ENERGY.block(), type,
-                (blockEntity, side) -> blockEntity.strictEnergyStorage());
+    private static void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            BlockEntityTypeAccessor accessor = (BlockEntityTypeAccessor) (Object)
+                    mekanism.common.registries.MekanismTileEntityTypes.BASIC_UNIVERSAL_CABLE.get();
+            java.util.Set<net.minecraft.world.level.block.Block> valid =
+                    new java.util.HashSet<>(accessor.meknh_core$validBlocks());
+            for (DeferredBlock<FeCableBlock> block : BLOCKS.values()) {
+                valid.add(block.get());
+            }
+            accessor.meknh_core$setValidBlocks(java.util.Set.copyOf(valid));
+        });
     }
 
     private static void addCreativeTab(BuildCreativeModeTabContentsEvent event) {

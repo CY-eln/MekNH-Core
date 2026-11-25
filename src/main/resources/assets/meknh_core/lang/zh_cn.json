@@ -248,5 +248,11 @@
   "direction.east": "东",
   "direction.west": "西",
   "direction.up": "上",
-  "direction.down": "下"
+  "direction.down": "下",
+  "block.meknh_core.wrought_iron_brick_casing": "砖砌锻铁外壳",
+  "item.meknh_core.dust_brick": "砖粉",
+  "item.meknh_core.dust_clay": "黏土粉",
+  "item.meknh_core.dust_fireclay": "耐火黏土粉",
+  "item.meknh_core.firebrick": "耐火砖",
+  "item.meknh_core.compressed_fireclay": "压缩耐火黏土砖"
 }

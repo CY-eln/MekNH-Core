@@ -5,7 +5,7 @@
   "share": "true",
   "结构": [
     ["bbb", "bbb", "bbb", "bbb"],
-    ["bbb", "b_b", "b_b", "b_b"],
+    ["bbb", "b#b", "b#b", "b#b"],
     ["bbb", "b@b", "bbb", "bbb"]
   ],
   "组成": {

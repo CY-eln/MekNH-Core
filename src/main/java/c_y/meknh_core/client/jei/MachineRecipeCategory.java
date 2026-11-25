@@ -171,10 +171,14 @@ public final class MachineRecipeCategory implements IRecipeCategory<MachineRecip
 
     static void addIngredient(mezz.jei.api.gui.builder.IRecipeSlotBuilder slot, MachineIngredient ingredient) {
         if (ingredient instanceof MachineIngredient.Item item) {
-            slot.addIngredients(item.ingredient());
+            // 数量放到物品格上，而不是额外的 tooltip 行
+            net.minecraft.world.item.ItemStack[] stacks = item.ingredient().getItems();
             if (item.count() > 1) {
-                slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.literal("x" + item.count())));
+                for (int i = 0; i < stacks.length; i++) {
+                    stacks[i] = stacks[i].copyWithCount(item.count());
+                }
             }
+            slot.addIngredients(net.minecraft.world.item.crafting.Ingredient.of(stacks));
         } else if (ingredient instanceof MachineIngredient.Fluid fluid) {
             net.minecraft.world.level.material.Fluid value = net.minecraft.core.registries.BuiltInRegistries.FLUID
                     .get(ResourceLocation.tryParse(fluid.fluid()));

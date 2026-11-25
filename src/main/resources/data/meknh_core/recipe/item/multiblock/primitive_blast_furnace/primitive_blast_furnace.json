@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "RPR",
+    "PXP",
+    "RPR"
+  ],
+  "key": {
+    "X": {"item": "meknh_core:primitive_blast_furnace_bricks"},
+    "P": {"tag": "c:plates/iron"},
+    "R": {"tag": "c:rods/iron"}
+  },
+  "result": {
+    "id": "meknh_core:primitive_blast_furnace",
+    "count": 1
+  }
+}

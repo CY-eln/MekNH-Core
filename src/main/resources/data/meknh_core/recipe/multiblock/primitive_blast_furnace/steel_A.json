@@ -1,0 +1,12 @@
+{
+  "type": "meknh_core:machine",
+  "id": "primitive_blast_furnace",
+  "time": "90s",
+  "input": [
+    {"type": "item", "ingredient": "minecraft:iron_ingot", "count": 1},
+    {"type": "item", "ingredient": "minecraft:charcoal", "count": 2}
+  ],
+  "output": [
+    {"type": "item", "id": "mekanism:ingot_steel", "count": 1}
+  ]
+}

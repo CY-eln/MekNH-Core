@@ -1,0 +1,13 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:forge_hammer",
+  "level": "ULV",
+  "time": "5s",
+  "energy": 0.25,
+  "input": [
+    { "type": "item", "ingredient": { "tag": "c:ingots/silver" }, "count": 3 }
+  ],
+  "output": [
+    { "type": "item", "id": "meknh_ores:plate_silver", "count": 2 }
+  ]
+}

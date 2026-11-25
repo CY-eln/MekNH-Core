@@ -55,6 +55,13 @@ public final class CasingRegistration {
                     .sound(SoundType.METAL)));
 
     /** 青铜机器外壳（对应 GT 的 bronze_machine_casing）。 */
+    /** 鐓ч搧鐮栧澹佸璧达紙瀵瑰簲 GT 鐨?wrought_iron_brick_casing锛夈€?*/
+    public static final DeferredBlock<Block> WROUGHT_IRON_BRICK_CASING = BLOCKS.register("wrought_iron_brick_casing",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(5.0F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
     public static final DeferredBlock<Block> BRONZE_MACHINE_CASING = BLOCKS.register("bronze_machine_casing",
             () -> new Block(BlockBehaviour.Properties.of()
                     .strength(5.0F, 6.0F)
@@ -73,6 +80,10 @@ public final class CasingRegistration {
     public static final DeferredItem<BlockItem> BRONZE_BRICK_CASING_ITEM =
             ITEMS.registerItem("bronze_brick_casing",
                     properties -> new BlockItem(BRONZE_BRICK_CASING.get(), properties));
+
+    public static final DeferredItem<BlockItem> WROUGHT_IRON_BRICK_CASING_ITEM =
+            ITEMS.registerItem("wrought_iron_brick_casing",
+                    properties -> new BlockItem(WROUGHT_IRON_BRICK_CASING.get(), properties));
 
     public static final DeferredItem<BlockItem> BRONZE_MACHINE_CASING_ITEM =
             ITEMS.registerItem("bronze_machine_casing",
@@ -122,6 +133,7 @@ public final class CasingRegistration {
             event.accept(STEAM_MACHINE_CASING_ITEM.get());
             event.accept(BRONZE_BRICK_CASING_ITEM.get());
             event.accept(BRONZE_MACHINE_CASING_ITEM.get());
+            event.accept(WROUGHT_IRON_BRICK_CASING_ITEM.get());
             event.accept(BRONZE_FIREBOX_CASING_ITEM.get());
             event.accept(PRIMITIVE_PUMP_ITEM.get());
             event.accept(PUMP_DECK_ITEM.get());

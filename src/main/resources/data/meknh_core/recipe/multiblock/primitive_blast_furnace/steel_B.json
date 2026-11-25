@@ -1,0 +1,12 @@
+{
+  "type": "meknh_core:machine",
+  "id": "primitive_blast_furnace",
+  "time": "75s",
+  "input": [
+    {"type": "item", "ingredient": "minecraft:iron_ingot", "count": 1},
+    {"type": "item", "ingredient": "meknh_core:coke_gem", "count": 1}
+  ],
+  "output": [
+    {"type": "item", "id": "mekanism:ingot_steel", "count": 1}
+  ]
+}

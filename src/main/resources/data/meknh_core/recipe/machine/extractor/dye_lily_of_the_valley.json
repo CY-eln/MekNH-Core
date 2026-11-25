@@ -1,0 +1,13 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:extractor",
+  "level": "ULV",
+  "time": "1s",
+  "energy": 0.25,
+  "input": [
+    { "type": "item", "ingredient": "minecraft:lily_of_the_valley", "count": 1 }
+  ],
+  "output": [
+    { "type": "item", "id": "minecraft:white_dye", "count": 2 }
+  ]
+}

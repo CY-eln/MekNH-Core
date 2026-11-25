@@ -8,7 +8,9 @@
     "BlockEntityTypeAccessor",
     "TileEntityMechanicalPipeMixin",
     "TileEntityMekanismChemSaveMixin",
-    "TransmitterAcceptorMixin"
+    "TransmitterAcceptorMixin",
+    "UniversalCableMixin",
+    "TileEntityMekanismCableSaveMixin"
   ],
   "client": [],
   "server": [],

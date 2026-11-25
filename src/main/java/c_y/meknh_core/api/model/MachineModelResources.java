@@ -704,25 +704,24 @@ public final class MachineModelResources {
     private static void appendFeCables(Map<ResourceLocation, byte[]> resources) {
         for (FePipeDefinition definition : FePipeRegistration.definitions()) {
             String name = definition.id().getPath();
-            String base = "meknh_core:block/pipe/fe/" + name;
-
+            String model = "meknh_core:block/pipe/fe/" + name;
             JsonObject blockstate = new JsonObject();
-            JsonArray multipart = new JsonArray();
-            multipart.add(cablePart(null, base + "_core", null, 0));
-            multipart.add(cablePart("north", base + "_arm", "y", 0));
-            multipart.add(cablePart("south", base + "_arm", "y", 180));
-            multipart.add(cablePart("west", base + "_arm", "y", 90));
-            multipart.add(cablePart("east", base + "_arm", "y", 270));
-            multipart.add(cablePart("up", base + "_arm", "x", 90));
-            multipart.add(cablePart("down", base + "_arm", "x", 270));
-            blockstate.add("multipart", multipart);
+            JsonObject variants = new JsonObject();
+            JsonObject only = new JsonObject();
+            only.addProperty("model", model);
+            variants.add("", only);
+            blockstate.add("variants", variants);
             put(resources, "blockstates/" + name + ".json", blockstate);
-
-            put(resources, "models/block/pipe/fe/" + name + "_core.json",
-                    cableModel(definition.texture(), 5.0D, 5.0D, 5.0D, 11.0D, 11.0D, 11.0D));
-            put(resources, "models/block/pipe/fe/" + name + "_arm.json",
-                    cableModel(definition.texture(), 5.0D, 5.0D, 0.0D, 11.0D, 11.0D, 6.0D));
-            put(resources, "models/item/" + name + ".json", parentItemModel(base + "_core"));
+            JsonObject modelJson = new JsonObject();
+            modelJson.addProperty("parent", "mekanism:block/transmitter/small/small");
+            JsonObject textures = new JsonObject();
+            textures.addProperty("side", definition.texture().toString());
+            textures.addProperty("center_down", definition.texture().toString());
+            textures.addProperty("side_opaque", definition.texture().toString());
+            textures.addProperty("center_opaque", definition.texture().toString());
+            modelJson.add("textures", textures);
+            put(resources, "models/block/pipe/fe/" + name + ".json", modelJson);
+            put(resources, "models/item/" + name + ".json", parentItemModel(model));
         }
         for (c_y.meknh_core.common.pipe.MekPipeDefinition definition
                 : c_y.meknh_core.common.pipe.MekPipeRegistration.definitions()) {

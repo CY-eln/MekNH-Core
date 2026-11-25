@@ -1,0 +1,13 @@
+{
+  "type": "meknh_core:machine",
+  "id": "meknh_core:electric_stove",
+  "level": "ULV",
+  "time": "10s",
+  "energy": 0.25,
+  "input": [
+    { "type": "item", "ingredient": "minecraft:iron_nugget", "count": 1 }
+  ],
+  "output": [
+    { "type": "item", "id": "meknh_ores:nugget_wrought_iron", "count": 1 }
+  ]
+}

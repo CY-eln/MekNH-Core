@@ -3,10 +3,6 @@
   "id": "primitive_pump",
   "input": "none",
   "output": [
-    {
-      "type": "fluid",
-      "fluid": "minecraft:water",
-      "amount": 250
-    }
+    {"type": "fluid", "fluid": "minecraft:water", "amount": 250}
   ]
 }

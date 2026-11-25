@@ -74,6 +74,7 @@ public class MekNHCore {
         c_y.meknh_core.common.pipe.FePipeDataLoader.loadFromMods();
         c_y.meknh_core.common.pipe.MekPipeRegistration.initialize(modEventBus);
         c_y.meknh_core.common.pipe.MekPipeDataLoader.loadFromMods();
+        c_y.meknh_core.common.fuel.FuelDataLoader.initialize(modEventBus);
     }
 
     /**

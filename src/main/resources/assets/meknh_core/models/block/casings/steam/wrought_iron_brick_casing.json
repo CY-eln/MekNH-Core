@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "meknh_core:block/casings/steam/bricked_steel/bottom",
+    "side": "meknh_core:block/casings/steam/bricked_steel/side",
+    "top": "meknh_core:block/casings/steam/bricked_steel/top"
+  }
+}

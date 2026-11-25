@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PGP",
+    "PBP"
+  ],
+  "key": {
+    "P": {"tag": "c:plates/wrought_iron"},
+    "B": {"item": "meknh_core:wrought_iron_brick_casing"},
+    "G": {"tag": "c:glass_blocks"}
+  },
+  "result": {
+    "id": "meknh_core:liquid_boiler_ulv_high",
+    "count": 1
+  }
+}

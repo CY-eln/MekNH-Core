@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "GBG",
+    "PPP"
+  ],
+  "key": {
+    "G": {"item": "meknh_core:bronze_fluid_pipe"},
+    "P": {"tag": "c:plates/wrought_iron"},
+    "B": {"item": "meknh_core:lp_steam_forge_hammer"}
+  },
+  "result": {
+    "id": "meknh_core:hp_steam_forge_hammer",
+    "count": 1
+  }
+}

@@ -44,7 +44,8 @@ import org.slf4j.Logger;
  *
  * <p>本类同时实现 {@link MachineOutput}，作为配方的产物入口。</p>
  */
-public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_y.meknh_core.common.machine.DropperTankHolder {
+public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_y.meknh_core.common.machine.DropperTankHolder,
+        c_y.meknh_core.common.pipe.FeEnergyEndpoint {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -133,14 +134,27 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
                         = c_y.meknh_core.common.machine.config.SideMode.INPUT;
             }
         }
+        // 物品通道默认：正面 OUTPUT，其余面 INPUT。
+        // MachineItemHandler 的自动化视图已经把输入槽限制为「只插」、输出槽限制为「只抽」
+        // （见 MachineItemHandler 的 automation 视图），所以这里只是「开门」，不会串味。
+        // 少了这段，漏斗/管道默认一个面都插不进去，必须开 GUI 逐面配置。
+        Direction front = state.getValue(MachineBlock.FACING);
+        for (Direction side : Direction.values()) {
+            this.sideModes[c_y.meknh_core.common.machine.config.MachineConfigType.ITEM.ordinal()][side.ordinal()]
+                    = side == front
+                            ? c_y.meknh_core.common.machine.config.SideMode.OUTPUT
+                            : c_y.meknh_core.common.machine.config.SideMode.INPUT;
+        }
 
         long fluidInput = definition.fluidInputCapacity();
         long fluidOutput = definition.fluidOutputCapacity();
         long chemicalInput = definition.chemicalInputCapacity();
         long chemicalOutput = definition.chemicalOutputCapacity();
 
-        // 提取机的 MEK 输出罐：电力版本按等级给 8/12/16/32/64 B；
-        // 蒸汽版本的容量为 0，因此无法执行带流体/化学品产物的配方。
+        // 提取机的 MEK 输出罐：电力版本按等级给 8/12/16/32/64 B。
+        // 蒸汽版本刻意不给流体/化学品罐：蒸汽时代的提取机只能做「物品 → 物品」（染料之类），
+        // 带流体/化学品产物的配方要等到 LV 才有。没有输出罐时这类配方会停在 NO_OUTPUT_SPACE，
+        // 不会卡进度条。
         if (definition.id().equals(c_y.meknh_core.MekNHCore.rl("extractor"))) {
             if (level.isSteam()) {
                 fluidOutput = 0L;
@@ -555,6 +569,18 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         }
         this.level.explode(null, this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D,
                 this.worldPosition.getZ() + 0.5D, 2.0F, net.minecraft.world.level.Level.ExplosionInteraction.BLOCK);
+    }
+
+    @Override
+    public int extractFePacket(int maxFe) {
+        if (this.energyStorage == null || maxFe <= 0) {
+            return 0;
+        }
+        int extracted = this.energyStorage.extractEnergy(maxFe, false);
+        if (extracted > 0) {
+            this.setChanged();
+        }
+        return extracted;
     }
 
     public MachineEnergyStorage energyStorage() {

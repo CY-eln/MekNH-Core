@@ -47,7 +47,7 @@ public final class CokeOvenMaterials {
     /**
      * 焦炭。
      */
-    public static final DeferredItem<Item> COKE_GEM = ITEMS.registerItem("coke_gem", Item::new);
+    public static final DeferredItem<Item> COKE_GEM = ITEMS.registerItem("coke_gem", c_y.meknh_core.common.fuel.FueledItem::new);
 
     /**
      * 焦炉前置材料，使用本模组命名空间；贴图取自 GT。
@@ -80,7 +80,8 @@ public final class CokeOvenMaterials {
      * 杂酚油桶：桶交互取流体靠它。
      */
     public static final DeferredItem<BucketItem> CREOSOTE_BUCKET = ITEMS.registerItem("creosote_bucket",
-            properties -> new BucketItem(CREOSOTE.get(), properties.stacksTo(1).craftRemainder(Items.BUCKET)));
+            properties -> new c_y.meknh_core.common.fuel.FueledBucketItem(CREOSOTE.get(),
+                    properties.stacksTo(1).craftRemainder(Items.BUCKET)));
 
     /**
      * 杂酚油液体方块，让桶能倒出来。
