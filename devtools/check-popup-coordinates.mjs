@@ -24,6 +24,7 @@ const utilityRender=render.slice(0,render.indexOf('        boolean canEject'))+'
 const tooltip=method('public boolean renderTooltip(');
 const tooltipStart=tooltip.indexOf('        if (mouseX >= originX + 6');
 const utilityTooltip='boolean utilityTooltip(GuiGraphics graphics, Font font, int mouseX, int mouseY, int left, int top, Context context) { int originX=this.originX(left), originY=this.originY(top);'+tooltip.slice(tooltipStart,tooltip.indexOf('        for (RelSide side',tooltipStart))+'return false;}';
+const hoverSource=readFileSync(new URL('../src/main/java/c_y/meknh_core/common/gui/render/MekButtonHover.java',import.meta.url),'utf8').replace(/^package .*;$/m,'').replace(/^import .*;$/gm,'').replace('public final class MekButtonHover','static final class MekButtonHover');
 const java=`import java.util.*;
 public class PopupCoordinateProbe {
     static final int WIDTH=156, HEIGHT=135, TYPE_TAB=26;
@@ -84,6 +85,7 @@ ${method('public java.util.List<net.minecraft.client.renderer.Rect2i> extraAreas
         }
         System.out.println("PASS: actual side-tab and dragged popup exclusions at 854x510 scales 1/2, warning/open/closed states");
     }
+${hoverSource}
 ${utilityRender}
 ${utilityTooltip}
 ${method('private static void drawButtonBase(')}
@@ -96,7 +98,7 @@ ${method('private static void drawConfigTypeTabHover(')}
     static class MekGuiTextures {static final String WINDOW_SHADOW="shadow", WINDOW_BASE="base", BUTTON_CLOSE="close", PINNED="pin", UNPINNED="unpin", TAB_BUTTON="button";}
     static class GuiGraphics {
         Map<String,Rect> icons=new HashMap<>(); String tooltip;
-        int fills;
+        int fills; List<String> slices=new ArrayList<>();
         void flush() {} void fill(int... args) {fills++;} void setColor(float... args) {}
         void drawString(Object... args) {}
         void blit(String texture,int x,int y,int w,int h,int u,int v,int uw,int vh,int tw,int th) {icons.put(texture,new Rect(x,y,w,h));}
@@ -104,10 +106,10 @@ ${method('private static void drawConfigTypeTabHover(')}
     }
     static class GuiDraw {
         static void nineSlice(Object... args) {}
-        static void nineSliceXY(Object... args) {}
+        static void nineSliceXY(Object... args) { ((GuiGraphics)args[0]).slices.add(Arrays.deepToString(Arrays.copyOfRange(args,1,args.length))); }
     }
     static String typeKey(int type) {return "items";}
-    static void drawConfigTypeTab(Object... args) {}
+    static void drawConfigTypeTab(GuiGraphics g,int x,int y,int type,MachineBackgroundMaterial m,int mx,int my) { drawConfigTypeTabHover(g,x,y,mx,my); }
     static void utilityRectangles() {
         for(int[] base:new int[][]{{0,0},{100,100},{200,150}}) {
             var p=new PopupCoordinateProbe(); p.open=true; p.dragOffsetX=-4; p.dragOffsetY=7;
@@ -115,13 +117,18 @@ ${method('private static void drawConfigTypeTabHover(')}
             p.render(graphics,font,base[0],base[1],context,null,Integer.MIN_VALUE,Integer.MIN_VALUE);
             Rect close=graphics.icons.get("close"), pin=graphics.icons.get("unpin");
             check(close.w()==8&&close.h()==8&&pin.w()==16&&pin.h()==8,"utility blit dimensions");
+            for (Rect button : List.of(close,pin)) {
+                var hovered=new GuiGraphics();
+                p.render(hovered,font,base[0],base[1],context,null,button.x(),button.y());
+                check(hovered.fills!=graphics.fills || !hovered.slices.equals(graphics.slices), "missing close/pin hover feedback");
+            }
             int ox=p.originX(base[0]),oy=p.originY(base[1]);
             int tx=ox-TYPE_TAB,ty=oy+30;
             for(int hx=tx-1;hx<=tx+TYPE_TAB;hx++) for(int hy=ty-1;hy<=ty+TYPE_TAB;hy++) {
                 var hover=new GuiGraphics();
                 p.render(hover,font,base[0],base[1],context,null,hx,hy);
                 boolean hit=hx>=tx&&hx<tx+TYPE_TAB&&hy>=ty&&hy<ty+TYPE_TAB;
-                check(hover.fills==(hit?6:1),"type tab hover rectangle or missing feedback");
+                check(hover.slices.size()==graphics.slices.size()+(hit?1:0),"type tab hover rectangle or missing feedback");
             }
             for(int x=ox;x<ox+36;x++) for(int y=oy;y<oy+18;y++) {
                 graphics.tooltip=null; p.pinned=false; p.open=true; p.dragging=false;

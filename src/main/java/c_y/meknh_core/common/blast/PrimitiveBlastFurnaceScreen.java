@@ -1,6 +1,7 @@
 package c_y.meknh_core.common.blast;
 
 import c_y.meknh_core.common.gui.layout.MekGuiTextures;
+import c_y.meknh_core.common.gui.render.BrickMachineNameplate;
 import c_y.meknh_core.common.gui.render.GuiDraw;
 import c_y.meknh_core.common.gui.render.MetalMachineBackground;
 import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
@@ -64,7 +65,7 @@ public class PrimitiveBlastFurnaceScreen extends GuiMekanism<PrimitiveBlastFurna
 
     @Override
     protected void drawForegroundText(GuiGraphics graphics, int mouseX, int mouseY) {
-        this.renderTitleText(graphics);
+        BrickMachineNameplate.render(graphics, this.font, this.title, this.imageWidth, this.titleLabelY);
         this.renderInventoryText(graphics);
         super.drawForegroundText(graphics, mouseX, mouseY);
     }

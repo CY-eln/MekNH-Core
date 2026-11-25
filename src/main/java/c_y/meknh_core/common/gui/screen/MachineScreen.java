@@ -266,7 +266,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             ((MachineMenu)this.menu).isSteam(), this.backgroundMaterial(),
             mouseX, mouseY, !this.transporter.isOpen());
       if (this.transporter.isOpen()) {
-         this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(), this.backgroundMaterial());
+         this.transporter.render(graphics, this.font, this.leftPos, this.topPos, this.transporterContext(),
+               this.backgroundMaterial(), mouseX, mouseY);
       } else {
          this.tabs.renderOverlay(graphics, this.font, this.leftPos, this.topPos, this.configContext(),
                this.backgroundMaterial(), mouseX, mouseY);
@@ -280,13 +281,12 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
    }
 
    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-      if (((MachineMenu)this.menu).usesSteamLayout()) {
-         // 合金炉/蒸汽机器：标题在顶部水平居中。
-         int titleX = (this.imageWidth - this.font.width(this.title)) / 2;
-         graphics.drawString(this.font, this.title, titleX, 6, 4210752, false);
-      } else {
-         graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
-      }
+      MachineBackgroundMaterial material = this.backgroundMaterial();
+      boolean centered = ((MachineMenu)this.menu).usesSteamLayout();
+      int titleWidth = this.font.width(this.title);
+      int titleX = centered ? (this.imageWidth - titleWidth) / 2 : this.titleLabelX;
+      int titleY = centered ? 6 : this.titleLabelY;
+      graphics.drawString(this.font, this.title, titleX, titleY, material.titleColor(), false);
       graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
    }
 

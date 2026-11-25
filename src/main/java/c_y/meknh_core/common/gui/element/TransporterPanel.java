@@ -4,6 +4,7 @@ import c_y.meknh_core.common.gui.layout.MekGuiTextures;
 import c_y.meknh_core.common.gui.render.GuiDraw;
 import c_y.meknh_core.common.gui.render.MachineBackgroundMaterial;
 import c_y.meknh_core.common.gui.render.MetalMachineBackground;
+import c_y.meknh_core.common.gui.render.MekButtonHover;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
@@ -98,6 +99,11 @@ public final class TransporterPanel {
 
     public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
                        MachineBackgroundMaterial material) {
+        this.render(graphics, font, left, top, context, material, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    }
+
+    public void render(GuiGraphics graphics, Font font, int left, int top, Context context,
+                       MachineBackgroundMaterial material, int mouseX, int mouseY) {
         if (!this.open) {
             return;
         }
@@ -120,7 +126,7 @@ public final class TransporterPanel {
         Component title = Component.translatable("gui.meknh_core.transporter.title");
         graphics.drawString(font, title, originX + 12 + (126 - font.width(title)) / 2,
                 originY + 5, labelColor, false);
-        drawButtonBase(graphics, originX + 6, originY + 6, 8, 8);
+        MekButtonHover.drawBase(graphics, originX + 6, originY + 6, 8, 8, mouseX, mouseY, true);
         graphics.blit(MekGuiTextures.BUTTON_CLOSE, originX + 6, originY + 6, 8, 8,
                 0, 0, 12, 12, 12, 12);
 
@@ -135,13 +141,14 @@ public final class TransporterPanel {
         graphics.drawString(font, strict, 0, 0, 0x3BE03B, false);
         graphics.pose().popPose();
 
-        drawButtonBase(graphics, originX + 136, originY + 6, 14, 14);
+        MekButtonHover.drawBase(graphics, originX + 136, originY + 6, 14, 14, mouseX, mouseY, true);
         graphics.blit(MekGuiTextures.BUTTON_EXCLAMATION, originX + 136, originY + 6,
                 14, 14, 0, 0, 14, 14, 14, 14);
         graphics.blit(MekGuiTextures.SLOT_NORMAL, originX + 111, originY + 48,
                 18, 18, 0, 0, 18, 18, 18, 18);
         graphics.fill(originX + 112, originY + 49, originX + 128, originY + 65,
                 0xFF000000 | COLORS[Math.floorMod(context.outputColor(), COLORS.length)]);
+        MekButtonHover.drawColorOverlay(graphics, originX + 112, originY + 49, 16, 16, mouseX, mouseY);
 
         for (Face face : Face.values()) {
             int x = originX + face.x;
@@ -149,8 +156,7 @@ public final class TransporterPanel {
             int color = COLORS[Math.floorMod(context.inputColor(face.direction(context.facing())), COLORS.length)];
             graphics.setColor((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F,
                     (color & 0xFF) / 255.0F, 1.0F);
-            GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_BUTTON, x, y, 22, 22,
-                    20, 4, 200, 60, 0, 20, 200, 20);
+            MekButtonHover.drawBase(graphics, x, y, 22, 22, mouseX, mouseY, true);
             graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
@@ -231,10 +237,5 @@ public final class TransporterPanel {
             }
         }
         return true;
-    }
-
-    private static void drawButtonBase(GuiGraphics graphics, int x, int y, int width, int height) {
-        GuiDraw.nineSliceXY(graphics, MekGuiTextures.TAB_BUTTON, x, y, width, height,
-                20, 4, 200, 60, 0, 20, 200, 20);
     }
 }
