@@ -56,9 +56,21 @@ import com.mojang.logging.LogUtils;
  * <p>控制器不提供 GUI：输入输出全部通过仓室能力（漏斗/管道/右键）完成。
  * 右键控制器会在聊天栏打印结构状态，方便搭结构时排查。</p>
  */
-public class MultiblockControllerBlockEntity extends BlockEntity implements MachineOutput {
+public class MultiblockControllerBlockEntity extends BlockEntity implements MachineOutput,
+        c_y.meknh_core.common.security.SecureBlockEntity {
 
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    /**
+     * 拥有者（放下时写入）+ 安全等级。
+     */
+    private final c_y.meknh_core.common.security.SecurityState security =
+            new c_y.meknh_core.common.security.SecurityState(this::meknh_core$markSecurityChanged);
+
+    @Override
+    public c_y.meknh_core.common.security.SecurityState securityState() {
+        return this.security;
+    }
 
     /**
      * 未成型时的结构复检间隔（tick）。
@@ -750,10 +762,24 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
         super.setRemoved();
     }
 
+    /**
+     * 同步 owner/安全等级到客户端（客户端要按 owner 判定挖掘进度）。
+     */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveWithoutMetadata(registries);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("Formed", this.formed);
+        this.meknh_core$saveSecurity(tag);
         tag.putInt("Progress", this.progress);
         tag.putInt("TotalTicks", this.totalTicks);
         tag.putInt("Overclocks", this.overclocks);
@@ -769,6 +795,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Mach
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         this.progress = tag.getInt("Progress");
+        this.meknh_core$loadSecurity(tag);
         this.totalTicks = tag.getInt("TotalTicks");
         this.overclocks = tag.getInt("Overclocks");
         this.activeParallel = Math.max(1, tag.getInt("ActiveParallel"));

@@ -58,6 +58,33 @@ public final class TabStrip {
             && mouseY >= top + AUTO_IO_Y && mouseY < top + AUTO_IO_Y + TAB_SIZE;
    }
 
+   /**
+    * 仓室 / 多方块控制器 GUI 的安全 Tab：贴在窗口右上角（与机器右侧红石 Tab 同位置）。
+    *
+    * @param imageWidth 窗口宽度，Tab 画在 {@code left + imageWidth} 处
+    */
+   public static void renderSecurity(GuiGraphics graphics, int left, int top, int imageWidth,
+                                     mekanism.api.security.SecurityMode mode) {
+      drawInset(
+            graphics,
+            MekGuiTextures.TAB_HOLDER_RIGHT,
+            mode == mekanism.api.security.SecurityMode.PUBLIC
+                  ? MekGuiTextures.TAB_SECURITY_PUBLIC
+                  : MekGuiTextures.TAB_SECURITY_PRIVATE,
+            left + imageWidth,
+            top + AUTO_IO_Y,
+            16752992
+      );
+   }
+
+   /**
+    * 安全 Tab 的命中判定（整块 26×26）。
+    */
+   public static boolean isOverSecurity(double mouseX, double mouseY, int left, int top, int imageWidth) {
+      return mouseX >= left + imageWidth && mouseX < left + imageWidth + TAB_SIZE
+            && mouseY >= top + AUTO_IO_Y && mouseY < top + AUTO_IO_Y + TAB_SIZE;
+   }
+
    public static void render(GuiGraphics graphics, int left, int top, int redstoneOrdinal, boolean privateMode, int warningCode, boolean steam) {
       drawInset(graphics, MekGuiTextures.TAB_HOLDER_LEFT, MekGuiTextures.TAB_CONFIG, left - TAB_SIZE, top + 6, 0xFFFFFF);
       drawInset(graphics, MekGuiTextures.TAB_HOLDER_LEFT, MekGuiTextures.TAB_TRANSPORTER, left - TAB_SIZE, top + 34, 0xFFFFFF);

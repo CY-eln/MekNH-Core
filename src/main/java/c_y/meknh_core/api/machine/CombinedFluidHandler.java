@@ -7,21 +7,59 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 /**
  * 把输入罐与输出罐合并成一个 {@link IFluidHandler}，用于注册方块实体能力。
+ *
+ * <p><b>只有输出罐可以被抽取</b>：输入罐排在前面，{@code firstDrainable} 指向第一个输出罐，
+ * {@link #drain} 只从这个下标往后找。这样管道 / 漏斗不可能把燃料、水这类输入抽走
+ * （表现为「输入槽能被抽干、却没法自动弹出」）。</p>
  */
 public final class CombinedFluidHandler implements IFluidHandler {
 
     private final List<FluidTank> tanks;
+    private final int firstDrainable;
 
     public CombinedFluidHandler(FluidTank... tanks) {
         this.tanks = List.of(tanks);
+        this.firstDrainable = 0;
     }
 
+    /**
+     * @param firstDrainable 第一个允许抽取的罐下标；等于输入罐数量
+     * @param tanks          罐列表，顺序必须是「先输入、后输出」，与能力暴露的顺序一致
+     */
+    public CombinedFluidHandler(int firstDrainable, FluidTank... tanks) {
+        this.tanks = List.of(tanks);
+        this.firstDrainable = clamp(firstDrainable, this.tanks.size());
+    }
+
+    /**
+     * 全部罐都可抽取（用于「这些罐本身就是输出」的场景，例如多方块输入聚合）。
+     */
     public CombinedFluidHandler(List<FluidTank> tanks) {
+        this(tanks, 0);
+    }
+
+    public CombinedFluidHandler(int firstDrainable, List<FluidTank> tanks) {
+        this(tanks, firstDrainable);
+    }
+
+    public CombinedFluidHandler(List<FluidTank> tanks, int firstDrainable) {
         this.tanks = List.copyOf(tanks);
+        this.firstDrainable = clamp(firstDrainable, this.tanks.size());
+    }
+
+    private static int clamp(int index, int size) {
+        return Math.max(0, Math.min(index, size));
     }
 
     public List<FluidTank> tanks() {
         return this.tanks;
+    }
+
+    /**
+     * 第一个允许抽取的罐下标；外部可用于 UI/调试。
+     */
+    public int firstDrainableTank() {
+        return this.firstDrainable;
     }
 
     private FluidTank tank(int index) {
@@ -71,7 +109,8 @@ public final class CombinedFluidHandler implements IFluidHandler {
 
     @Override
     public FluidStack drain(FluidStack resource, FluidAction action) {
-        for (FluidTank target : this.tanks) {
+        for (int tank = this.firstDrainable; tank < this.tanks.size(); tank++) {
+            FluidTank target = this.tanks.get(tank);
             if (target.isEmpty() || target.getFluid().getFluid() != resource.getFluid()) {
                 continue;
             }
@@ -85,7 +124,8 @@ public final class CombinedFluidHandler implements IFluidHandler {
 
     @Override
     public FluidStack drain(int maxDrain, FluidAction action) {
-        for (FluidTank target : this.tanks) {
+        for (int tank = this.firstDrainable; tank < this.tanks.size(); tank++) {
+            FluidTank target = this.tanks.get(tank);
             if (target.isEmpty()) {
                 continue;
             }

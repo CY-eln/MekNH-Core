@@ -260,7 +260,10 @@ public class BoilerMenu extends AbstractContainerMenu {
             this.blockEntity.cycleRedstoneMode();
             return true;
         } else if (id == BUTTON_PRIVATE) {
-            this.blockEntity.togglePrivateMode();
+            if (!this.blockEntity.meknh_core$isOwner(player)) {
+                return false;
+            }
+            this.blockEntity.securityState().cycleMode();
             return true;
         }
         return false;

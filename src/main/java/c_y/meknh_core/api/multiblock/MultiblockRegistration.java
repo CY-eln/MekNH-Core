@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -281,7 +282,7 @@ public final class MultiblockRegistration {
             DeferredBlock<MultiblockControllerBlock> block = BLOCKS.registerBlock(
                     path,
                     properties -> new MultiblockControllerBlock(properties, definition, level),
-                    BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()
+                    BlockBehaviour.Properties.of().strength(3.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
             );
             blocks.add(Map.entry(level, block));
         }
@@ -349,7 +350,7 @@ public final class MultiblockRegistration {
                     DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
                             path,
                             properties -> new MultiblockPartBlock(properties, type, level, amp),
-                            BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+                            BlockBehaviour.Properties.of().strength(4.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     );
                     DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
                             path,
@@ -409,7 +410,7 @@ public final class MultiblockRegistration {
         DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
                 path,
                 properties -> new MultiblockPartBlock(properties, MultiblockPartType.STEAM_INPUT, level),
-                BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+                BlockBehaviour.Properties.of().strength(4.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
         );
         DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
                 path,
@@ -444,7 +445,7 @@ public final class MultiblockRegistration {
         DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
                 path,
                 properties -> new MultiblockPartBlock(properties, MultiblockPartType.COKE_OVEN_HATCH, level),
-                BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+                BlockBehaviour.Properties.of().strength(4.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
         );
         DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
                 path,
@@ -479,7 +480,7 @@ public final class MultiblockRegistration {
         DeferredBlock<MultiblockPartBlock> block = BLOCKS.registerBlock(
                 path,
                 properties -> new MultiblockPartBlock(properties, MultiblockPartType.PUMP_HATCH, level),
-                BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()
+                BlockBehaviour.Properties.of().strength(4.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
         );
         DeferredItem<MultiblockBlockItem> item = ITEMS.registerItem(
                 path,
@@ -541,6 +542,7 @@ public final class MultiblockRegistration {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         for (PartTypeEntry entry : PART_TYPES) {
             BlockEntityType<MultiblockPartBlockEntity> type = entry.holder().get();
+            c_y.meknh_core.common.security.SecurityCapabilities.register(event, type);
             switch (entry.type()) {
                 case ITEM_INPUT, ITEM_OUTPUT -> event.registerBlockEntity(
                         net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
@@ -583,6 +585,11 @@ public final class MultiblockRegistration {
                             (blockEntity, side) -> blockEntity.externalFluidHandler());
                 }
             }
+        }
+        // 控制器：拥有者 / 安全等级能力
+        for (MultiblockVariant variant : VARIANTS.values()) {
+            c_y.meknh_core.common.security.SecurityCapabilities.register(event,
+                    variant.blockEntityType().get());
         }
     }
 

@@ -106,7 +106,8 @@ public final class CasingRegistration {
     public static final DeferredItem<Item> TREATED_WOOD_ROD = ITEMS.registerSimpleItem("treated_wood_rod");
 
     public static final DeferredItem<BlockItem> PRIMITIVE_PUMP_ITEM =
-            ITEMS.registerItem("primitive_pump", properties -> new BlockItem(PRIMITIVE_PUMP.get(), properties));
+            ITEMS.registerItem("primitive_pump", properties ->
+                    new c_y.meknh_core.api.multiblock.MultiblockBlockItem(PRIMITIVE_PUMP.get(), properties));
     public static final DeferredItem<BlockItem> PUMP_DECK_ITEM =
             ITEMS.registerItem("pump_deck", properties -> new BlockItem(PUMP_DECK.get(), properties));
     public static final DeferredItem<BlockItem> TREATED_WOOD_FRAME_ITEM =

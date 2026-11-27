@@ -57,6 +57,24 @@ public class HatchMenu extends AbstractContainerMenu {
     private final boolean bus;
 
     /**
+     * 安全按钮：循环 PUBLIC → PRIVATE → TRUSTED（仅主人）。
+     */
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id == c_y.meknh_core.common.security.SecurityMenuActions.BUTTON_SECURITY) {
+            return c_y.meknh_core.common.security.SecurityMenuActions.cycle(player, this.part);
+        }
+        return super.clickMenuButton(player, id);
+    }
+
+    /**
+     * 当前安全等级（客户端也读得到，因为方块实体同步了 owner/mode）。
+     */
+    public mekanism.api.security.SecurityMode securityMode() {
+        return c_y.meknh_core.common.security.SecurityMenuActions.modeOf(this.part);
+    }
+
+    /**
      * 服务端构造。
      */
     public HatchMenu(int windowId, Inventory playerInventory, MultiblockPartBlockEntity part) {

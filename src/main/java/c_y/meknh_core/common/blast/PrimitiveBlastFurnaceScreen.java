@@ -64,6 +64,26 @@ public class PrimitiveBlastFurnaceScreen extends GuiMekanism<PrimitiveBlastFurna
     }
 
     @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        c_y.meknh_core.common.gui.element.SecurityTabRenderer.render(graphics, this.font,
+                this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY, this.menu.securityMode());
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (c_y.meknh_core.common.gui.element.SecurityTabRenderer.isClick(mouseX, mouseY, button,
+                this.leftPos, this.topPos, this.imageWidth)) {
+            if (this.minecraft != null && this.minecraft.gameMode != null) {
+                this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId,
+                        c_y.meknh_core.common.security.SecurityMenuActions.BUTTON_SECURITY);
+            }
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
     protected void drawForegroundText(GuiGraphics graphics, int mouseX, int mouseY) {
         BrickMachineNameplate.render(graphics, this.font, this.title, this.imageWidth, this.titleLabelY);
         this.renderInventoryText(graphics);

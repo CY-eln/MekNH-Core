@@ -117,6 +117,19 @@ public class MachineBlock extends Block implements EntityBlock {
         }
     }
 
+    /**
+     * 无权限时挖掘进度恒为 0（对齐 Mekanism：挖不动别人的私有机器）。
+     */
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level,
+                                       BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof c_y.meknh_core.common.security.SecureBlockEntity secure
+                && !secure.meknh_core$canAccess(player)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
+    }
+
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {

@@ -33,7 +33,13 @@ public final class PrimitivePumpControllerBlock extends MultiblockControllerBloc
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                             BlockHitResult hit) {
-        // 原始水泵没有 GUI、没有结构提示，也不产生右键事件。
+        // 原始水泵没有 GUI：成型后用「空手潜行右键」循环安全等级（唯一入口）。
+        // 未成型时保留这个手势给多方块预览，与其它控制器一致。
+        if (!level.isClientSide && state.getValue(FORMED)
+                && c_y.meknh_core.common.security.SecurityInteractions.tryCycle(level, pos, player)) {
+            return InteractionResult.CONSUME;
+        }
+        // 其余情况仍然不产生右键事件。
         return InteractionResult.PASS;
     }
 

@@ -75,6 +75,8 @@ public class MachineBlockItem extends BlockItem {
             tooltip.add(MekanismLang.HAS_INVENTORY.translateColored(EnumColor.AQUA, EnumColor.GRAY, YesNo.NO));
             tooltip.add(Component.translatable("machine.meknh_core.tooltip.tier",
                     Component.literal(MachineDescriptions.tierText(this.level))).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("machine.meknh_core.tooltip.security_hint")
+                    .withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
         tooltip.add(MekanismLang.HOLD_FOR_DETAILS.translateColored(EnumColor.GRAY, EnumColor.INDIGO,

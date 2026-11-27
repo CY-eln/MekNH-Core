@@ -35,11 +35,15 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, IChemicalHandler, IHeatHandler,
-        c_y.meknh_core.common.machine.DropperTankHolder {
+        c_y.meknh_core.common.machine.DropperTankHolder, c_y.meknh_core.common.security.SecureBlockEntity {
 
     private final BoilerDefinition definition;
     private final BoilerTier tier;
     private final ItemStackHandler inventory;
+    /**
+     * 对外物品能力：只允许插入，禁止抽取（锅炉没有物品输出槽）。
+     */
+    private final IItemHandler externalItemHandler;
     private final SharedBoilerTank sharedInput;
     private final IChemicalTank steamOutput;
     private final FluidTank waterTank = new FluidTank(10000, stack -> stack.getFluid().isSame(Fluids.WATER)) {
@@ -68,8 +72,9 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
     private int outputColor;
     private c_y.meknh_core.common.machine.config.RedstoneMode redstoneMode =
             c_y.meknh_core.common.machine.config.RedstoneMode.DISABLED;
-    private boolean privateMode;
-    private java.util.UUID owner;
+    private final c_y.meknh_core.common.security.SecurityState security =
+            new c_y.meknh_core.common.security.SecurityState(this::meknh_core$markSecurityChanged);
+
 
     public BoilerBlockEntity(BlockEntityType<BoilerBlockEntity> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -85,6 +90,9 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
         this.sharedInput = definition.fluidInputSlots() <= 0 && definition.chemicalInputSlots() <= 0
                 ? null : new SharedBoilerTank(10000, this::contentsChanged);
         this.steamOutput = BasicChemicalTank.output(definition.steamCapacity(), this::contentsChanged);
+        // 对外只暴露「插入」：锅炉的物品槽是燃料输入，没有输出槽，
+        // 允许抽取会让漏斗/管道把正在烧的燃料抽回去。
+        this.externalItemHandler = new c_y.meknh_core.common.machine.config.InsertOnlyItemHandler(this.inventory);
         for (c_y.meknh_core.common.machine.config.SideMode[] modes : this.sideModes) {
             java.util.Arrays.fill(modes, c_y.meknh_core.common.machine.config.SideMode.NONE);
         }
@@ -312,7 +320,7 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
     }
 
     public IItemHandler itemHandler() {
-        return this.definition.itemInputSlots() > 0 ? this.inventory : null;
+        return this.definition.itemInputSlots() > 0 ? this.externalItemHandler : null;
     }
 
     public ItemStackHandler inventory() {
@@ -611,22 +619,20 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
         this.setChanged();
     }
 
+    @Override
+    public c_y.meknh_core.common.security.SecurityState securityState() {
+        return this.security;
+    }
+
+    /**
+     * 是否处于非公开模式（兼容旧 GUI 语义）。
+     */
     public boolean privateMode() {
-        return this.privateMode;
+        return this.security.mode() != mekanism.api.security.SecurityMode.PUBLIC;
     }
 
     public void setOwner(java.util.UUID owner) {
-        this.owner = owner;
-        this.setChanged();
-    }
-
-    public boolean canAccess(java.util.UUID player) {
-        return !this.privateMode || this.owner == null || this.owner.equals(player);
-    }
-
-    public void togglePrivateMode() {
-        this.privateMode = !this.privateMode;
-        this.setChanged();
+        this.security.setOwner(owner);
     }
 
     @Override
@@ -687,12 +693,13 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
 
     @Override
     public FluidStack drain(FluidStack resource, FluidAction action) {
-        return this.sharedInput == null ? FluidStack.EMPTY : this.sharedInput.drain(resource, action);
+        // 水罐与燃料罐都是输入，锅炉没有流体产物；对外不可抽取。
+        return FluidStack.EMPTY;
     }
 
     @Override
     public FluidStack drain(int maxDrain, FluidAction action) {
-        return this.sharedInput == null ? FluidStack.EMPTY : this.sharedInput.drain(maxDrain, action);
+        return FluidStack.EMPTY;
     }
 
     @Override
@@ -798,10 +805,7 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
             tag.putInt("inputColor" + i, this.inputColors[i]);
         }
         tag.putInt("redstone", this.redstoneMode.ordinal());
-        tag.putBoolean("private", this.privateMode);
-        if (this.owner != null) {
-            tag.putUUID("owner", this.owner);
-        }
+        this.meknh_core$saveSecurity(tag);
     }
 
     @Override
@@ -843,10 +847,7 @@ public class BoilerBlockEntity extends BlockEntity implements IFluidHandler, ICh
             this.inputColors[i] = tag.getInt("inputColor" + i);
         }
         this.redstoneMode = c_y.meknh_core.common.machine.config.RedstoneMode.byOrdinal(tag.getInt("redstone"));
-        this.privateMode = tag.getBoolean("private");
-        if (tag.hasUUID("owner")) {
-            this.owner = tag.getUUID("owner");
-        }
+        this.meknh_core$loadSecurity(tag);
         this.normalizeSideModes();
     }
 

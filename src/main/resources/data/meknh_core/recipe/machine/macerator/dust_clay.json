@@ -8,6 +8,6 @@
     { "type": "item", "ingredient": "minecraft:clay_ball", "count": 1 }
   ],
   "output": [
-    { "type": "item", "id": "meknh_core:dust_cray", "count": 1 }
+    { "type": "item", "id": "meknh_core:dust_clay", "count": 1 }
   ]
 }

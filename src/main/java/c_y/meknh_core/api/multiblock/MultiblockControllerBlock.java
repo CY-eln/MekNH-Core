@@ -121,6 +121,15 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
+        // 主人空手 Shift+右键：循环安全等级。
+        // 只在「已成型」时生效 —— 未成型时这个手势要留给多方块结构预览（空手潜行右键预览）。
+        if (state.getValue(FORMED)
+                && c_y.meknh_core.common.security.SecurityInteractions.tryCycle(level, pos, player)) {
+            return InteractionResult.CONSUME;
+        }
+        if (!c_y.meknh_core.common.security.SecurityInteractions.checkAccess(level, pos, player)) {
+            return InteractionResult.FAIL;
+        }
         if (level.getBlockEntity(pos) instanceof MultiblockControllerGui gui
                 && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
                 && gui.openControllerGui(serverPlayer)) {
@@ -134,6 +143,21 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
     }
 
     /**
+     * 放下时记录拥有者（拥有者只在放下后产生，对齐 Mekanism）。
+     */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state,
+                            @org.jetbrains.annotations.Nullable net.minecraft.world.entity.LivingEntity placer,
+                            ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide && placer instanceof Player player
+                && level.getBlockEntity(pos) instanceof c_y.meknh_core.common.security.SecureBlockEntity secure
+                && secure.getOwnerUUID() == null) {
+            secure.setOwnerUUID(player.getUUID());
+        }
+    }
+
+    /**
      * 桶/容器交互：实现了 {@link BucketFluidController} 的控制器可以直接用桶取流体。
      */
     @Override
@@ -142,11 +166,25 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
                                                                  net.minecraft.world.InteractionHand hand,
                                                                  BlockHitResult hit) {
         if (level.getBlockEntity(pos) instanceof BucketFluidController buckets
+                && c_y.meknh_core.common.security.SecurityInteractions.checkAccess(level, pos, player)
                 && net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(
                         player, hand, buckets.bucketFluidHandler())) {
             return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
         return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    /**
+     * 无权限时挖掘进度恒为 0。
+     */
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level,
+                                       BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof c_y.meknh_core.common.security.SecureBlockEntity secure
+                && !secure.meknh_core$canAccess(player)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
     }
 
     @Override

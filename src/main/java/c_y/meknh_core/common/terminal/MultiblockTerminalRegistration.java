@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -89,15 +91,24 @@ public final class MultiblockTerminalRegistration {
 
         List<Placement> plan = new ArrayList<>();
         Map<Block, Integer> needed = new LinkedHashMap<>();
+        int occupied = 0;
+        int blocked = 0;
         MultiblockStructure structure = definition.structure();
         for (MultiblockStructure.Cell cell : structure.cells()) {
             MultiblockMatcher matcher = cell.matcher();
             BlockPos target = MultiblockStructure.offset(controller.getBlockPos(),
                     cell.dx(), cell.dy(), cell.dz(), facing);
-            // 结构要求空气的位置：把挡路的方块清掉，否则永远配不上。
+            BlockState current = level.getBlockState(target);
+            // 结构要求空气的位置：只清可替换方块（草/雪/水/花），实心方块一律不动，
+            // 否则「一键成型」会把玩家摆好的墙、箱子、机器直接抹掉。
             if (matcher instanceof MultiblockMatcher.Air) {
-                if (!level.getBlockState(target).isAir()) {
+                if (current.isAir()) {
+                    continue;
+                }
+                if (current.canBeReplaced()) {
                     plan.add(new Placement(target, Blocks.AIR));
+                } else {
+                    blocked++;
                 }
                 continue;
             }
@@ -110,6 +121,11 @@ public final class MultiblockTerminalRegistration {
             if (structure.accepts(level, target, cell)) {
                 continue;
             }
+            // 只往空气/可替换位置放；已经有别的方块的格子记为「被占用」并跳过，绝不覆盖。
+            if (!current.isAir() && !current.canBeReplaced()) {
+                occupied++;
+                continue;
+            }
             Block block = resolveBlock(matcher);
             if (block == null || block == Blocks.AIR) {
                 continue;
@@ -119,8 +135,15 @@ public final class MultiblockTerminalRegistration {
         }
 
         if (plan.isEmpty()) {
-            player.displayClientMessage(Component.translatable("message.meknh_core.multiblock_terminal.complete")
-                    .withStyle(ChatFormatting.GREEN), false);
+            if (occupied > 0 || blocked > 0) {
+                player.displayClientMessage(Component.translatable(
+                        "message.meknh_core.multiblock_terminal.obstructed", occupied, blocked)
+                        .withStyle(ChatFormatting.RED), false);
+            } else {
+                player.displayClientMessage(Component.translatable(
+                        "message.meknh_core.multiblock_terminal.complete")
+                        .withStyle(ChatFormatting.GREEN), false);
+            }
             return;
         }
 
@@ -153,8 +176,12 @@ public final class MultiblockTerminalRegistration {
             }
         }
         controller.invalidateStructure();
-        player.displayClientMessage(Component.translatable("message.meknh_core.multiblock_terminal.built",
-                plan.size()).withStyle(ChatFormatting.GREEN), false);
+        MutableComponent message = Component.translatable("message.meknh_core.multiblock_terminal.built", plan.size());
+        if (occupied > 0 || blocked > 0) {
+            message.append(Component.translatable(
+                    "message.meknh_core.multiblock_terminal.skipped", occupied, blocked));
+        }
+        player.displayClientMessage(message.withStyle(ChatFormatting.GREEN), false);
     }
 
     /**

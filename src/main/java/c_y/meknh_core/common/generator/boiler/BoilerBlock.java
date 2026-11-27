@@ -82,7 +82,7 @@ public class BoilerBlock extends Block implements EntityBlock {
                 }
             }
             if (level.getBlockEntity(pos) instanceof BoilerBlockEntity boiler) {
-                if (!boiler.canAccess(player.getUUID())) {
+                if (!c_y.meknh_core.common.security.SecurityInteractions.checkAccess(level, pos, player)) {
                     return InteractionResult.FAIL;
                 }
                 player.openMenu(new SimpleMenuProvider(
@@ -119,6 +119,19 @@ public class BoilerBlock extends Block implements EntityBlock {
                 && placer instanceof net.minecraft.server.level.ServerPlayer player) {
             boiler.setOwner(player.getUUID());
         }
+    }
+
+    /**
+     * 无权限时挖掘进度恒为 0（挖不动别人的私有锅炉）。
+     */
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level,
+                                       BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof c_y.meknh_core.common.security.SecureBlockEntity secure
+                && !secure.meknh_core$canAccess(player)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
     }
 
     @Nullable

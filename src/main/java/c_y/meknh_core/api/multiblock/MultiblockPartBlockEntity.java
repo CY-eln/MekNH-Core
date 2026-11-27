@@ -47,7 +47,7 @@ import org.jetbrains.annotations.Nullable;
  * 因此管道只能按仓室的方向工作，而控制器总能拿到完整的读写权限。</p>
  */
 public class MultiblockPartBlockEntity extends BlockEntity implements MultiblockPart, DropperTankHolder,
-        c_y.meknh_core.common.pipe.FeEnergyEndpoint {
+        c_y.meknh_core.common.pipe.FeEnergyEndpoint, c_y.meknh_core.common.security.SecureBlockEntity {
 
     /**
      * 物品仓的槽位数。
@@ -79,8 +79,18 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
     /**
      * 自动搬运开关：输出仓自动弹出、输入仓自动吸入，默认开启。
      */
-    private boolean autoTransfer;
+    /**
+     * 拥有者（放下时写入）+ 安全等级。
+     */
+    private final c_y.meknh_core.common.security.SecurityState security =
+            new c_y.meknh_core.common.security.SecurityState(this::meknh_core$markSecurityChanged);
 
+    @Override
+    public c_y.meknh_core.common.security.SecurityState securityState() {
+        return this.security;
+    }
+
+    private boolean autoTransfer;
     private int transferTimer;
 
     @Nullable
@@ -1013,6 +1023,19 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         }
     }
 
+    /**
+     * 同步 owner/安全等级到客户端。
+     */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveWithoutMetadata(registries);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
@@ -1032,6 +1055,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
             tag.putInt("Energy", this.energyStorage.getEnergyStored());
         }
         tag.putBoolean("AutoTransfer", this.autoTransfer);
+        this.meknh_core$saveSecurity(tag);
     }
 
     @Override
@@ -1056,6 +1080,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
         } else if (tag.contains("AutoEject")) {
             this.autoTransfer = tag.getBoolean("AutoEject");
         }
+        this.meknh_core$loadSecurity(tag);
         this.resizeItems();
     }
 

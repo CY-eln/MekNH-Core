@@ -111,6 +111,8 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
+        c_y.meknh_core.common.gui.element.SecurityTabRenderer.render(graphics, this.font,
+                this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY, this.menu.securityMode());
         if (this.isOverTank(mouseX, mouseY)) {
             FluidStack fluid = this.menu.fluid();
             if (fluid == null || fluid.isEmpty()) {
@@ -129,6 +131,14 @@ public class CokeOvenScreen extends GuiMekanism<CokeOvenMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (c_y.meknh_core.common.gui.element.SecurityTabRenderer.isClick(mouseX, mouseY, button,
+                this.leftPos, this.topPos, this.imageWidth)) {
+            if (this.minecraft != null && this.minecraft.gameMode != null) {
+                this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId,
+                        c_y.meknh_core.common.security.SecurityMenuActions.BUTTON_SECURITY);
+            }
+            return true;
+        }
         if (this.isOverTank(mouseX, mouseY)
                 && c_y.meknh_core.common.gui.element.DropperInteraction.click(
                         this.menu.blockPos(), c_y.meknh_core.common.network.DropperUsePayload.TANK_FLUID, 0,

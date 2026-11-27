@@ -45,7 +45,7 @@ import org.slf4j.Logger;
  * <p>本类同时实现 {@link MachineOutput}，作为配方的产物入口。</p>
  */
 public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_y.meknh_core.common.machine.DropperTankHolder,
-        c_y.meknh_core.common.pipe.FeEnergyEndpoint {
+        c_y.meknh_core.common.pipe.FeEnergyEndpoint, c_y.meknh_core.common.security.SecureBlockEntity {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -91,12 +91,13 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
                     [Direction.values().length];
     private c_y.meknh_core.common.machine.config.RedstoneMode redstoneMode =
             c_y.meknh_core.common.machine.config.RedstoneMode.DISABLED;
-    private boolean privateMode;
+    private final c_y.meknh_core.common.security.SecurityState security =
+            new c_y.meknh_core.common.security.SecurityState(this::meknh_core$markSecurityChanged);
     private boolean strictInput;
     private int outputColor;
     private final int[] inputColors = new int[Direction.values().length];
     @Nullable
-    private java.util.UUID owner;
+
 
     /** 每种传输类型是否自动向相邻方块输出。 */
     private final boolean[] autoEject =
@@ -184,9 +185,11 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         this.steamTank = level.isSteam() ? SteamTank.create(level.steamCapacity(), this::setChanged) : null;
         this.energyStorage = level.isSteam() ? null : new MachineEnergyStorage(level.energyCapacity(), this::setChanged);
 
+        // 只有输出罐可以被抽取；输入罐（燃料/原料）只进不出。
+        int fluidInputCount = this.inputFluidTank != null ? 1 : 0;
         this.fluidHandler = this.inputFluidTank == null && this.outputFluidTank == null
                 ? null
-                : new CombinedFluidHandler(nonNullTanks(this.inputFluidTank, this.outputFluidTank));
+                : new CombinedFluidHandler(nonNullTanks(this.inputFluidTank, this.outputFluidTank), fluidInputCount);
         this.chemicalHandler = this.buildChemicalHandler();
     }
 
@@ -207,7 +210,12 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         if (this.outputGasTank != null) {
             tanks.add(this.outputGasTank);
         }
-        return tanks.isEmpty() ? null : new CombinedChemicalHandler(tanks);
+        // 只有气体输出罐可以被抽取：蒸汽罐是燃料、输入罐是原料，都只进不出。
+        int firstExtractable = tanks.size();
+        if (this.outputGasTank != null) {
+            firstExtractable = tanks.size() - 1;
+        }
+        return tanks.isEmpty() ? null : new CombinedChemicalHandler(tanks, firstExtractable);
     }
 
     private static List<FluidTank> nonNullTanks(FluidTank... tanks) {
@@ -480,33 +488,51 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         this.setChanged();
     }
 
-    public boolean privateMode() {
-        return this.privateMode;
-    }
-
-    public void togglePrivateMode() {
-        this.privateMode = !this.privateMode;
-        this.setChanged();
-    }
-
-    public void setOwner(Player player) {
-        this.owner = player.getUUID();
-        this.setChanged();
-    }
-
-    public boolean isOwner(Player player) {
-        return this.owner != null && this.owner.equals(player.getUUID());
-    }
-
-    public boolean hasOwner() {
-        return this.owner != null;
+    @Override
+    public c_y.meknh_core.common.security.SecurityState securityState() {
+        return this.security;
     }
 
     /**
-     * 私有模式下只有主人能打开界面。
+     * 安全等级序号（0 公开 / 1 私有 / 2 可信），供 GUI 数据槽使用。
+     */
+    public int securityModeOrdinal() {
+        return this.security.mode().ordinal();
+    }
+
+    /**
+     * 是否为「非公开」模式（兼容旧 GUI 的私有开关语义）。
+     */
+    public boolean privateMode() {
+        return this.security.mode() != mekanism.api.security.SecurityMode.PUBLIC;
+    }
+
+    /**
+     * 循环安全等级：PUBLIC → PRIVATE → TRUSTED → PUBLIC（仅主人可用）。
+     */
+    public void cycleSecurityMode(Player player) {
+        if (this.meknh_core$isOwner(player)) {
+            this.security.cycleMode();
+        }
+    }
+
+    public void setOwner(Player player) {
+        this.security.setOwner(player.getUUID());
+    }
+
+    public boolean isOwner(Player player) {
+        return this.security.owner() != null && this.security.owner().equals(player.getUUID());
+    }
+
+    public boolean hasOwner() {
+        return this.security.owner() != null;
+    }
+
+    /**
+     * 打开界面 / 拆解前的权限检查：走 Mekanism 的 PUBLIC/PRIVATE/TRUSTED 判定。
      */
     public boolean canUse(Player player) {
-        return !this.privateMode || this.isOwner(player);
+        return this.meknh_core$canAccess(player);
     }
 
     private boolean redstoneAllows() {
@@ -1334,14 +1360,11 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
         }
         tag.putByteArray("AutoEject", eject);
         tag.putByte("RedstoneMode", (byte) this.redstoneMode.ordinal());
-        tag.putBoolean("PrivateMode", this.privateMode);
+        this.meknh_core$saveSecurity(tag);
         tag.putBoolean("StrictInput", this.strictInput);
         tag.putInt("OutputColor", this.outputColor);
         tag.putIntArray("InputColors", this.inputColors);
         tag.put("EnergySlot", this.energySlot.serializeNBT(registries));
-        if (this.owner != null) {
-            tag.putUUID("Owner", this.owner);
-        }
     }
 
     @Override
@@ -1405,14 +1428,14 @@ public class MachineBlockEntity extends BlockEntity implements MachineOutput, c_
                 this.autoEject[index] = index < eject.length && eject[index] != 0;
             }
         }
-        this.privateMode = tag.getBoolean("PrivateMode");
+        this.meknh_core$loadSecurity(tag);
         this.strictInput = tag.getBoolean("StrictInput");
         this.outputColor = tag.getInt("OutputColor");
         int[] colors = tag.getIntArray("InputColors");
         for (int index = 0; index < this.inputColors.length; index++) {
             this.inputColors[index] = index < colors.length ? colors[index] : 0;
         }
-        this.owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
+
         if (tag.contains("EnergySlot")) {
             this.energySlot.deserializeNBT(registries, tag.getCompound("EnergySlot"));
         }
