@@ -1,4 +1,10 @@
 {
+  "meknh.structure.category": "多方块结构",
+  "meknh.structure.open": "查看完整结构",
+  "meknh.structure.reset": "重置视角",
+  "meknh.structure.layer": "切换高度层",
+  "meknh.structure.hint": "拖动旋转 | 滚轮缩放 | Esc 返回",
+  "meknh.structure.representative": "候选方块示例；空气/任意位隐藏；未展示可替换仓室",
   "item.meknh_core.brick_wooden_form": "木制砖模具",
   "item.meknh_core.compressed_coke_clay": "压缩焦黏土",
   "item.meknh_core.coke_oven_brick": "焦炉砖",
