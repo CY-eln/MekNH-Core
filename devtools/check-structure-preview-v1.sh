@@ -29,7 +29,8 @@ cached_jar() {
   printf '%s\n' "${matches[0]}"
 }
 java_cp() {
-  if command -v cygpath >/dev/null 2>&1; then cygpath -mp "$1"; else printf '%s\n' "$1"; fi
+  # Absolute entries keep MSYS from re-converting a relative-first Windows path list.
+  if command -v cygpath >/dev/null 2>&1; then cygpath -amp "$1"; else printf '%s\n' "$1"; fi
 }
 JOML=$(cached_jar org.joml joml 1.10.5 joml-1.10.5.jar)
 GSON=$(cached_jar com.google.code.gson gson 2.10.1 gson-2.10.1.jar)

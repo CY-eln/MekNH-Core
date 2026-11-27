@@ -35,7 +35,8 @@ cached_jar() {
   printf '%s\n' "${matches[0]}"
 }
 java_cp() {
-  if command -v cygpath >/dev/null 2>&1; then cygpath -mp "$1"; else printf '%s\n' "$1"; fi
+  # Absolute entries keep MSYS from re-converting a relative-first Windows path list.
+  if command -v cygpath >/dev/null 2>&1; then cygpath -amp "$1"; else printf '%s\n' "$1"; fi
 }
 case "$(uname -s):$(uname -m)" in
   MINGW*:x86_64|MSYS*:x86_64) NATIVE=natives-windows ;;

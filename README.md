@@ -20,4 +20,4 @@ MekNH Core 是 Mekanism：New Horizon 整合包的核心模组。
 
 客户端需要 **LDLib2 2.2.46.a**（`[2.2.46.a,2.2.47)`），配合 JEI 使用；服务端不强制安装 LDLib2。
 
-开发回归：JDK 21 下运行 `bash devtools/check-structure-preview-v1.sh`。此检查覆盖状态、网格、视口、拾取及构建产物契约；不替代整合包内的交互验收。
+开发回归：先用 JDK 21 执行 `./gradlew build` 准备依赖缓存，再运行 `bash devtools/check-structure-preview-v1.sh`（离线）。可用 `JAVA_HOME`、`GRADLE_USER_HOME` 指定环境，`RUN_STRUCTURE_GPU=1` 启用可选 GPU 检查。此检查覆盖状态、网格、视口、拾取及构建产物契约；不替代整合包内的交互验收。
