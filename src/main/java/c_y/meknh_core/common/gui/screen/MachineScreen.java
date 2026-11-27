@@ -262,7 +262,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
       int warningCode = ((MachineMenu)this.menu).data(MachineMenu.DATA_WARNING);
       this.tabs.renderTabs(graphics, this.leftPos, this.topPos,
             ((MachineMenu)this.menu).data(MachineMenu.DATA_REDSTONE),
-            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) == 1, warningCode,
+            ((MachineMenu)this.menu).data(MachineMenu.DATA_PRIVATE) != 0, warningCode,
             ((MachineMenu)this.menu).isSteam(), this.backgroundMaterial(),
             mouseX, mouseY, !this.transporter.isOpen());
       if (this.transporter.isOpen()) {
@@ -340,7 +340,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             case CONFIG -> graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.tab.config"), mouseX, mouseY);
             case TRANSPORTER -> graphics.renderTooltip(this.font, Component.translatable("gui.meknh_core.tab.transporter"), mouseX, mouseY);
             case SECURITY -> graphics.renderTooltip(this.font, Component.translatable(
-                  ((MachineMenu)this.menu).data(19) == 1 ? "gui.meknh_core.security.private" : "gui.meknh_core.security.public"
+                  c_y.meknh_core.common.security.SecurityText.tabKey(((MachineMenu)this.menu).data(19))
             ), mouseX, mouseY);
             case REDSTONE -> graphics.renderTooltip(this.font, RedstoneMode.byOrdinal(((MachineMenu)this.menu).data(18)).displayName(), mouseX, mouseY);
             case ENERGY -> graphics.renderComponentTooltip(this.font, this.energyTabTooltip(), mouseX, mouseY);

@@ -15,6 +15,7 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
@@ -69,7 +70,7 @@ public final class BoilerRegistration {
             String path = definition.id().getPath() + "_" + tier.getSerializedName();
             DeferredBlock<BoilerBlock> block = BLOCKS.registerBlock(path,
                     properties -> new BoilerBlock(definition, tier, properties),
-                    BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops());
+                    BlockBehaviour.Properties.of().strength(3.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
             blocks.add(Map.entry(tier, block));
         }
 
@@ -112,14 +113,24 @@ public final class BoilerRegistration {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         for (Variant variant : VARIANTS.values()) {
             BlockEntityType<BoilerBlockEntity> type = variant.type().get();
+            c_y.meknh_core.common.security.SecurityCapabilities.register(event, type);
             event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type,
                     (be, side) -> side != null && be.sideMode(
                             c_y.meknh_core.common.machine.config.MachineConfigType.ITEM, side).allowsInsert()
                             ? be.itemHandler() : null);
             event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, type,
-                    (be, side) -> side != null && be.sideMode(
-                            c_y.meknh_core.common.machine.config.MachineConfigType.FLUID, side).allowsInsert()
-                            ? be : null);
+                    (be, side) -> {
+                        if (side == null) {
+                            return null;
+                        }
+                        c_y.meknh_core.common.machine.config.SideMode mode = be.sideMode(
+                                c_y.meknh_core.common.machine.config.MachineConfigType.FLUID, side);
+                        if (mode == c_y.meknh_core.common.machine.config.SideMode.NONE) {
+                            return null;
+                        }
+                        return new c_y.meknh_core.common.machine.config.SidedFluidHandler(
+                                be, mode.allowsInsert(), mode.allowsExtract());
+                    });
             event.registerBlockEntity(Capabilities.CHEMICAL.block(), type,
                     (be, side) -> be.chemicalHandlerForSide(side));
             event.registerBlockEntity(Capabilities.HEAT, type, (be, side) -> be);

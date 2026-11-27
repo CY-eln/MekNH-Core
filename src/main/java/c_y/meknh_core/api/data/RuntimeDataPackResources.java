@@ -13,18 +13,18 @@ import net.minecraft.server.packs.resources.IoSupplier;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 把 {@link RuntimeLootTables} 生成的战利品表包成服务端数据包。
+ * 把 {@link RuntimeLootTables} 与 {@link RuntimeBlockTags} 生成的战利品表 / 挖掘标签包成服务端数据包。
  */
 public final class RuntimeDataPackResources implements PackResources {
-
-    private static final String NAMESPACE = "meknh_core";
 
     private final PackLocationInfo location;
     private final Map<ResourceLocation, byte[]> resources;
 
     public RuntimeDataPackResources(PackLocationInfo location) {
         this.location = location;
-        this.resources = RuntimeLootTables.build();
+        Map<ResourceLocation, byte[]> merged = new java.util.LinkedHashMap<>(RuntimeLootTables.build());
+        merged.putAll(RuntimeBlockTags.build());
+        this.resources = merged;
     }
 
     @Nullable
@@ -45,7 +45,7 @@ public final class RuntimeDataPackResources implements PackResources {
 
     @Override
     public void listResources(PackType type, String namespace, String path, ResourceOutput resourceOutput) {
-        if (type != PackType.SERVER_DATA || !NAMESPACE.equals(namespace)) {
+        if (type != PackType.SERVER_DATA) {
             return;
         }
         String prefix = path.isEmpty() ? "" : path + "/";
@@ -58,7 +58,14 @@ public final class RuntimeDataPackResources implements PackResources {
 
     @Override
     public Set<String> getNamespaces(PackType type) {
-        return type == PackType.SERVER_DATA ? Set.of(NAMESPACE) : Set.of();
+        if (type != PackType.SERVER_DATA) {
+            return Set.of();
+        }
+        Set<String> namespaces = new java.util.LinkedHashSet<>();
+        for (ResourceLocation id : this.resources.keySet()) {
+            namespaces.add(id.getNamespace());
+        }
+        return namespaces;
     }
 
     @Nullable

@@ -71,6 +71,7 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderSecurityTab(graphics, mouseX, mouseY);
         if (!this.isEnergyHatch()) {
             this.renderAutoIoTab(graphics, mouseX, mouseY);
         }
@@ -79,6 +80,20 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
     /**
      * 自动搬运 Tab：输出仓是「自动弹出」，输入仓是「自动吸入」。
      */
+    /**
+     * 安全 Tab：贴在窗口右上角，主人点击循环 PUBLIC → PRIVATE → TRUSTED。
+     */
+    private void renderSecurityTab(GuiGraphics graphics, int mouseX, int mouseY) {
+        mekanism.api.security.SecurityMode mode = this.menu.securityMode();
+        TabStrip.renderSecurity(graphics, this.leftPos, this.topPos, this.imageWidth, mode);
+        if (TabStrip.isOverSecurity(mouseX, mouseY, this.leftPos, this.topPos, this.imageWidth)) {
+            graphics.renderTooltip(this.font,
+                    net.minecraft.network.chat.Component.translatable(
+                            c_y.meknh_core.common.security.SecurityText.tabKey(mode.ordinal())),
+                    mouseX, mouseY);
+        }
+    }
+
     private void renderAutoIoTab(GuiGraphics graphics, int mouseX, int mouseY) {
         TabStrip.renderAutoIo(graphics, this.leftPos, this.topPos, this.menu.autoIo());
         if (TabStrip.isOverAutoIo(mouseX, mouseY, this.leftPos, this.topPos)) {
@@ -120,6 +135,13 @@ public class HatchScreen extends GuiMekanism<HatchMenu> {
                     net.minecraft.client.gui.screens.Screen.hasShiftDown())) {
                 return true;
             }
+        }
+        if (button == 0 && TabStrip.isOverSecurity(mouseX, mouseY, this.leftPos, this.topPos, this.imageWidth)) {
+            if (this.minecraft != null && this.minecraft.gameMode != null) {
+                this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId,
+                        c_y.meknh_core.common.security.SecurityMenuActions.BUTTON_SECURITY);
+            }
+            return true;
         }
         if (!this.isEnergyHatch() && button == 0 && TabStrip.isOverAutoIo(mouseX, mouseY, this.leftPos, this.topPos)) {
             // 只发目标状态，服务端写回后由 ContainerData 同步，客户端不本地翻转。

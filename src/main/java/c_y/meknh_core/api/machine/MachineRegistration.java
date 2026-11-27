@@ -16,6 +16,7 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
@@ -117,7 +118,7 @@ public final class MachineRegistration {
             DeferredBlock<MachineBlock> block = BLOCKS.registerBlock(
                     path,
                     properties -> new MachineBlock(properties, definition, level),
-                    BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()
+                    BlockBehaviour.Properties.of().strength(3.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
             );
             blocks.add(Map.entry(level, block));
         }
@@ -156,6 +157,7 @@ public final class MachineRegistration {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         for (MachineVariant variant : VARIANTS.values()) {
             BlockEntityType<MachineBlockEntity> type = variant.blockEntityType().get();
+            c_y.meknh_core.common.security.SecurityCapabilities.register(event, type);
             event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type,
                     (blockEntity, side) -> blockEntity.itemHandlerFor(side));
 
@@ -178,9 +180,16 @@ public final class MachineRegistration {
 
             if (variant.definition().fluidInputCapacity() > 0L || variant.definition().fluidOutputCapacity() > 0L) {
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, type,
-                        (blockEntity, side) -> blockEntity.allowsConnection(
-                                c_y.meknh_core.common.machine.config.MachineConfigType.FLUID, side)
-                                ? blockEntity.fluidHandler() : null);
+                        (blockEntity, side) -> {
+                            if (!blockEntity.allowsConnection(
+                                    c_y.meknh_core.common.machine.config.MachineConfigType.FLUID, side)) {
+                                return null;
+                            }
+                            c_y.meknh_core.common.machine.config.SideMode mode = blockEntity.sideMode(
+                                    c_y.meknh_core.common.machine.config.MachineConfigType.FLUID, side);
+                            return new c_y.meknh_core.common.machine.config.SidedFluidHandler(
+                                    blockEntity.fluidHandler(), mode.allowsInsert(), mode.allowsExtract());
+                        });
             }
         }
     }

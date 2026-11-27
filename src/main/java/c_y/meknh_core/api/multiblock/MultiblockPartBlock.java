@@ -139,6 +139,34 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
         return simpleCodec(properties -> new MultiblockPartBlock(properties, this.partType, this.level, this.amp));
     }
 
+    /**
+     * 无权限时挖掘进度恒为 0。
+     */
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level,
+                                       BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof c_y.meknh_core.common.security.SecureBlockEntity secure
+                && !secure.meknh_core$canAccess(player)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
+    }
+
+    /**
+     * 放下时记录拥有者（拥有者只在放下后产生，对齐 Mekanism）。
+     */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state,
+                            @Nullable net.minecraft.world.entity.LivingEntity placer,
+                            net.minecraft.world.item.ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide && placer instanceof Player player
+                && level.getBlockEntity(pos) instanceof c_y.meknh_core.common.security.SecureBlockEntity secure
+                && secure.getOwnerUUID() == null) {
+            secure.setOwnerUUID(player.getUUID());
+        }
+    }
+
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -194,11 +222,21 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                             BlockHitResult hit) {
+        // 没有 GUI 的仓室（焦炉仓）：只保留空手 Shift+右键 切安全等级；
+        // 有 GUI 的仓室用 GUI 里的安全 Tab，不再占用 Shift+右键。
         if (!this.partType.hasGui()) {
+            if (!level.isClientSide && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                    && c_y.meknh_core.common.security.SecurityInteractions.tryCycle(level, pos, serverPlayer)) {
+                return InteractionResult.CONSUME;
+            }
             // 焦炉仓这类专属仓室没有 GUI，只靠漏斗/管道交互。
             return InteractionResult.PASS;
         }
         if (!level.isClientSide) {
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                    && !c_y.meknh_core.common.security.SecurityInteractions.checkAccess(level, pos, serverPlayer)) {
+                return InteractionResult.FAIL;
+            }
             if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
                     && level.getBlockEntity(pos) instanceof MultiblockPartBlockEntity part) {
                 serverPlayer.openMenu(

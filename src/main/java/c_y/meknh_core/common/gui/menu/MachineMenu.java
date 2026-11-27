@@ -354,7 +354,7 @@ public class MachineMenu extends AbstractContainerMenu {
             this.machine.setOwner(player);
          }
          if (this.machine.isOwner(player)) {
-            this.machine.togglePrivateMode();
+            this.machine.cycleSecurityMode(player);
             return true;
          } else {
             return false;
@@ -396,7 +396,7 @@ public class MachineMenu extends AbstractContainerMenu {
                case 11 -> chemicalId(this.machine.outputGasTank());
                default -> 0;
                case 18 -> this.machine.redstoneMode().ordinal();
-               case 19 -> this.machine.privateMode() ? 1 : 0;
+               case 19 -> this.machine.securityModeOrdinal();
                case 20 -> this.machine.warningCode();
                case 21 -> clamp(this.machine.steamPerTick());
                case 40, 41, 42, 43 -> this.machine.autoEject(

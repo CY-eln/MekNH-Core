@@ -70,12 +70,8 @@ public final class WrenchDismantle {
      */
     public static boolean canDismantleAt(Level level, BlockPos pos, Player player) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof c_y.meknh_core.api.machine.MachineBlockEntity machine
-                && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            return machine.canUse(serverPlayer);
-        }
-        if (blockEntity instanceof c_y.meknh_core.common.generator.boiler.BoilerBlockEntity boiler) {
-            return boiler.canAccess(player.getUUID());
+        if (blockEntity instanceof c_y.meknh_core.common.security.SecureBlockEntity secure) {
+            return secure.meknh_core$canAccess(player);
         }
         return true;
     }

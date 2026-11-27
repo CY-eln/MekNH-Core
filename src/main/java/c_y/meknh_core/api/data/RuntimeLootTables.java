@@ -45,7 +45,8 @@ public final class RuntimeLootTables {
             paths.add(variant.path());
         }
         for (MultiblockVariant variant : MultiblockRegistration.variants()) {
-            if (MultiblockRegistration.hasExternalController(variant.definition().id())) continue;
+            // 外部控制器（焦炉 / 土高炉 / 原始泵）也是正常方块，同样需要战利品表；
+            // 它们的 path 就是定义 id，交给下面的注册表过滤兜底。
             paths.add(variant.path());
         }
         for (MultiblockRegistration.PartBlockInfo part : MultiblockRegistration.partBlockInfos()) {
@@ -69,6 +70,10 @@ public final class RuntimeLootTables {
 
         Map<ResourceLocation, byte[]> resources = new LinkedHashMap<>();
         for (String path : paths) {
+            // 只给真实注册过的方块生成，避免拼错 id 时生成无用表 / 标签报 unknown entry
+            if (!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(MekNHCore.rl(path))) {
+                continue;
+            }
             resources.put(MekNHCore.rl("loot_table/blocks/" + path + ".json"),
                     blockLoot(path).toString().getBytes(StandardCharsets.UTF_8));
         }

@@ -17,6 +17,24 @@ public class PrimitiveBlastFurnaceMenu extends AbstractContainerMenu {
     private final BlockPos pos;
     @Nullable private final PrimitiveBlastFurnaceControllerBlockEntity furnace;
     private final ContainerData data;
+
+    /**
+     * 安全按钮：循环 PUBLIC → PRIVATE → TRUSTED（仅主人）。
+     */
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id == c_y.meknh_core.common.security.SecurityMenuActions.BUTTON_SECURITY) {
+            return c_y.meknh_core.common.security.SecurityMenuActions.cycle(player, this.furnace);
+        }
+        return super.clickMenuButton(player, id);
+    }
+
+    /**
+     * 当前安全等级（客户端可读，方块实体已同步）。
+     */
+    public mekanism.api.security.SecurityMode securityMode() {
+        return c_y.meknh_core.common.security.SecurityMenuActions.modeOf(this.furnace);
+    }
     public PrimitiveBlastFurnaceMenu(int id, Inventory inventory, PrimitiveBlastFurnaceControllerBlockEntity furnace) {
         this(id, inventory, furnace.getBlockPos(), furnace, new FurnaceData(furnace));
     }
