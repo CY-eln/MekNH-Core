@@ -1,4 +1,10 @@
 {
+  "meknh.structure.category": "Multiblock Structures",
+  "meknh.structure.open": "View full structure",
+  "meknh.structure.reset": "Reset view",
+  "meknh.structure.layer": "Cycle Y layer",
+  "meknh.structure.hint": "Drag: rotate | Scroll: zoom | Esc: back",
+  "meknh.structure.representative": "Representative blocks; air/any hidden; hatch replacements not shown",
   "item.meknh_core.brick_wooden_form": "Brick Wooden Form",
   "item.meknh_core.compressed_coke_clay": "Compressed Coke Clay",
   "item.meknh_core.coke_oven_brick": "Coke Oven Brick",

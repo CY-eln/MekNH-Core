@@ -134,13 +134,35 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
+// LDLib2 ships Yoga as a nested jar, which javac does not search automatically.
+configurations { ldlibLayout }
+def extractLdlibLayout = tasks.register("extractLdlibLayout", Sync) {
+    inputs.property("layoutJars", "yoga-taffy-kotlin-v2")
+    from({ zipTree(configurations.ldlibLayout.singleFile) }) {
+        include "META-INF/jarjar/*.jar"
+        eachFile { path = name }
+        includeEmptyDirs = false
+    }
+    into layout.buildDirectory.dir("ldlib-layout")
+}
+
 dependencies {
+    ldlibLayout "maven.modrinth:ldlib:Zrj8M2XK"
+    compileOnly files(
+        layout.buildDirectory.file("ldlib-layout/yoga-1.0.0.jar"),
+        layout.buildDirectory.file("ldlib-layout/taffy-1.1.5.jar"),
+        layout.buildDirectory.file("ldlib-layout/kotlin-stdlib-2.1.20.jar")
+    ).builtBy(extractLdlibLayout)
+    // LDLib2: pin the same NeoForge 1.21.1 release used by the target instance.
+    implementation "maven.modrinth:ldlib:Zrj8M2XK"
     // 本地开发使用 mods/ 下的完整依赖；CI 环境没有 mods/，从公开 Maven 拉取最小依赖。
     if (fileTree(dir: 'mods', include: ['*.jar']).isEmpty()) {
         // 版本号对应的 Modrinth version id，见 https://api.modrinth.com
         implementation "maven.modrinth:mekanism:5KzzycBT"
         implementation "maven.modrinth:mekanism-generators:a6gl7srE"
         compileOnly "maven.modrinth:jei:1vC6z8wV"
+        // Client screen ingredient handlers reference JEI; include it for local trial runs only.
+        localRuntime "maven.modrinth:jei:1vC6z8wV"
         compileOnly "maven.modrinth:jade:eYz2YBGT"
     } else {
         implementation fileTree(dir: 'mods', include: ['*.jar'])

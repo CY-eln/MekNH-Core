@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 public final class MeknhJeiPlugin implements IModPlugin {
 
     private static final ResourceLocation UID = MekNHCore.rl("jei");
+    private final List<StructureInfoCategory> structureCategories = new ArrayList<>();
     private final List<MachineRecipeCategory> machineCategories = new ArrayList<>();
     private final List<MultiblockRecipeCategory> multiblockCategories = new ArrayList<>();
 
@@ -58,6 +59,16 @@ public final class MeknhJeiPlugin implements IModPlugin {
      */
     public static boolean openMultiblockRecipes(ResourceLocation multiblockId) {
         return openCategory(MULTIBLOCK_TYPES.get(multiblockId));
+    }
+
+    /** Open recipes producing the displayed material, without binding an inventory slot. */
+    public static boolean openItemRecipes(net.minecraft.world.item.ItemStack stack) {
+        if (jeiRuntime == null || stack.isEmpty()) return false;
+        var focus = jeiRuntime.getJeiHelpers().getFocusFactory().createFocus(
+                mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT,
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack.copyWithCount(1));
+        jeiRuntime.getRecipesGui().show(java.util.List.of(focus));
+        return true;
     }
 
     private static boolean openCategory(@Nullable RecipeType<MachineRecipe> recipeType) {
@@ -83,8 +94,36 @@ public final class MeknhJeiPlugin implements IModPlugin {
         return UID;
     }
 
+    private void registerStructureCategories(IRecipeCategoryRegistration registration) {
+        structureCategories.clear();
+        var previews = c_y.meknh_core.api.multiblock.MultiblockRegistration.variants().stream()
+                .filter(v -> c_y.meknh_core.api.multiblock.MultiblockRegistration.definitions().stream()
+                        .anyMatch(d -> d.id().equals(v.definition().id())))
+                .map(c_y.meknh_core.client.structure.StructurePreview::new).toList();
+        var controllers = previews.stream().map(p -> p.variant().item().get()).collect(java.util.stream.Collectors.toSet());
+        var helper = registration.getJeiHelpers().getGuiHelper();
+        structureCategories.add(new StructureInfoCategory(helper, null, controllers));
+        for (var preview : previews) structureCategories.add(new StructureInfoCategory(helper, preview, controllers));
+        for (var category : structureCategories) registration.addRecipeCategories(category);
+    }
+
+    private void registerStructureRecipes(IRecipeRegistration registration) {
+        // Structure information is registry-backed, even without a level or processing recipes.
+        var previews = structureCategories.stream().map(StructureInfoCategory::controllerPreview)
+                .filter(java.util.Objects::nonNull).toList();
+        for (var category : structureCategories) registration.addRecipes(category.getRecipeType(),
+                category.controllerPreview() == null ? previews : List.of(category.controllerPreview()));
+    }
+
+    private void registerStructureCatalysts(IRecipeCatalystRegistration registration) {
+        // Controller categories contain exactly one preview. Shared parts use native recipe pagination.
+        for (var category : structureCategories) if (category.controllerPreview() != null)
+            registration.addRecipeCatalysts(category.getRecipeType(), category.controllerPreview().variant().item().get());
+    }
+
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
+        registerStructureCategories(registration);
         this.machineCategories.clear();
         this.multiblockCategories.clear();
         MACHINE_TYPES.clear();
@@ -108,6 +147,7 @@ public final class MeknhJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        registerStructureRecipes(registration);
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) {
             return;
@@ -132,6 +172,7 @@ public final class MeknhJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        registerStructureCatalysts(registration);
         for (MachineRecipeCategory category : this.machineCategories) {
             for (var variant : MachineRegistration.variants()) {
                 if (variant.definition().id().equals(category.definition().id())) {
