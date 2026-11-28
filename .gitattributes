@@ -1,3 +1,29 @@
+# Line endings: normalise everything to LF in the repository *and* in the
+# working tree. Without this, `core.autocrlf=true` on Windows makes every
+# `git add` of an LF file print
+#   warning: in the working copy of 'x', LF will be replaced by CRLF ...
+# for hundreds of files, and leaves the tree with a mix of LF and CRLF.
+* text=auto eol=lf
+
+# Windows batch files must keep CRLF for cmd.exe.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets: never convert, never diff.
+*.jar binary
+*.class binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ogg binary
+*.wav binary
+*.zip binary
+*.nbt binary
+*.ttf binary
+*.otf binary
+
 # Disable autocrlf on generated files, they always generate with LF
 # Add any extra files or paths here to make git stop saying they
 # are changed when only line endings change.
