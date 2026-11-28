@@ -216,6 +216,7 @@
   "multiblock.meknh_core.part.energy_output": "动力仓",
   "multiblock.meknh_core.part.steam_input": "蒸汽输入仓",
   "multiblock.meknh_core.part.pump_hatch": "水泵仓",
+  "multiblock.meknh_core.preview_hint": "潜行 + 空手右键：预览结构",
   "multiblock.meknh_core.status.formed": "结构已成型：%s（进度 %s，并行 %s）",
   "multiblock.meknh_core.status.unformed": "结构未成型：%s",
   "block.meknh_core.steam_machine_casing": "蒸汽机器外壳",

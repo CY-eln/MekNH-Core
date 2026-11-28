@@ -33,8 +33,15 @@ public final class PrimitivePumpControllerBlock extends MultiblockControllerBloc
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                             BlockHitResult hit) {
+        // 未成型 + 潜行 + 空手：预览结构（与其它控制器一致）。
+        if (!state.getValue(FORMED) && player.isShiftKeyDown()) {
+            if (level.isClientSide) {
+                c_y.meknh_core.client.render.preview.MultiblockInWorldPreviewRenderer
+                        .showPreview(this, state, pos);
+            }
+            return InteractionResult.SUCCESS;
+        }
         // 原始水泵没有 GUI：成型后用「空手潜行右键」循环安全等级（唯一入口）。
-        // 未成型时保留这个手势给多方块预览，与其它控制器一致。
         if (!level.isClientSide && state.getValue(FORMED)
                 && c_y.meknh_core.common.security.SecurityInteractions.tryCycle(level, pos, player)) {
             return InteractionResult.CONSUME;

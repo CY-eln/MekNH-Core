@@ -87,6 +87,17 @@ public class MultiblockPartBlock extends Block implements EntityBlock {
     }
 
     /**
+     * 成型外壳贴图索引：1=低压蒸汽、2=高压蒸汽、3..7=LV..IV。
+     * 预览需要和成型后的仓室外壳一致，所以放在方块类上供渲染侧复用。
+     */
+    public static int casingIndex(MachineLevel level) {
+        if (level.isSteam()) {
+            return level.steam() == c_y.meknh_core.common.machine.steam.SteamVariant.HIGH ? 2 : 1;
+        }
+        return 2 + level.voltage().level();
+    }
+
+    /**
      * 仓室显示名：电压/安培 + 功能名；能源输出仓统一以「动力仓」结尾。
      */
     public MutableComponent displayName() {

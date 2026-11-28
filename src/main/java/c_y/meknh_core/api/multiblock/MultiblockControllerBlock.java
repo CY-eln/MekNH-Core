@@ -118,6 +118,15 @@ public class MultiblockControllerBlock extends Block implements EntityBlock {
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                             BlockHitResult hit) {
+        // 未成型 + 潜行 + 空手：客户端在世界里预览结构，两端都不走 GUI。
+        // 成型之后这个手势归「循环安全等级」所有（见下），两者不会冲突。
+        if (!state.getValue(FORMED) && player.isShiftKeyDown()) {
+            if (level.isClientSide) {
+                c_y.meknh_core.client.render.preview.MultiblockInWorldPreviewRenderer
+                        .showPreview(this, state, pos);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

@@ -349,7 +349,7 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                 || controller.definition().noVoltage()) {
             return;
         }
-        int casing = casingIndex(controller.level());
+        int casing = MultiblockPartBlock.casingIndex(controller.level());
         if (state.getValue(MultiblockPartBlock.FORMED) && state.getValue(MultiblockPartBlock.CASING) == casing) {
             return;
         }
@@ -357,13 +357,6 @@ public class MultiblockPartBlockEntity extends BlockEntity implements Multiblock
                 state.setValue(MultiblockPartBlock.FORMED, true)
                         .setValue(MultiblockPartBlock.CASING, casing),
                 net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
-    }
-
-    private static int casingIndex(MachineLevel level) {
-        if (level.isSteam()) {
-            return level.steam() == c_y.meknh_core.common.machine.steam.SteamVariant.HIGH ? 2 : 1;
-        }
-        return 2 + level.voltage().level();
     }
 
     @Override

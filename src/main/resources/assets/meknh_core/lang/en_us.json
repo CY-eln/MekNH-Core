@@ -217,6 +217,7 @@
   "multiblock.meknh_core.part.energy_output": "Dynamo Hatch",
   "multiblock.meknh_core.part.steam_input": "Steam Input Hatch",
   "multiblock.meknh_core.part.pump_hatch": "Pump Hatch",
+  "multiblock.meknh_core.preview_hint": "Sneak + right-click with an empty hand: preview structure",
   "multiblock.meknh_core.status.formed": "Formed: %s (progress %s, parallel %s)",
   "multiblock.meknh_core.status.unformed": "Not formed: %s",
   "block.meknh_core.steam_machine_casing": "Steam Machine Casing",

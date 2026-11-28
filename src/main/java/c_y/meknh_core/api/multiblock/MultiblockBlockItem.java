@@ -154,6 +154,9 @@ public class MultiblockBlockItem extends BlockItem {
         }
         tooltip.add(Component.translatable("machine.meknh_core.tooltip.security_hint")
                 .withStyle(ChatFormatting.DARK_GRAY));
+        // 预览手势只在「控制器物品」上出现：仓室物品走 addPartDetails，不会执行到这里。
+        tooltip.add(Component.translatable("multiblock.meknh_core.preview_hint")
+                .withStyle(ChatFormatting.DARK_GRAY));
     }
 
     private static Component label(String key, Object value) {
